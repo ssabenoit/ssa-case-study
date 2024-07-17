@@ -7,15 +7,11 @@ sources:
     tables:
       - name: current_standings
         description: Most recent NHL Standings
-
       - name: current_teams
         description: All the teams actively competing in the NHL
-
       - name: games
         description: Basic info on all the games from 2023 season start until now
-
       - name: game_boxscore
         description: Detailed boxscore for each game_id in the games table
-
       - name: team_rosters
         description: team rosters with json objects for defensemen, forwards, goalies
