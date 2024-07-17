@@ -1,9 +1,13 @@
-with
+{{ config(
+    schema='DBT_BCAMBOURNAC'
+) }}
 
-source as (
+with source as (
 
     select * from {{ source('nhl_staging_data', 'team_rosters') }}
 
 )
 
-select * from source limit 2
+select * 
+from source 
+-- limit 2

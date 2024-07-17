@@ -1,0 +1,12 @@
+nhl_profile:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: ssabenoit
+      user: ssabenoit
+      password: Ben_032603
+      role: ACCOUNTADMIN
+      database: DBT_ANALYTICS
+      warehouse: DBT_WH
+      schema: STAGING
