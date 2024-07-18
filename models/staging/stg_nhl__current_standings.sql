@@ -6,4 +6,4 @@ source as (
 
 )
 
-select * from source limit 1
+select * from source
