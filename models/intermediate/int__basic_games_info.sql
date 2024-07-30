@@ -8,7 +8,7 @@ with raw_games as (
 
 select
     id::INT as game_id,
-    date,
+    date as date,
     season::INT as season,
     venue:default::STRING as venue,
     TO_TIMESTAMP(starttimeutc, 'YYYY-MM-DDTHH24:MI:SSZ') AS start_time_utc,
