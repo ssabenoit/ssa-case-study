@@ -13,13 +13,13 @@ select
     divisionname as division,
     divisionabbrev as division_abv,
     conferencename as conference,
-    coferenceabbrev as conference_abv,
-    leaguessequence::INT as league_standing,
+    conferenceabbrev as conference_abv,
+    leaguesequence::INT as league_standing,
     conferencesequence::INT as conference_standing,
     divisionsequence::INT as division_standing,
     wildcardsequence::INT as wildcard_standing,
     clinchindicator as clinch_indicator,
-    waiversequence::INT as waiver,
+    waiverssequence::INT as waiver,
 
     -- basic total stats
     points::INT as points,
@@ -32,10 +32,10 @@ select
 
     regulationwins::INT as reg_wins,
     regulationplusotwins::INT as reg_ot_wins,
-    regulationplusotwinspctg as reg_ot_win_pct,
-    reulationwinpctg as reg_win_pct,
+    regulationplusotwinpctg as reg_ot_win_pct,
+    regulationwinpctg as reg_win_pct,
     shootoutwins::INT as shootout_w,
-    shoutoutlosses::INT as shootout_l,
+    shootoutlosses::INT as shootout_l,
 
     goalfor::INT as goals_for,
     goalagainst::INT as goals_against,
@@ -46,7 +46,7 @@ select
     -- home and away stats
     homewins::INT as home_wins,
     homelosses::INT as home_losses,
-    homesotlosses::INT as home_ot_l,
+    homeotlosses::INT as home_ot_l,
     homepoints::INT as home_points,
     homegamesplayed::INT as home_gp,
     homegoalsfor::INT as home_goals,
@@ -60,12 +60,12 @@ select
 
     roadwins::INT as road_wins,
     roadlosses::INT as road_losses,
-    roadot_losses::INT as road_ot_l,
+    roadotlosses::INT as road_ot_l,
     roadpoints::INT as road_points,
     roadgamesplayed::INT as road_gp,
     roadgoalsfor::INT as road_goals,
     roadgoalsagainst::INT as road_goals_against,
-    roadgoaldifferential::INT as road_goal_diff
+    roadgoaldifferential::INT as road_goal_diff,
     roadregulationwins::INT as road_reg_wins,
     roadregulationplusotwins::INT as road_reg_ot_wins,
     leagueroadsequence::INT as league_road_standing,
@@ -75,9 +75,9 @@ select
     -- recent (L10) game stats
     streakcode as streak,
     streakcount::INT as streak_count,
-    l10gamesplayed::INT as l10_gp
+    l10gamesplayed::INT as l10_gp,
     l10wins::INT as l10_wins,
-    l10lossess::INT as l10_losses,
+    l10losses::INT as l10_losses,
     l10otlosses::INT as l10_ot_l,
     l10points::INT as l10_points,
     l10goalsfor::INT as l10_goals,

@@ -6,7 +6,7 @@ with raw_teams as (
 )
 
 select
-    id::INT,
+    id::INT as team_id,
     name:default::STRING as team_name,
     abbrev as team_abv,
     name:fr::STRING as french_name,
