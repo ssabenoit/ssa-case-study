@@ -22,6 +22,11 @@ away_team_forwards as (
         season::INT as season,
         awayteam:abbrev::STRING as team_abv,
         'away' as type,
+        case 
+            when gametype = 2 then 'regular'
+            when gametype = 3 then 'playoff'
+            else 'other'
+        end as game_type,
         player.value: playerId::INT as player_id,
         player.value: name:default::STRING as name,
         -- player.value: position::STRING as position,
@@ -47,6 +52,11 @@ away_team_defense as (
         season::INT as season,
         awayteam:abbrev::STRING as team_abv,
         'away' as type,
+        case 
+            when gametype = 2 then 'regular'
+            when gametype = 3 then 'playoff'
+            else 'other'
+        end as game_type,
         player.value: playerId::INT as player_id,
         player.value: name:default::STRING as name,
         -- player.value: position::STRING as position,
@@ -72,6 +82,11 @@ home_team_forwards as (
         season::INT as season,
         hometeam:abbrev::STRING as team_abv,
         'home' as type,
+        case 
+            when gametype = 2 then 'regular'
+            when gametype = 3 then 'playoff'
+            else 'other'
+        end as game_type,
         player.value: playerId::INT as player_id,
         player.value: name:default::STRING as name,
         -- player.value: position::STRING as position,
@@ -97,6 +112,11 @@ home_team_defense as (
         season::INT as season,
         hometeam:abbrev::STRING as team_abv,
         'home' as type,
+        case 
+            when gametype = 2 then 'regular'
+            when gametype = 3 then 'playoff'
+            else 'other'
+        end as game_type,
         player.value: playerId::INT as player_id,
         player.value: name:default::STRING as name,
         -- player.value: position::STRING as position,
