@@ -14,7 +14,7 @@ away_team_goalies as (
         season::INT as season,
         awayteam:abbrev::STRING as team_abv,
         'away' as type,
-        player.value: playerId as player_id,
+        player.value: playerId::INT as player_id,
         player.value: name:default::STRING as name,
         player.value: position::STRING as position,
         player.value: starter::BOOLEAN as starter,
@@ -30,7 +30,7 @@ away_team_goalies as (
         player.value: powerPlayShotsAgainst::STRING as pp_shots_faced,
         player.value: shorthandedGoalsAgainst::INT as sh_goals_against,
         player.value: shorthandedShotsAgainst::STRING as sh_shots_faced,
-        player.value: pim as pim,
+        player.value: pim::INT as pim,
         TO_TIME(CAST(
             CAST(split_part(player.value: toi::STRING, ':', 0) as INT) * 60 + CAST(split_part(player.value: toi::STRING, ':', -1) as INT)
             as STRING)
@@ -48,7 +48,7 @@ home_team_goalies as (
         season::INT as season,
         hometeam:abbrev::STRING as team_abv,
         'home' as type,
-        player.value: playerId as player_id,
+        player.value: playerId::INT as player_id,
         player.value: name:default::STRING as name,
         player.value: position::STRING as position,
         player.value: starter::BOOLEAN as starter,
@@ -64,7 +64,7 @@ home_team_goalies as (
         player.value: powerPlayShotsAgainst::STRING as pp_shots_faced,
         player.value: shorthandedGoalsAgainst::INT as sh_goals_against,
         player.value: shorthandedShotsAgainst::STRING as sh_shots_faced,
-        player.value: pim as pim,
+        player.value: pim::INT as pim,
         TO_TIME(CAST(
             CAST(split_part(player.value: toi::STRING, ':', 0) as INT) * 60 + CAST(split_part(player.value: toi::STRING, ':', -1) as INT)
             as STRING)
