@@ -1,4 +1,4 @@
--- models/intermediate/int__goalies_per_game_stats.sql
+-- models/intermediate/goalies_per_game_stats_all.sql
 -- compile per game stats for nhl goalies from individual box scores
 {{ config(materialized='table') }}
 
