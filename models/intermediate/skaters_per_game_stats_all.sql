@@ -1,4 +1,4 @@
--- models/intermediate/int__skaters_per_game_stats.sql
+-- models/intermediate/skaters_per_game_stats_all.sql
 -- extracts individual player stats per game from each game boxscore
 -- each entry has the season, game-id, player_id and the associated stats
 {{ config(materialized='table') }}

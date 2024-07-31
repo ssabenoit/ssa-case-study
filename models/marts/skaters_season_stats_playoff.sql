@@ -1,4 +1,4 @@
--- models/marts/skaters_playoff_season_stats.sql
+-- models/marts/skaters_season_stats_playoff.sql
 -- compiles stats for each player for each regular season (from the per game stats table)
 
 with skaters_info as (

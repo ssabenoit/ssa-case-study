@@ -1,4 +1,4 @@
--- models/intermediate/int__team_per_game_stats.sql
+-- models/intermediate/team_per_game_stats_all.sql
 -- compile per game stats for each team and each game they played in the data
 {{ config(materialized='table') }}
 

@@ -1,4 +1,4 @@
--- models/marts/team_playoff_stats.sql
+-- models/marts/team_season_stats_playoff.sql
 -- aggregates per game data to get playoff season stats data for each team
 
 with team_game_stats as (

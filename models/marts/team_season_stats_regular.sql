@@ -1,4 +1,4 @@
--- models/marts/team_regular_season_stats.sql
+-- models/marts/team_season_stats_regular.sql
 -- aggregates per game data to get regular season stats data for each team
 
 with team_game_stats as (
