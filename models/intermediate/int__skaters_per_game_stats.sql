@@ -8,13 +8,6 @@ with games as (
     from {{ ref("stg_nhl__game_boxscore") }}
 ),
 
-/*
-skaters as (
-    select *
-    from {{ ref("int__all_skaters") }}
-),
-*/
-
 away_team_forwards as (
     -- selects all the away team forwards statistics
     select 
