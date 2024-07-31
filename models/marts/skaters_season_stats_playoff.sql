@@ -8,7 +8,7 @@ with skaters_info as (
 
 skater_stats as (
     select *
-    from {{ ref("int__skaters_per_game_stats") }}
+    from {{ ref("skaters_per_game_stats_all") }}
 ),
 
 skater_season_stats as (
