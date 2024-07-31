@@ -3,7 +3,7 @@
 
 with team_game_stats as (
     select *
-    from {{ ref("int__team_per_game_stats") }}
+    from {{ ref("team_per_game_stats_all") }}
 )
 
 select
