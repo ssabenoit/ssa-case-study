@@ -9,7 +9,7 @@ with raw_standings as (
 select
     -- team info
     teamname:default::STRING as team,
-    teamabbrev as team_abv,
+    teamabbrev:default::STRING as team_abv,
     divisionname as division,
     divisionabbrev as division_abv,
     conferencename as conference,
