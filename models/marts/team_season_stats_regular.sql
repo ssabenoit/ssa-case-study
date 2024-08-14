@@ -20,7 +20,7 @@ team_stats as (
         sum(goals) as goals,
         avg(goals) as goals_per_game,
         sum(goals_against) as goals_against,
-        avg(goals_aginst) as goals_against_average,
+        avg(goals_against) as goals_against_average,
         sum(shots) as shots,
         avg(shots) as shots_per_game,
         sum(p1_goals) as p1_goals,
