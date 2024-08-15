@@ -59,6 +59,10 @@ select
     homegoalsfor::INT as home_goals,
     homegoalsagainst::INT as home_goals_against,
     homegoaldifferential::INT as home_goal_diff,
+    case
+        when home_goal_diff > 0 then concat('+', home_goal_diff)
+        else CAST(home_goal_diff as STRING)
+    end as home_goal_diff_string,
     homeregulationwins::INT as home_reg_wins,
     homeregulationplusotwins::INT as home_reg_ot_wins,
     leaguehomesequence::INT as league_home_standing,
@@ -74,6 +78,10 @@ select
     roadgoalsfor::INT as road_goals,
     roadgoalsagainst::INT as road_goals_against,
     roadgoaldifferential::INT as road_goal_diff,
+    case
+        when road_goal_diff > 0 then concat('+', road_goal_diff)
+        else CAST(road_goal_diff as STRING)
+    end as road_goal_diff_string,
     roadregulationwins::INT as road_reg_wins,
     roadregulationplusotwins::INT as road_reg_ot_wins,
     leagueroadsequence::INT as league_road_standing,
