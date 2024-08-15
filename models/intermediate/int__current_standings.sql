@@ -37,10 +37,15 @@ select
     regulationwinpctg as reg_win_pct,
     shootoutwins::INT as shootout_w,
     shootoutlosses::INT as shootout_l,
+    concat(shootoutwins, '-', shootoutlosses) as shootout_record,
 
     goalfor::INT as goals_for,
     goalagainst::INT as goals_against,
     goaldifferential::INT as goal_diff,
+    case
+        when goal_diff > 0 then concat('+', goal_diff)
+        else CAST(goal_diff as STRING)
+    end as goal_diff_string,
     goalsforpctg as goals_per_game,
     goaldifferentialpctg as goal_diff_pct,
     
@@ -78,6 +83,7 @@ select
     -- recent (L10) game stats
     streakcode as streak,
     streakcount::INT as streak_count,
+    concat(streakcode, streakcount) as streak_string,
     l10gamesplayed::INT as l10_gp,
     l10wins::INT as l10_wins,
     l10losses::INT as l10_losses,
