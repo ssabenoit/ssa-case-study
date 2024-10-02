@@ -12,6 +12,11 @@ away_team_goalies as (
     select 
         id::INT as game_id,
         season::INT as season,
+        case 
+            when gametype = 2 then 'regular'
+            when gametype = 3 then 'playoff'
+            else 'other'
+        end as game_type,
         awayteam:abbrev::STRING as team_abv,
         'away' as type,
         player.value: playerId::INT as player_id,
@@ -46,6 +51,11 @@ home_team_goalies as (
     select 
         id::INT as game_id,
         season::INT as season,
+        case 
+            when gametype = 2 then 'regular'
+            when gametype = 3 then 'playoff'
+            else 'other'
+        end as game_type,
         hometeam:abbrev::STRING as team_abv,
         'home' as type,
         player.value: playerId::INT as player_id,
