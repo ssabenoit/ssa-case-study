@@ -38,6 +38,7 @@ ranked_stats as (
 SELECT
   {% for column_name in columns %}
     CASE 
+      WHEN ({{ column_name }} % 100) IN (11, 12, 13) THEN CONCAT({{ column_name }}, 'th')
       WHEN ({{ column_name }} % 10) = 1 THEN CONCAT({{ column_name }}, 'st')
       WHEN ({{ column_name }} % 10) = 2 THEN CONCAT({{ column_name }}, 'nd')
       WHEN ({{ column_name }} % 10) = 3 THEN CONCAT({{ column_name }}, 'rd')

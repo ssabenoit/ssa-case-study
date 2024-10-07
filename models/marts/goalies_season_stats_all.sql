@@ -62,14 +62,14 @@ goalies_season_stats as (
     group by season, player_id, name
 )
 
-select 
-    ss.*,
-    si.first_name,
-    si.last_name,
-    si.team_abv,
-    si.position
-from goalies_season_stats ss
-left join goalies_info si on ss.player_id = si.player_id
+-- select 
+--     ss.*,
+--     si.first_name,
+--     si.last_name,
+--     si.team_abv,
+--     si.position
+-- from goalies_season_stats ss
+-- left join goalies_info si on ss.player_id = si.player_id
 
--- select *
--- from goalies_stats
+select *
+from goalies_stats
