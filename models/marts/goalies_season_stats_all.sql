@@ -9,7 +9,7 @@ with goalies_info as (
 goalies_stats as (
     select *
     from {{ ref("goalies_per_game_stats_all") }}
-),
+)
 
 -- goalies_season_stats as (
 --     select
