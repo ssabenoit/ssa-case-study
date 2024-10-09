@@ -31,10 +31,16 @@ away_team_goalies as (
         CAST(split_part(player.value: saveShotsAgainst::STRING, '/', -1) as INT) as shots_against,
         player.value: evenStrengthGoalsAgainst::INT as even_goals_against,
         player.value: evenStrengthShotsAgainst::STRING as even_shots_faced,
+        CAST(split_part(player.value: evenStrengthShotsAgainst::STRING, '/', 1) as INT) as even_shots_saved,
+        CAST(split_part(player.value: evenStrengthShotsAgainst::STRING, '/', -1) as INT) as even_shots_against,
         player.value: powerPlayGoalsAgainst::INT as pp_goals_against,
         player.value: powerPlayShotsAgainst::STRING as pp_shots_faced,
+        CAST(split_part(player.value: powerPlayShotsAgainst::STRING, '/', 1) as INT) as pp_shots_saved,
+        CAST(split_part(player.value: powerPlayShotsAgainst::STRING, '/', -1) as INT) as pp_shots_against,
         player.value: shorthandedGoalsAgainst::INT as sh_goals_against,
         player.value: shorthandedShotsAgainst::STRING as sh_shots_faced,
+        CAST(split_part(player.value: shorthandedShotsAgainst::STRING, '/', 1) as INT) as sh_shots_saved,
+        CAST(split_part(player.value: shorthandedShotsAgainst::STRING, '/', -1) as INT) as sh_shots_against,
         player.value: pim::INT as pim,
         TO_TIME(CAST(
             CAST(split_part(player.value: toi::STRING, ':', 0) as INT) * 60 + CAST(split_part(player.value: toi::STRING, ':', -1) as INT)
@@ -70,10 +76,16 @@ home_team_goalies as (
         CAST(split_part(player.value: saveShotsAgainst::STRING, '/', -1) as INT) as shots_against,
         player.value: evenStrengthGoalsAgainst::INT as even_goals_against,
         player.value: evenStrengthShotsAgainst::STRING as even_shots_faced,
+        CAST(split_part(player.value: evenStrengthShotsAgainst::STRING, '/', 1) as INT) as even_shots_saved,
+        CAST(split_part(player.value: evenStrengthShotsAgainst::STRING, '/', -1) as INT) as even_shots_against,
         player.value: powerPlayGoalsAgainst::INT as pp_goals_against,
         player.value: powerPlayShotsAgainst::STRING as pp_shots_faced,
+        CAST(split_part(player.value: powerPlayShotsAgainst::STRING, '/', 1) as INT) as pp_shots_saved,
+        CAST(split_part(player.value: powerPlayShotsAgainst::STRING, '/', -1) as INT) as pp_shots_against,
         player.value: shorthandedGoalsAgainst::INT as sh_goals_against,
         player.value: shorthandedShotsAgainst::STRING as sh_shots_faced,
+        CAST(split_part(player.value: shorthandedShotsAgainst::STRING, '/', 1) as INT) as sh_shots_saved,
+        CAST(split_part(player.value: shorthandedShotsAgainst::STRING, '/', -1) as INT) as sh_shots_against,
         player.value: pim::INT as pim,
         TO_TIME(CAST(
             CAST(split_part(player.value: toi::STRING, ':', 0) as INT) * 60 + CAST(split_part(player.value: toi::STRING, ':', -1) as INT)
