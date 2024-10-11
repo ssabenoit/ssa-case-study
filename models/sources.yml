@@ -15,3 +15,5 @@ sources:
         description: Detailed boxscore for each game_id in the games table
       - name: team_rosters
         description: team rosters with json objects for defensemen, forwards, goalies
+      - name: daily_standings
+        description: detailed standings for every calendar day
