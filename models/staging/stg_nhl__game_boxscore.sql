@@ -1,10 +1,8 @@
-with
-
-source as (
+with source as (
 
     select * from {{ source('nhl_staging_data', 'game_boxscore') }}
 
 )
 
-select * from source 
+select * from source
 -- limit 15
