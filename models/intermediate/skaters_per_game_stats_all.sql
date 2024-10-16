@@ -152,4 +152,5 @@ all_skaters_per_game_stats as (
     from full_home_teams_stats
 )
 
-select * from all_skaters_per_game_stats where season = 20242025 and game_type = 'regular'
+select * from all_skaters_per_game_stats 
+-- where season = 20242025 and game_type = 'regular'

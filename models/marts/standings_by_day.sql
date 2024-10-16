@@ -6,6 +6,8 @@ with standings as (
     from {{ ref('stg_nhl__daily_standings') }}
 )
 
+-- select * from standings
+
 select
     date,
     cast(seasonid as int) as season,
@@ -26,4 +28,5 @@ select
     cast(wildcardsequence as int) as wc_sequence,
     cast(conferencesequence as int) as conf_sequence,
     cast(leaguesequence as int) as leaguesequence,
+    -- clinchindicator as clinch_indicator,
 from standings
