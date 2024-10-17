@@ -7,6 +7,72 @@ with games as (
     from {{ ref("stg_nhl__game_boxscore") }}
 ),
 
+skaters as (
+    select *
+    from {{ ref('skaters_per_game_stats_all') }}
+),
+
+goalies as (
+    select *
+    from {{ ref('goalies_per_game_stats_all') }}
+),
+
+offense_per_game as (
+    select
+        game_id,
+        team_abv, 
+        season,
+        game_type,
+        -- count(*) as num_players,
+        sum(goals) as goals,
+        sum(assists) as assists,
+        sum(hits) as hits,
+        sum(shots) as shots,
+        sum(pim) as pim,
+        sum(points) as points
+
+    from skaters
+    group by game_id, team_abv, season, game_type
+),
+
+goalies_per_game as (
+    select
+        game_id,
+        team_abv, 
+        season,
+        game_type,
+        sum(goals_against) as goals_against,
+        sum(shots_saved) as saves,
+        sum(shots_against) as shots_against,
+        cast(sum(shots_saved) as int)/cast(sum(shots_against) as int) as save_pct,
+        sum(pim) as pim,
+        cast(sum(pp_shots_against) as int) as pp_shots_against,
+        cast(sum(pp_shots_saved) as int) as pp_saves,
+        -- cast(sum(pp_shots_against) as int)/cast(sum(pp_shots_saved) as int) as pp_save_pct,
+        
+    from goalies
+    group by game_id, team_abv, season, game_type
+)
+
+select
+    o.*,
+    g.goals_against,
+    g.saves,
+    g.shots_against,
+    g.save_pct,
+    o.pim + g.pim as total_pim,
+    g.pp_shots_against,
+    g.pp_saves
+from offense_per_game o
+left join goalies_per_game g
+on o.game_id = g.game_id
+and o.season = g.season
+and o.game_type = g.game_type
+and o.team_abv = g.team_abv
+
+/*
+no longer works due to summary
+
 away_team_stats as (
     select
         season::STRING as season,
@@ -86,3 +152,5 @@ from home_team_stats
 union all
 select * 
 from away_team_stats
+
+*/
