@@ -29,7 +29,8 @@ offense_per_game as (
         sum(hits) as hits,
         sum(shots) as shots,
         sum(pim) as pim,
-        sum(points) as points
+        sum(points) as points,
+        sum(pp_goals) as pp_goals
 
     from skaters
     group by game_id, team_abv, season, game_type

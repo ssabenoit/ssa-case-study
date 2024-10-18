@@ -34,7 +34,7 @@ team_stats as (
         -- sum(p3_shots) as p3_shots,
         -- round(avg(p3_shots), 2) as p3_shots_per_game,
         -- sum(ot_shots) as ot_shots,
-        -- sum(pp_goals) as pp_goals,
+        sum(pp_goals) as pp_goals,
         -- sum(pp_attempts) as pp_attempts,
         -- sum(pp_goals)/sum(pp_attempts) as pp_pct,
         sum(pim) as pim,
