@@ -17,9 +17,9 @@ with season_stats as (
 
 ranked_stats as (
     select
-        ROW_NUMBER() over(order by goals_per_game desc) as goals_per_game_rank,
-        ROW_NUMBER() over(order by shots_per_game desc) as shots_per_game_rank,
-        ROW_NUMBER() over(order by goals_against_average asc) as goals_against_average_rank,
+        ROW_NUMBER() over(partition by season order by goals_per_game desc) as goals_per_game_rank,
+        ROW_NUMBER() over(partition by season order by shots_per_game desc) as shots_per_game_rank,
+        ROW_NUMBER() over(partition by season order by goals_against_average asc) as goals_against_average_rank,
         -- ROW_NUMBER() over(order by p1_shots_per_game desc) as p1_shots_per_game_rank,
         -- ROW_NUMBER() over(order by p2_shots_per_game desc) as p2_shots_per_game_rank,
         -- ROW_NUMBER() over(order by p3_shots_per_game desc) as p3_shots_per_game_rank,
@@ -28,15 +28,14 @@ ranked_stats as (
         -- ROW_NUMBER() over(order by p3_goals desc) as p3_goals_rank,
         -- ROW_NUMBER() over(order by ot_goals desc) as ot_goals_rank,
         -- ROW_NUMBER() over(order by ot_shots desc) as ot_shots_rank,
-        ROW_NUMBER() over(order by pp_goals desc) as pp_goals_rank,
+        ROW_NUMBER() over(partition by season order by pp_goals desc) as pp_goals_rank,
         -- ROW_NUMBER() over(order by pp_attempts desc) as pp_attempts_rank,
         -- ROW_NUMBER() over(order by pp_pct desc) as pp_pct_rank,
-        ROW_NUMBER() over(order by pim_per_game desc) as pim_per_game_rank,
-        ROW_NUMBER() over(order by hits_per_game desc) as hits_per_game_rank,
+        ROW_NUMBER() over(partition by season order by pim_per_game desc) as pim_per_game_rank,
+        ROW_NUMBER() over(partition by season order by hits_per_game desc) as hits_per_game_rank,
         -- ROW_NUMBER() over(order by blocks_per_game desc) as blocks_per_game_rank,
         -- ROW_NUMBER() over(order by takeaways_per_game desc) as takeaways_per_game_rank,
         -- ROW_NUMBER() over(order by giveaways_per_game desc) as giveaways_per_game_rank,
-        *
     from season_stats
 )
 
