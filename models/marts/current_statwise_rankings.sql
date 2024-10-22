@@ -17,6 +17,8 @@ with season_stats as (
 
 ranked_stats as (
     select
+        -- team_abv,
+        -- season,
         ROW_NUMBER() over(partition by season order by goals_per_game desc) as goals_per_game_rank,
         ROW_NUMBER() over(partition by season order by shots_per_game desc) as shots_per_game_rank,
         ROW_NUMBER() over(partition by season order by goals_against_average asc) as goals_against_average_rank,
@@ -36,6 +38,7 @@ ranked_stats as (
         -- ROW_NUMBER() over(order by blocks_per_game desc) as blocks_per_game_rank,
         -- ROW_NUMBER() over(order by takeaways_per_game desc) as takeaways_per_game_rank,
         -- ROW_NUMBER() over(order by giveaways_per_game desc) as giveaways_per_game_rank,
+        *
     from season_stats
 )
 
