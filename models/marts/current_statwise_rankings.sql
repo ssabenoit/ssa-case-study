@@ -36,9 +36,9 @@ ranked_stats as (
         -- ROW_NUMBER() over(order by pp_pct desc) as pp_pct_rank,
         ROW_NUMBER() over(partition by season order by pim_per_game desc) as pim_per_game_rank,
         ROW_NUMBER() over(partition by season order by hits_per_game desc) as hits_per_game_rank,
-        ROW_NUMBER() over(order by blocks_per_game desc) as blocks_per_game_rank,
-        ROW_NUMBER() over(order by takeaways_per_game desc) as takeaways_per_game_rank,
-        ROW_NUMBER() over(order by giveaways_per_game desc) as giveaways_per_game_rank,
+        ROW_NUMBER() over(partition by season order by blocks_per_game desc) as blocks_per_game_rank,
+        ROW_NUMBER() over(partition by season order by takeaways_per_game desc) as takeaways_per_game_rank,
+        ROW_NUMBER() over(partition by season order by giveaways_per_game desc) as giveaways_per_game_rank,
         *
     from season_stats
 )
