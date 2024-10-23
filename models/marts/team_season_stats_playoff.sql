@@ -41,12 +41,12 @@ team_stats as (
         round(avg(pim), 2) as pim_per_game,
         sum(hits) as hits,
         round(avg(hits), 2) as hits_per_game,
-        -- sum(blocked_shots) as blocks,
-        -- round(avg(blocked_shots), 2) as blocks_per_game,
-        -- sum(giveaways) as giveaways,
-        -- round(avg(giveaways), 2) as giveaways_per_game,
-        -- sum(takeaways) as takeaways,
-        -- round(avg(takeaways), 2) as takeaways_per_game
+        sum(blocks) as blocks,
+        round(avg(blocks), 2) as blocks_per_game,
+        sum(giveaways) as giveaways,
+        round(avg(giveaways), 2) as giveaways_per_game,
+        sum(takeaways) as takeaways,
+        round(avg(takeaways), 2) as takeaways_per_game
     from team_game_stats
     where game_type = 'playoff'
     group by season, team_abv --, team_id
