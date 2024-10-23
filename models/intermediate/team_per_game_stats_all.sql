@@ -30,7 +30,10 @@ offense_per_game as (
         sum(shots) as shots,
         sum(pim) as pim,
         sum(points) as points,
-        sum(pp_goals) as pp_goals
+        sum(pp_goals) as pp_goals,
+        sum(blocks) as blocks,
+        sum(giveaways) as giveaways,
+        sum(takeaways) as takeaways
 
     from skaters
     group by game_id, team_abv, season, game_type

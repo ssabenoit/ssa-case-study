@@ -26,6 +26,10 @@ skater_season_stats as (
         sum(plus_minus) as plus_minus,
         sum(points) as points,
         sum(pp_goals) as pp_goals,
+        sum(giveaways) as giveaways,
+        sum(takeaways) as takeaways,
+        sum(shifts) as shifts,
+        SUM(EXTRACT(hour FROM toi) * 3600 +  EXTRACT(minute FROM toi) * 60 + EXTRACT(second FROM toi) ) as total_toi,
         /*
         TIMEADD(
             'second', 
