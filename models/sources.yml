@@ -17,3 +17,5 @@ sources:
         description: team rosters with json objects for defensemen, forwards, goalies
       - name: daily_standings
         description: detailed standings for every calendar day
+      - name: game_summaries
+        description: detailed total team stats and individual penalty/goal information for each game
