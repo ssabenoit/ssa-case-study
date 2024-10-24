@@ -18,7 +18,7 @@ select
     conferencesequence::INT as conference_standing,
     divisionsequence::INT as division_standing,
     wildcardsequence::INT as wildcard_standing,
-    clinchindicator as clinch_indicator,
+    -- clinchindicator as clinch_indicator,
     waiverssequence::INT as waiver,
 
     -- basic total stats
