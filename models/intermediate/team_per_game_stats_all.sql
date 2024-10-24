@@ -7,6 +7,11 @@ with games as (
     from {{ ref("stg_nhl__game_boxscore") }}
 ),
 
+summaries as (
+    select *
+    from {{ ref('stg_nhl__game_summaries') }}
+),
+
 skaters as (
     select *
     from {{ ref('skaters_per_game_stats_all') }}
@@ -17,27 +22,27 @@ goalies as (
     from {{ ref('goalies_per_game_stats_all') }}
 ),
 
-offense_per_game as (
-    select
-        game_id,
-        team_abv, 
-        season,
-        game_type,
-        -- count(*) as num_players,
-        sum(goals) as goals,
-        sum(assists) as assists,
-        sum(hits) as hits,
-        sum(shots) as shots,
-        sum(pim) as pim,
-        sum(points) as points,
-        sum(pp_goals) as pp_goals,
-        sum(blocks) as blocks,
-        sum(giveaways) as giveaways,
-        sum(takeaways) as takeaways
+-- offense_per_game as (
+--     select
+--         game_id,
+--         team_abv, 
+--         season,
+--         game_type,
+--         -- count(*) as num_players,
+--         sum(goals) as goals,
+--         sum(assists) as assists,
+--         sum(hits) as hits,
+--         sum(shots) as shots,
+--         sum(pim) as pim,
+--         sum(points) as points,
+--         sum(pp_goals) as pp_goals,
+--         sum(blocks) as blocks,
+--         sum(giveaways) as giveaways,
+--         sum(takeaways) as takeaways
 
-    from skaters
-    group by game_id, team_abv, season, game_type
-),
+--     from skaters
+--     group by game_id, team_abv, season, game_type
+-- ),
 
 goalies_per_game as (
     select
@@ -59,20 +64,20 @@ goalies_per_game as (
 )
 
 select
-    o.*,
-    g.goals_against,
+    s.*,
+    g.goals_against as goals_against_g,
     g.saves,
     g.shots_against,
     g.save_pct,
-    o.pim + g.pim as total_pim,
+    -- s.pim + g.pim as total_pim,
     g.pp_shots_against,
     g.pp_saves
-from offense_per_game o
+from summaries s
 left join goalies_per_game g
-on o.game_id = g.game_id
-and o.season = g.season
-and o.game_type = g.game_type
-and o.team_abv = g.team_abv
+on s.game_id = g.game_id
+and s.season = g.season
+and s.game_type = g.game_type
+and s.team_abv = g.team_abv
 
 /*
 no longer works due to summary
