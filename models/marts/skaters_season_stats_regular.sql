@@ -15,6 +15,7 @@ skater_season_stats as (
     select
         season,
         player_id,
+        team_abv,
         name,
         count(*) as games_played,
         sum(goals) as goals,
@@ -54,14 +55,15 @@ skater_season_stats as (
         -- sum(toi) as toi
     from skater_stats
     where game_type = 'regular'
-    group by season, player_id, name
+    group by season, player_id, name, team_abv
 )
 
 select 
     ss.*,
     si.first_name,
     si.last_name,
-    si.team_abv,
+    -- si.team_abv,
     si.position
 from skater_season_stats ss
 left join skaters_info si on ss.player_id = si.player_id
+-- where name = 'S. Monahan'
