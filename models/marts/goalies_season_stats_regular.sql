@@ -16,6 +16,7 @@ goalies_season_stats as (
         season,
         player_id,
         name,
+        team_abv,
         -- position,
         count(*) as gp,
         round(avg(goals_against), 2) as gaa,
@@ -34,7 +35,7 @@ goalies_season_stats as (
         sum(pim) as pim
     from goalies_stats
     where game_type = 'regular' and starter = True or result is not null
-    group by season, player_id, name
+    group by season, player_id, name, team_abv
 )
 
 select 
@@ -54,3 +55,4 @@ select
     end as sh_save_pct
     -- sh_saves/sh_shots_against as sh_save_pct
 from goalies_season_stats
+-- where name = 'C. DeSmith'
