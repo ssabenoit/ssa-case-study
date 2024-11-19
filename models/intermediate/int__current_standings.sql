@@ -1,5 +1,6 @@
 -- models/intermediate/int__current_standings.sql
 -- formatting the current standings
+{{ config(materialized='table')}}
 
 with raw_standings as (
     select *
