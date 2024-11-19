@@ -24,8 +24,8 @@ select
     plays.value:timeRemaining::string as time_remaining,
     plays.value:typeCode::int as type_code,
     plays.value:typeDescKey::string as description,
-    plays.value:details.xCoord as x_pos,
-    plays.value:details.yCoord as y_pos,
+    plays.value:details.xCoord::int as x_pos,
+    plays.value:details.yCoord::int as y_pos,
     plays.value:details.zoneCode::string as zone_code,
     plays.value:details as full_details
     -- count(*)
