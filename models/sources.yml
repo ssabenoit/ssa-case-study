@@ -19,3 +19,5 @@ sources:
         description: detailed standings for every calendar day
       - name: game_summaries
         description: detailed total team stats and individual penalty/goal information for each game
+      - name: play_by_play 
+        description: list of all meaningful plays for each NHL Game in the database
