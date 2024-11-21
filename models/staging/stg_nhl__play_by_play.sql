@@ -24,6 +24,11 @@ select
     plays.value:timeRemaining::string as time_remaining,
     plays.value:typeCode::int as type_code,
     plays.value:details.eventOwnerTeamId::int as play_team_id,
+    case
+        when play_team_id = home_id then home_abv
+        when play_team_id = away_id then away_abv
+        else null
+    end as play_team_abv,
     plays.value:typeDescKey::string as description,
     plays.value:details.xCoord::int as x_pos,
     plays.value:details.yCoord::int as y_pos,
