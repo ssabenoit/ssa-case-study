@@ -21,3 +21,5 @@ sources:
         description: detailed total team stats and individual penalty/goal information for each game
       - name: play_by_play 
         description: list of all meaningful plays for each NHL Game in the database
+      - name: season_schedules
+        description: every game (played or unplayed) in the seasons with the data scope
