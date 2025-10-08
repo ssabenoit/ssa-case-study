@@ -15,14 +15,14 @@ teams as (
 ),
 
 current_season as (
-    select max(season) as season
-    from {{ ref('int__current_standings') }}
+    select max(season_key) as season
+    from {{ ref('dim_seasons') }}
 ),
 
 previous_season as (
-    select max(season) as season
-    from {{ ref('standings_by_day') }}
-    where season < (select season from current_season)
+    select max(season_key) as season
+    from {{ ref('dim_seasons') }}
+    where season_key < (select season from current_season)
 ),
 
 current_standings as (
@@ -524,7 +524,7 @@ select
     ranking_date,
     team_id,
     team_abv,
-    team_name,
+    parse_json(team_name):default::string as team_name,
     power_score,
     row_number() over (order by power_score desc) as power_rank,
     points_component,

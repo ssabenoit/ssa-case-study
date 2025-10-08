@@ -7,7 +7,7 @@ with
 
 date_spine as (
     select
-        dateadd(day, seq4(), '2015-10-01'::date) as date
+        dateadd(day, seq4(), '2020-01-01'::date) as date
     from table(generator(rowcount => 3650))  -- 10 years of dates
 ),
 
