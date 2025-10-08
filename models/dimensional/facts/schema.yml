@@ -1,0 +1,561 @@
+version: 2
+
+models:
+  - name: fct_games
+    description: "Game-level fact table containing one row per NHL game with scores, outcomes, and key metrics"
+    columns:
+      - name: game_key
+        description: "Surrogate key for the game"
+        tests:
+          - unique
+          - not_null
+      - name: game_id
+        description: "NHL API game identifier"
+        tests:
+          - unique
+          - not_null
+      - name: date_key
+        description: "Foreign key to dim_dates"
+        tests:
+          - not_null
+      - name: season_key
+        description: "Foreign key to dim_seasons"
+        tests:
+          - not_null
+      - name: home_team_key
+        description: "Foreign key to dim_teams for home team"
+        tests:
+          - not_null
+      - name: away_team_key
+        description: "Foreign key to dim_teams for away team"
+        tests:
+          - not_null
+      - name: game_type
+        description: "Type of game (regular, playoff, preseason, all-star)"
+      - name: game_date
+        description: "Date the game was played"
+      - name: game_time
+        description: "Scheduled start time of game"
+      - name: venue_name
+        description: "Arena where game was played"
+      - name: attendance
+        description: "Number of fans in attendance"
+      - name: home_goals
+        description: "Goals scored by home team"
+      - name: away_goals
+        description: "Goals scored by away team"
+      - name: total_goals
+        description: "Total goals scored in game"
+      - name: goal_differential
+        description: "Absolute difference in goals"
+      - name: game_outcome
+        description: "How game ended (REG, OT, SO)"
+      - name: winner_team_key
+        description: "Foreign key to dim_teams for winning team"
+      - name: loser_team_key
+        description: "Foreign key to dim_teams for losing team"
+      - name: is_overtime_game
+        description: "True if game went to overtime"
+      - name: is_shootout_game
+        description: "True if game went to shootout"
+      - name: is_shutout
+        description: "True if one team didn't score"
+      - name: is_one_goal_game
+        description: "True if decided by one goal"
+      - name: is_comeback_win
+        description: "True if winner trailed entering 3rd period"
+      - name: home_shots
+        description: "Shots on goal by home team"
+      - name: away_shots
+        description: "Shots on goal by away team"
+      - name: home_hits
+        description: "Hits by home team"
+      - name: away_hits
+        description: "Hits by away team"
+      - name: home_blocked_shots
+        description: "Shots blocked by home team"
+      - name: away_blocked_shots
+        description: "Shots blocked by away team"
+      - name: home_penalty_minutes
+        description: "Penalty minutes for home team"
+      - name: away_penalty_minutes
+        description: "Penalty minutes for away team"
+      - name: home_powerplay_goals
+        description: "Power play goals by home team"
+      - name: away_powerplay_goals
+        description: "Power play goals by away team"
+      - name: home_powerplay_opportunities
+        description: "Power play opportunities for home team"
+      - name: away_powerplay_opportunities
+        description: "Power play opportunities for away team"
+      - name: home_faceoff_win_pct
+        description: "Faceoff win percentage for home team"
+      - name: away_faceoff_win_pct
+        description: "Faceoff win percentage for away team"
+      - name: three_stars_1
+        description: "First star of the game player_id"
+      - name: three_stars_2
+        description: "Second star of the game player_id"
+      - name: three_stars_3
+        description: "Third star of the game player_id"
+      - name: referees
+        description: "Names of game referees"
+      - name: linesmen
+        description: "Names of game linesmen"
+
+  - name: fct_player_game_stats
+    description: "Skater game-level statistics fact table with one row per player per game"
+    columns:
+      - name: game_key
+        description: "Foreign key to fct_games"
+        tests:
+          - not_null
+      - name: player_key
+        description: "Foreign key to dim_players"
+        tests:
+          - not_null
+      - name: team_key
+        description: "Foreign key to dim_teams for player's team"
+        tests:
+          - not_null
+      - name: date_key
+        description: "Foreign key to dim_dates"
+        tests:
+          - not_null
+      - name: season_key
+        description: "Foreign key to dim_seasons"
+        tests:
+          - not_null
+      - name: opponent_team_key
+        description: "Foreign key to dim_teams for opponent"
+      - name: is_home_game
+        description: "True if playing at home"
+      - name: position_played
+        description: "Position played in this game"
+      - name: jersey_number
+        description: "Jersey number worn"
+      - name: goals
+        description: "Goals scored"
+      - name: assists
+        description: "Assists recorded"
+      - name: primary_assists
+        description: "Primary assists (estimated)"
+      - name: secondary_assists
+        description: "Secondary assists (estimated)"
+      - name: points
+        description: "Total points (goals + assists)"
+      - name: plus_minus
+        description: "Plus/minus rating"
+      - name: shots
+        description: "Shots on goal"
+      - name: shooting_pct
+        description: "Shooting percentage for the game"
+      - name: hits
+        description: "Hits delivered"
+      - name: blocks
+        description: "Shots blocked"
+      - name: giveaways
+        description: "Giveaways"
+      - name: takeaways
+        description: "Takeaways"
+      - name: faceoff_wins
+        description: "Faceoffs won (estimated)"
+      - name: faceoff_losses
+        description: "Faceoffs lost (estimated)"
+      - name: faceoff_pct
+        description: "Faceoff win percentage"
+      - name: penalty_minutes
+        description: "Penalty minutes served"
+      - name: minor_penalties
+        description: "Minor penalties taken"
+      - name: major_penalties
+        description: "Major penalties taken"
+      - name: misconduct_penalties
+        description: "Misconduct penalties taken"
+      - name: time_on_ice_seconds
+        description: "Total time on ice in seconds"
+      - name: even_strength_toi
+        description: "Even strength time on ice (estimated)"
+      - name: powerplay_toi
+        description: "Power play time on ice (estimated)"
+      - name: shorthanded_toi
+        description: "Shorthanded time on ice (estimated)"
+      - name: pp_goals
+        description: "Power play goals"
+      - name: pp_assists
+        description: "Power play assists (estimated)"
+      - name: sh_goals
+        description: "Shorthanded goals"
+      - name: sh_assists
+        description: "Shorthanded assists"
+      - name: game_winning_goals
+        description: "Game-winning goals"
+      - name: overtime_goals
+        description: "Overtime goals"
+      - name: shifts
+        description: "Number of shifts"
+      - name: hat_trick
+        description: "True if scored 3+ goals"
+      - name: four_point_game
+        description: "True if 4+ points"
+      - name: four_goal_game
+        description: "True if 4+ goals"
+      - name: point_contributions
+        description: "Total goal/assist contributions"
+
+  - name: fct_goalie_game_stats
+    description: "Goalie game-level statistics fact table with one row per goalie per game"
+    columns:
+      - name: game_key
+        description: "Foreign key to fct_games"
+        tests:
+          - not_null
+      - name: player_key
+        description: "Foreign key to dim_players"
+        tests:
+          - not_null
+      - name: team_key
+        description: "Foreign key to dim_teams"
+        tests:
+          - not_null
+      - name: date_key
+        description: "Foreign key to dim_dates"
+        tests:
+          - not_null
+      - name: season_key
+        description: "Foreign key to dim_seasons"
+        tests:
+          - not_null
+      - name: opponent_team_key
+        description: "Foreign key to dim_teams for opponent"
+      - name: is_home_game
+        description: "True if playing at home"
+      - name: is_starting_goalie
+        description: "True if started the game"
+      - name: decision
+        description: "Game decision (W, L, OT, ND)"
+      - name: shots_faced
+        description: "Total shots faced"
+      - name: saves
+        description: "Total saves made"
+      - name: goals_against
+        description: "Goals allowed"
+      - name: save_percentage
+        description: "Save percentage for the game"
+      - name: goals_against_average
+        description: "Goals against average for the game"
+      - name: time_on_ice_seconds
+        description: "Time played in seconds"
+      - name: even_strength_saves
+        description: "Saves at even strength"
+      - name: even_strength_shots
+        description: "Shots faced at even strength"
+      - name: even_strength_goals_against
+        description: "Goals allowed at even strength"
+      - name: even_strength_save_pct
+        description: "Save percentage at even strength"
+      - name: powerplay_saves
+        description: "Saves while shorthanded"
+      - name: powerplay_shots
+        description: "Shots faced while shorthanded"
+      - name: powerplay_goals_against
+        description: "Goals allowed while shorthanded"
+      - name: powerplay_save_pct
+        description: "Save percentage while shorthanded"
+      - name: shorthanded_saves
+        description: "Saves while on power play"
+      - name: shorthanded_shots
+        description: "Shots faced while on power play"
+      - name: shorthanded_goals_against
+        description: "Goals allowed while on power play"
+      - name: shorthanded_save_pct
+        description: "Save percentage while on power play"
+      - name: penalty_shot_saves
+        description: "Penalty shots saved"
+      - name: penalty_shot_attempts
+        description: "Penalty shots faced"
+      - name: shutout_flag
+        description: "True if recorded a shutout"
+      - name: goals_allowed_1st
+        description: "Goals allowed in 1st period"
+      - name: goals_allowed_2nd
+        description: "Goals allowed in 2nd period"
+      - name: goals_allowed_3rd
+        description: "Goals allowed in 3rd period"
+      - name: goals_allowed_ot
+        description: "Goals allowed in overtime"
+      - name: penalty_minutes
+        description: "Penalty minutes served"
+      - name: performance_category
+        description: "Performance rating (Elite, Excellent, Good, etc.)"
+      - name: is_relief_appearance
+        description: "True if entered in relief"
+      - name: quality_start
+        description: "True if quality start (SV% >= .917 and GA <= 2)"
+      - name: really_bad_start
+        description: "True if really bad start (SV% < .850)"
+      - name: saves_above_average
+        description: "Saves above league average (.910)"
+
+  - name: fct_team_game_stats
+    description: "Team game-level statistics fact table with two rows per game (one per team)"
+    columns:
+      - name: game_key
+        description: "Foreign key to fct_games"
+        tests:
+          - not_null
+      - name: team_key
+        description: "Foreign key to dim_teams"
+        tests:
+          - not_null
+      - name: opponent_team_key
+        description: "Foreign key to dim_teams for opponent"
+        tests:
+          - not_null
+      - name: date_key
+        description: "Foreign key to dim_dates"
+        tests:
+          - not_null
+      - name: season_key
+        description: "Foreign key to dim_seasons"
+        tests:
+          - not_null
+      - name: is_home
+        description: "True if home team"
+      - name: game_result
+        description: "Game result (W, L, OTL)"
+      - name: points_earned
+        description: "League points earned (2 for win, 1 for OTL)"
+      - name: goals_for
+        description: "Goals scored"
+      - name: goals_against
+        description: "Goals allowed"
+      - name: goal_differential
+        description: "Goal differential"
+      - name: shots_for
+        description: "Shots on goal"
+      - name: shots_against
+        description: "Shots faced"
+      - name: shooting_pct
+        description: "Team shooting percentage"
+      - name: save_pct
+        description: "Team save percentage"
+      - name: powerplay_goals
+        description: "Power play goals scored"
+      - name: powerplay_opportunities
+        description: "Power play opportunities"
+      - name: powerplay_pct
+        description: "Power play percentage"
+      - name: penalty_kill_goals_against
+        description: "Goals allowed while shorthanded"
+      - name: penalty_kill_situations
+        description: "Times shorthanded"
+      - name: penalty_kill_pct
+        description: "Penalty kill percentage"
+      - name: faceoff_wins
+        description: "Faceoffs won (estimated)"
+      - name: faceoff_losses
+        description: "Faceoffs lost (estimated)"
+      - name: faceoff_win_pct
+        description: "Faceoff win percentage"
+      - name: hits
+        description: "Hits delivered"
+      - name: blocks
+        description: "Shots blocked"
+      - name: giveaways
+        description: "Giveaways"
+      - name: takeaways
+        description: "Takeaways"
+      - name: penalty_minutes
+        description: "Penalty minutes"
+      - name: score_first_flag
+        description: "True if scored first goal"
+      - name: lead_after_1st
+        description: "True if leading after 1st period"
+      - name: lead_after_2nd
+        description: "True if leading after 2nd period"
+      - name: comeback_win_flag
+        description: "True if won after trailing"
+      - name: shot_differential
+        description: "Shot differential"
+      - name: scored_5_plus
+        description: "True if scored 5+ goals"
+      - name: shutout_for
+        description: "True if shutout opponent"
+      - name: shutout_against
+        description: "True if was shut out"
+      - name: pp_drought
+        description: "True if 0 PP goals with opportunities"
+      - name: perfect_pk
+        description: "True if killed all penalties"
+      - name: shot_share_pct
+        description: "Percentage of total shots (possession proxy)"
+
+  - name: fct_plays
+    description: "Play-by-play event fact table with one row per game event"
+    columns:
+      - name: play_key
+        description: "Unique identifier for the play"
+        tests:
+          - unique
+          - not_null
+      - name: game_key
+        description: "Foreign key to fct_games"
+        tests:
+          - not_null
+      - name: date_key
+        description: "Foreign key to dim_dates"
+        tests:
+          - not_null
+      - name: season_key
+        description: "Foreign key to dim_seasons"
+        tests:
+          - not_null
+      - name: event_idx
+        description: "Event sequence number within game"
+      - name: period_number
+        description: "Period number (1-5)"
+      - name: period_type
+        description: "Period type (REG, OT, SO)"
+      - name: time_elapsed_seconds
+        description: "Seconds elapsed in period"
+      - name: game_elapsed_seconds
+        description: "Total seconds elapsed in game"
+      - name: time_in_period
+        description: "Time display in period (MM:SS)"
+      - name: time_remaining
+        description: "Time remaining in period (MM:SS)"
+      - name: event_type_id
+        description: "Event type identifier"
+      - name: event_type_name
+        description: "Event type description"
+      - name: event_team_key
+        description: "Foreign key to dim_teams for event team"
+      - name: primary_player_key
+        description: "Foreign key to dim_players for primary player"
+      - name: secondary_player_key
+        description: "Foreign key to dim_players for secondary player"
+      - name: x_coordinate
+        description: "X coordinate on ice (-100 to 100)"
+      - name: y_coordinate
+        description: "Y coordinate on ice (-42.5 to 42.5)"
+      - name: zone_code
+        description: "Zone code (O=Offensive, D=Defensive, N=Neutral)"
+      - name: zone_name
+        description: "Zone name"
+      - name: shot_type
+        description: "Type of shot (if shot event)"
+      - name: shot_distance
+        description: "Distance from goal (if shot event)"
+      - name: shot_angle
+        description: "Angle to goal (if shot event)"
+      - name: shot_distance_category
+        description: "Shot distance category (Close, Medium, Long)"
+      - name: is_goal
+        description: "True if event is a goal"
+      - name: is_penalty
+        description: "True if event is a penalty"
+      - name: penalty_type
+        description: "Type of penalty"
+      - name: penalty_severity
+        description: "Penalty severity (minor, major, etc.)"
+      - name: penalty_minutes
+        description: "Penalty minutes assessed"
+      - name: strength_code
+        description: "Strength situation code"
+      - name: strength_state
+        description: "Strength state (Even, PP, SH)"
+      - name: is_empty_net
+        description: "True if empty net situation"
+      - name: is_powerplay
+        description: "True if power play situation"
+      - name: is_shorthanded
+        description: "True if shorthanded situation"
+      - name: period_category
+        description: "Period category (Regulation, Overtime, Shootout)"
+
+  - name: fct_standings_daily
+    description: "Daily standings snapshot fact table with one row per team per day"
+    columns:
+      - name: date_key
+        description: "Foreign key to dim_dates"
+        tests:
+          - not_null
+      - name: season_key
+        description: "Foreign key to dim_seasons"
+        tests:
+          - not_null
+      - name: team_key
+        description: "Foreign key to dim_teams"
+        tests:
+          - not_null
+      - name: games_played
+        description: "Games played to date"
+      - name: wins
+        description: "Total wins"
+      - name: losses
+        description: "Regulation losses"
+      - name: ot_losses
+        description: "Overtime/shootout losses"
+      - name: points
+        description: "League points"
+      - name: row_wins
+        description: "Regulation + overtime wins (tiebreaker)"
+      - name: points_percentage
+        description: "Points percentage (points / possible points)"
+      - name: goals_for
+        description: "Total goals scored"
+      - name: goals_against
+        description: "Total goals allowed"
+      - name: goal_differential
+        description: "Goal differential"
+      - name: home_wins
+        description: "Wins at home"
+      - name: home_losses
+        description: "Losses at home"
+      - name: home_ot_losses
+        description: "OT losses at home"
+      - name: away_wins
+        description: "Wins on road"
+      - name: away_losses
+        description: "Losses on road"
+      - name: away_ot_losses
+        description: "OT losses on road"
+      - name: last_10_wins
+        description: "Wins in last 10 games"
+      - name: last_10_losses
+        description: "Losses in last 10 games"
+      - name: last_10_ot_losses
+        description: "OT losses in last 10 games"
+      - name: streak_type
+        description: "Current streak type (W, L, OT)"
+      - name: streak_count
+        description: "Current streak length"
+      - name: division_rank
+        description: "Rank within division"
+      - name: conference_rank
+        description: "Rank within conference"
+      - name: league_rank
+        description: "Rank in entire league"
+      - name: wildcard_rank
+        description: "Wildcard position rank"
+      - name: playoff_spot_flag
+        description: "True if in playoff position"
+      - name: points_from_playoff
+        description: "Points behind playoff line (0 if in)"
+      - name: games_remaining
+        description: "Regular season games remaining"
+      - name: max_possible_points
+        description: "Maximum achievable points"
+      - name: magic_number
+        description: "Magic number to clinch playoff spot"
+      - name: elimination_number
+        description: "Games until mathematical elimination"
+      - name: points_pace
+        description: "82-game pace for points"
+      - name: wins_pace
+        description: "82-game pace for wins"
+      - name: goals_for_pace
+        description: "82-game pace for goals scored"
+      - name: goals_against_pace
+        description: "82-game pace for goals allowed"

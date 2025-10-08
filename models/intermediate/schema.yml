@@ -1,0 +1,552 @@
+version: 2
+
+models:
+  - name: int__all_games
+    description: Consolidated information for all games (both completed and scheduled)
+    columns:
+      - name: id
+        description: Unique identifier for the game
+        tests:
+          - not_null:
+              severity: warn
+          - unique:
+              severity: warn
+      - name: season
+        description: NHL season identifier
+        tests:
+          - not_null:
+              severity: warn
+      - name: away_id
+        description: ID of the away team
+        tests:
+          - not_null:
+              severity: warn
+      - name: away_abv
+        description: Three-letter abbreviation of the away team
+        tests:
+          - not_null:
+              severity: warn
+      - name: away_score
+        description: Away team score
+      - name: home_id
+        description: ID of the home team
+        tests:
+          - not_null:
+              severity: warn
+      - name: home_abv
+        description: Three-letter abbreviation of the home team
+        tests:
+          - not_null:
+              severity: warn
+      - name: home_score
+        description: Home team score
+      - name: date
+        description: Date of the game
+        tests:
+          - not_null:
+              severity: warn
+      - name: venue
+        description: Venue where the game was played
+      - name: neutral_site
+        description: Whether the game was played at a neutral site
+      - name: game_outcome
+        description: Outcome of the game (regulation, overtime, shootout)
+
+  - name: int__basic_games_info
+    description: Basic information about completed games
+    columns:
+      - name: game_id
+        description: Unique identifier for the game
+        tests:
+          - not_null:
+              severity: warn
+          - unique:
+              severity: warn
+      - name: date
+        description: Date of the game
+        tests:
+          - not_null:
+              severity: warn
+      - name: season
+        description: NHL season identifier
+        tests:
+          - not_null:
+              severity: warn
+      - name: venue
+        description: Venue where the game was played
+      - name: start_time_utc
+        description: Start time of the game in UTC
+      - name: venue_tz
+        description: Venue timezone
+      - name: venue_utc_offset
+        description: Venue UTC offset
+      - name: eastern_utc_offset
+        description: Eastern UTC offset
+      - name: is_neutral
+        description: Whether the game was played at a neutral site
+
+  - name: int__current_standings
+    description: Current NHL standings with enhanced team information
+    columns:
+      - name: team
+        description: Full name of the team
+        tests:
+          - not_null:
+              severity: warn
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+        tests:
+          - not_null:
+              severity: warn
+      - name: division
+        description: Division name
+      - name: division_abv
+        description: Division abbreviation
+      - name: conference
+        description: Conference name
+      - name: conference_abv
+        description: Conference abbreviation
+      - name: league_standing
+        description: Overall league standing
+      - name: conference_standing
+        description: Conference standing
+      - name: division_standing
+        description: Division standing
+      - name: wildcard_standing
+        description: Wildcard standing
+      - name: waiver
+        description: Waiver order
+      - name: points
+        description: Current season points total
+        tests:
+          - not_null:
+              severity: warn
+      - name: wins
+        description: Total wins
+        tests:
+          - not_null:
+              severity: warn
+      - name: losses
+        description: Total losses
+        tests:
+          - not_null:
+              severity: warn
+      - name: ot_losses
+        description: Overtime losses
+        tests:
+          - not_null:
+              severity: warn
+      - name: games_played
+        description: Total number of games played
+        tests:
+          - not_null:
+              severity: warn
+      - name: record
+        description: Win-loss-overtime record
+      - name: win_pct
+        description: Win percentage
+      - name: point_pct
+        description: Point percentage
+
+  - name: int__teams_basic_info
+    description: Basic information for all NHL teams
+    columns:
+      - name: team_id
+        description: Unique identifier for the team
+        tests:
+          - not_null:
+              severity: warn
+          - unique:
+              severity: warn
+      - name: team_name
+        description: Full name of the team
+        tests:
+          - not_null:
+              severity: warn
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+        tests:
+          - not_null:
+              severity: warn
+          - unique:
+              severity: warn
+      - name: french_name
+        description: French version of the team name
+      - name: place_name
+        description: City or location name
+      - name: common_name
+        description: Common team name
+      - name: is_french
+        description: Boolean indicating if French version is available
+      - name: logo_url
+        description: URL to team logo image
+
+  - name: int__all_skaters
+    description: Combined information for all skaters (forwards and defensemen)
+    columns:
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+        tests:
+          - not_null:
+              severity: warn
+      - name: player_id
+        description: Unique identifier for the player
+        tests:
+          - not_null:
+              severity: warn
+      - name: first_name
+        description: Player's first name
+        tests:
+          - not_null:
+              severity: warn
+      - name: last_name
+        description: Player's last name
+        tests:
+          - not_null:
+              severity: warn
+      - name: position
+        description: Player's position code
+        tests:
+          - not_null:
+              severity: warn
+      - name: number
+        description: Player's jersey number
+      - name: height
+        description: Player's height in inches
+      - name: weight
+        description: Player's weight in pounds
+      - name: shoots
+        description: Player's shooting handedness (L/R)
+      - name: birthDate
+        description: Player's birth date
+      - name: birth_city
+        description: Player's city of birth
+      - name: birth_state
+        description: Player's state/province of birth
+      - name: birth_country
+        description: Player's country of birth
+      - name: headshot_url
+        description: URL to player's headshot image
+
+  - name: int__all_forwards
+    description: Information for all forwards
+    columns:
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+        tests:
+          - not_null:
+              severity: warn
+      - name: player_id
+        description: Unique identifier for the player
+        tests:
+          - not_null:
+              severity: warn
+      - name: first_name
+        description: Player's first name
+      - name: last_name
+        description: Player's last name
+      - name: position
+        description: Player's position code
+      - name: number
+        description: Player's jersey number
+      - name: height
+        description: Player's height in inches
+      - name: weight
+        description: Player's weight in pounds
+      - name: shoots
+        description: Player's shooting handedness (L/R)
+      - name: birthDate
+        description: Player's birth date
+      - name: birth_city
+        description: Player's city of birth
+      - name: birth_state
+        description: Player's state/province of birth
+      - name: birth_country
+        description: Player's country of birth
+      - name: headshot_url
+        description: URL to player's headshot image
+
+  - name: int__all_defensemen
+    description: Information for all defensemen
+    columns:
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+        tests:
+          - not_null:
+              severity: warn
+      - name: player_id
+        description: Unique identifier for the player
+        tests:
+          - not_null:
+              severity: warn
+      - name: first_name
+        description: Player's first name
+      - name: last_name
+        description: Player's last name
+      - name: position
+        description: Player's position code
+      - name: number
+        description: Player's jersey number
+      - name: height
+        description: Player's height in inches
+      - name: weight
+        description: Player's weight in pounds
+      - name: shoots
+        description: Player's shooting handedness (L/R)
+      - name: birthDate
+        description: Player's birth date
+      - name: birth_city
+        description: Player's city of birth
+      - name: birth_state
+        description: Player's state/province of birth
+      - name: birth_country
+        description: Player's country of birth
+      - name: headshot_url
+        description: URL to player's headshot image
+
+  - name: int__all_goalies
+    description: Information for all goalies
+    columns:
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+        tests:
+          - not_null:
+              severity: warn
+      - name: player_id
+        description: Unique identifier for the player
+        tests:
+          - not_null:
+              severity: warn
+      - name: first_name
+        description: Player's first name
+      - name: last_name
+        description: Player's last name
+      - name: position
+        description: Player's position code
+        tests:
+          - accepted_values:
+              values: ['G']
+              severity: warn
+      - name: number
+        description: Player's jersey number
+      - name: height
+        description: Player's height in inches
+      - name: weight
+        description: Player's weight in pounds
+      - name: catches
+        description: Player's catching handedness (L/R)
+      - name: birthDate
+        description: Player's birth date
+      - name: birth_city
+        description: Player's city of birth
+      - name: birth_state
+        description: Player's state/province of birth
+      - name: birth_country
+        description: Player's country of birth
+      - name: headshot_url
+        description: URL to player's headshot image
+
+  - name: skaters_per_game_stats_all
+    description: Statistics for all skaters on a per-game basis
+    config:
+      materialized: table
+    columns:
+      - name: game_id
+        description: Unique identifier for the game
+        tests:
+          - not_null:
+              severity: warn
+      - name: season
+        description: NHL season identifier
+        tests:
+          - not_null:
+              severity: warn
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+        tests:
+          - not_null:
+              severity: warn
+      - name: type
+        description: Home or away designation
+        tests:
+          - accepted_values:
+              values: ['home', 'away']
+              severity: warn
+      - name: game_type
+        description: Type of game (regular/playoff)
+        tests:
+          - accepted_values:
+              values: ['regular', 'playoff', 'other']
+              severity: warn
+      - name: player_id
+        description: Unique identifier for the player
+        tests:
+          - not_null:
+              severity: warn
+      - name: name
+        description: Player's name (format typically "F. Lastname")
+      - name: goals
+        description: Number of goals scored in the game
+      - name: assists
+        description: Number of assists in the game
+      - name: hits
+        description: Number of hits in the game
+      - name: shots
+        description: Number of shots on goal in the game
+      - name: faceoff_pct
+        description: Faceoff win percentage in the game
+      - name: pim
+        description: Penalty minutes in the game
+      - name: plus_minus
+        description: Plus-minus rating in the game
+      - name: points
+        description: Total points in the game
+      - name: pp_goals
+        description: Power play goals in the game
+      - name: giveaways
+        description: Giveaways in the game
+      - name: takeaways
+        description: Takeaways in the game
+      - name: blocks
+        description: Blocked shots in the game
+      - name: shifts
+        description: Number of shifts in the game
+      - name: toi
+        description: Time on ice in the game
+
+  - name: goalies_per_game_stats_all
+    description: Statistics for all goalies on a per-game basis
+    config:
+      materialized: table
+    columns:
+      - name: game_id
+        description: Unique identifier for the game
+        tests:
+          - not_null:
+              severity: warn
+      - name: season
+        description: NHL season identifier
+        tests:
+          - not_null:
+              severity: warn
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+        tests:
+          - not_null:
+              severity: warn
+      - name: type
+        description: Home or away designation
+        tests:
+          - accepted_values:
+              values: ['home', 'away']
+              severity: warn
+      - name: game_type
+        description: Type of game (regular/playoff)
+        tests:
+          - accepted_values:
+              values: ['regular', 'playoff', 'other']
+              severity: warn
+      - name: player_id
+        description: Unique identifier for the player
+        tests:
+          - not_null:
+              severity: warn
+      - name: name
+        description: Player's name (format typically "F. Lastname")
+      - name: shots_against
+        description: Number of shots faced
+      - name: goals_against
+        description: Number of goals allowed
+      - name: shots_saved
+        description: Number of saves made
+      - name: save_pct
+        description: Save percentage
+      - name: toi
+        description: Time on ice
+      - name: pp_shots_against
+        description: Power play shots against
+      - name: pp_goals_against
+        description: Power play goals allowed
+      - name: pp_shots_saved
+        description: Power play shots saved
+      - name: pp_save_pct
+        description: Power play save percentage
+      - name: pk_shots_against
+        description: Penalty kill shots against
+      - name: pk_goals_against
+        description: Penalty kill goals allowed
+      - name: pk_shots_saved
+        description: Penalty kill shots saved
+      - name: pk_save_pct
+        description: Penalty kill save percentage
+      - name: pim
+        description: Penalty minutes
+
+  - name: team_per_game_stats_all
+    description: Team statistics on a per-game basis
+    config:
+      materialized: table
+    columns:
+      - name: game_id
+        description: Unique identifier for the game
+        tests:
+          - not_null:
+              severity: warn
+      - name: season
+        description: NHL season identifier
+        tests:
+          - not_null:
+              severity: warn
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+        tests:
+          - not_null:
+              severity: warn
+      - name: type
+        description: Home or away designation
+        tests:
+          - accepted_values:
+              values: ['home', 'away']
+              severity: warn
+      - name: game_type
+        description: Type of game (regular/playoff)
+        tests:
+          - accepted_values:
+              values: ['regular', 'playoff', 'other']
+              severity: warn
+      - name: shots
+        description: Number of shots on goal
+      - name: goals
+        description: Number of goals scored
+      - name: goals_against
+        description: Number of goals allowed
+      - name: sog
+        description: Shots on goal
+      - name: faceoff_pct
+        description: Faceoff win percentage
+      - name: power_play
+        description: Power play results (format - "x/y")
+      - name: pp_goals
+        description: Power play goals scored
+      - name: pp_attempts
+        description: Power play opportunities
+      - name: penalty_kill
+        description: Penalty kill results (format - "x/y")
+      - name: pk_goals_against
+        description: Goals allowed while shorthanded
+      - name: pk_attempts
+        description: Number of times shorthanded
+      - name: pp_pct
+        description: Power play percentage
+      - name: pim
+        description: Total penalty minutes
+      - name: hits
+        description: Number of hits
+      - name: blocked_shots
+        description: Number of blocked shots
+      - name: blocks
+        description: Number of blocked shots (alias)
+      - name: giveaways
+        description: Number of giveaways
+      - name: takeaways
+        description: Number of takeaways

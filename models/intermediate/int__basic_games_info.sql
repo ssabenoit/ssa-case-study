@@ -1,19 +1,21 @@
 -- models/intermediate/int__basic_games_info.sql
--- neatly compile the basic information for all the games in the db
+-- Compiles basic information for all games in the database
 
-with raw_games as (
+with
+
+raw_games as (
     select *
     from {{ ref("stg_nhl__games") }}
 )
 
 select
-    id::INT as game_id,
+    id::int as game_id,
     date as date,
-    season::INT as season,
-    venue:default::STRING as venue,
-    TO_TIMESTAMP(starttimeutc, 'YYYY-MM-DDTHH24:MI:SSZ') AS start_time_utc,
+    season::int as season,
+    venue:default::string as venue,
+    to_timestamp(starttimeutc, 'YYYY-MM-DDTHH24:MI:SSZ') as start_time_utc,
     venuetimezone as venue_tz,
-    venueutcoffset::STRING as venue_utc_offset,
-    easternutcoffset::STRING as eastern_utc_offset,
-    neutralsite::BOOLEAN as is_neutral
+    venueutcoffset::string as venue_utc_offset,
+    easternutcoffset::string as eastern_utc_offset,
+    neutralsite::boolean as is_neutral
 from raw_games

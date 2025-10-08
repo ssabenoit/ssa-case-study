@@ -1,0 +1,244 @@
+version: 2
+
+models:
+  - name: dim_dates
+    description: "Date dimension table with NHL-specific calendar attributes for time series analysis"
+    columns:
+      - name: date_key
+        description: "Surrogate key for the date in YYYYMMDD format"
+        tests:
+          - unique
+          - not_null
+      - name: date
+        description: "Actual calendar date"
+        tests:
+          - unique
+          - not_null
+      - name: year
+        description: "Calendar year (e.g., 2024)"
+      - name: quarter
+        description: "Calendar quarter (1-4)"
+      - name: month
+        description: "Calendar month number (1-12)"
+      - name: month_name
+        description: "Full month name (e.g., January)"
+      - name: week_of_year
+        description: "ISO week number of the year"
+      - name: day_of_year
+        description: "Day number within the year (1-366)"
+      - name: day_of_month
+        description: "Day number within the month"
+      - name: day_of_week
+        description: "Day number of week (1=Monday, 7=Sunday)"
+      - name: day_name
+        description: "Full day name (e.g., Monday)"
+      - name: is_weekend
+        description: "True if Saturday or Sunday"
+      - name: is_weekday
+        description: "True if Monday through Friday"
+      - name: is_holiday
+        description: "True if date is a major US/Canadian holiday"
+      - name: holiday_name
+        description: "Name of the holiday if applicable"
+      - name: nhl_season
+        description: "NHL season in YYYY-YYYY format (e.g., 2023-2024)"
+      - name: season_type
+        description: "Type of season period (pre-season, regular, playoff, off-season)"
+      - name: is_trade_deadline
+        description: "True if date is the NHL trade deadline"
+      - name: is_draft_day
+        description: "True if date is during the NHL draft"
+      - name: days_until_season_start
+        description: "Number of days until next season starts"
+      - name: days_since_season_end
+        description: "Number of days since last season ended"
+
+  - name: dim_seasons
+    description: "Season dimension table with NHL season metadata and key dates"
+    columns:
+      - name: season_key
+        description: "Primary key for the season (e.g., 20232024)"
+        tests:
+          - unique
+          - not_null
+      - name: season_name
+        description: "Display name for the season (e.g., 2023-24)"
+      - name: start_date
+        description: "First day of the regular season"
+      - name: end_date
+        description: "Last day of the Stanley Cup Finals"
+      - name: regular_season_start
+        description: "First game day of regular season"
+      - name: regular_season_end
+        description: "Last game day of regular season"
+      - name: playoff_start_date
+        description: "First day of playoffs"
+      - name: playoff_end_date
+        description: "Last day of Stanley Cup Finals"
+      - name: all_star_date
+        description: "Date of All-Star game"
+      - name: trade_deadline
+        description: "Trade deadline date for the season"
+      - name: draft_date
+        description: "First day of the NHL draft"
+      - name: total_regular_games
+        description: "Total number of regular season games (typically 1312)"
+      - name: total_teams
+        description: "Number of teams in the league"
+      - name: salary_cap
+        description: "Salary cap for the season in USD"
+      - name: stanley_cup_winner
+        description: "Team that won the Stanley Cup"
+      - name: presidents_trophy_winner
+        description: "Team with best regular season record"
+      - name: is_lockout_season
+        description: "True if season was affected by lockout"
+      - name: is_covid_affected
+        description: "True if season was affected by COVID-19"
+
+  - name: dim_teams
+    description: "Team dimension table with current and historical team information"
+    columns:
+      - name: team_key
+        description: "Surrogate key for the team"
+        tests:
+          - unique
+          - not_null
+      - name: team_id
+        description: "NHL API team identifier"
+      - name: team_abv
+        description: "Three-letter team abbreviation (e.g., NYR)"
+        tests:
+          - unique
+          - not_null
+      - name: team_name
+        description: "Current team name (e.g., New York Rangers)"
+      - name: team_full_name
+        description: "Full team name including city"
+      - name: division
+        description: "Current NHL division"
+      - name: conference
+        description: "Current NHL conference (Eastern/Western)"
+      - name: franchise_id
+        description: "Franchise identifier for tracking relocations"
+      - name: venue_name
+        description: "Home arena name"
+      - name: venue_city
+        description: "City where team plays"
+      - name: venue_state
+        description: "State/Province where team plays"
+      - name: venue_country
+        description: "Country where team plays (USA/Canada)"
+      - name: venue_capacity
+        description: "Seating capacity of home arena"
+      - name: year_founded
+        description: "Year franchise was founded"
+      - name: team_colors
+        description: "Primary team colors"
+      - name: team_logo_url
+        description: "URL to team logo"
+      - name: is_original_six
+        description: "True if team is an Original Six franchise"
+      - name: championships_won
+        description: "Number of Stanley Cups won"
+      - name: is_active
+        description: "True if team is currently active"
+      - name: effective_from
+        description: "Date this team record became effective"
+      - name: effective_to
+        description: "Date this team record ceased to be effective"
+
+  - name: dim_players
+    description: "Player dimension table with biographical and career information"
+    columns:
+      - name: player_key
+        description: "Surrogate key for the player"
+        tests:
+          - unique
+          - not_null
+      - name: player_id
+        description: "NHL API player identifier"
+        tests:
+          - unique
+          - not_null
+      - name: full_name
+        description: "Player's full name"
+      - name: first_name
+        description: "Player's first name"
+      - name: last_name
+        description: "Player's last name"
+      - name: birth_date
+        description: "Player's date of birth"
+      - name: birth_city
+        description: "City where player was born"
+      - name: birth_country
+        description: "Country where player was born"
+      - name: nationality
+        description: "Player's nationality"
+      - name: height_inches
+        description: "Player's height in inches"
+      - name: weight_pounds
+        description: "Player's weight in pounds"
+      - name: shoots_catches
+        description: "Shooting hand (L/R) or catching hand for goalies"
+      - name: primary_position_code
+        description: "Primary position code (C, LW, RW, D, G)"
+      - name: primary_position_name
+        description: "Primary position full name"
+      - name: position_category
+        description: "Position category (Forward, Defense, Goalie)"
+      - name: nhl_debut_date
+        description: "Date of first NHL game"
+      - name: nhl_debut_season
+        description: "Season of NHL debut"
+      - name: draft_year
+        description: "Year player was drafted"
+      - name: draft_round
+        description: "Round player was drafted"
+      - name: draft_overall
+        description: "Overall pick number in draft"
+      - name: draft_team
+        description: "Team that drafted the player"
+      - name: is_active
+        description: "True if player is currently active"
+      - name: is_rookie
+        description: "True if player is in their rookie season"
+      - name: is_hall_of_fame
+        description: "True if player is in Hockey Hall of Fame"
+      - name: jersey_number
+        description: "Current jersey number"
+
+  - name: dim_player_team_bridge
+    description: "Bridge table tracking player-team relationships over time to handle trades and free agency"
+    columns:
+      - name: bridge_key
+        description: "Surrogate key for the bridge record"
+        tests:
+          - unique
+          - not_null
+      - name: player_key
+        description: "Foreign key to dim_players"
+        tests:
+          - not_null
+      - name: team_key
+        description: "Foreign key to dim_teams"
+        tests:
+          - not_null
+      - name: start_date
+        description: "Date player joined the team"
+        tests:
+          - not_null
+      - name: end_date
+        description: "Date player left the team (NULL if current)"
+      - name: transaction_type
+        description: "How player joined (draft, trade, free agency, waiver)"
+      - name: is_current
+        description: "True if this is the player's current team"
+      - name: seasons_with_team
+        description: "Number of seasons played with this team"
+      - name: games_played
+        description: "Total games played with this team"
+      - name: position_played
+        description: "Primary position while with team"
+      - name: jersey_numbers
+        description: "Jersey numbers worn with team"

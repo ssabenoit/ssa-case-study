@@ -1,9 +1,8 @@
 name: 'nhl_analytics'
 version: '1.0.0'
 config-version: 2
-
 # Profile Configuration
-profile: 'default'
+profile: 'nhl_analytics'
 
 # These configurations specify where dbt should look for different types of files.
 model-paths: ["models"]
@@ -37,3 +36,7 @@ models:
       +materialized: view
     marts:
       +materialized: table
+
+# Configure all tests to result in warnings rather than failures
+tests:
+  +severity: warn

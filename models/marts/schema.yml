@@ -1,0 +1,456 @@
+version: 2
+
+models:
+  - name: all_players
+    description: Master table containing all players (forwards, defensemen, and goalies) for every team
+    columns:
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+      - name: player_id
+        description: Unique identifier for the player
+      - name: first_name
+        description: Player's first name
+      - name: last_name
+        description: Player's last name
+      - name: position
+        description: Player's position code
+      - name: number
+        description: Player's jersey number
+      - name: height
+        description: Player's height in inches
+      - name: weight
+        description: Player's weight in pounds
+      - name: shoots
+        description: Player's shooting handedness (L/R) for skaters
+      - name: catches
+        description: Player's catching handedness (L/R) for goalies
+      - name: birthDate
+        description: Player's birth date
+      - name: birth_city
+        description: Player's city of birth
+      - name: birth_state
+        description: Player's state/province of birth
+      - name: birth_country
+        description: Player's country of birth
+      - name: headshot_url
+        description: URL to player's headshot image
+
+  - name: all_plays
+    description: Comprehensive record of all plays from NHL games
+    columns:
+      - name: id
+        description: Unique identifier for the game
+      - name: season
+        description: NHL season identifier
+      - name: game_type
+        description: Type of game (regular/playoff)
+      - name: away_team
+        description: Away team identifier
+      - name: home_team
+        description: Home team identifier
+      - name: plays
+        description: JSON array of plays in the game
+
+  - name: current_statwise_rankings
+    description: Current statistical rankings for teams across various metrics
+    columns:
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+      - name: team_name
+        description: Full name of the team
+      - name: goals_for_rank
+        description: Team ranking based on goals scored
+      - name: goals_against_rank
+        description: Team ranking based on goals allowed
+      - name: pp_pct_rank
+        description: Team ranking based on power play percentage
+      - name: pk_pct_rank
+        description: Team ranking based on penalty kill percentage
+      - name: points_rank
+        description: Team ranking based on points in the standings
+      - name: goals_for
+        description: Total goals scored
+      - name: goals_against
+        description: Total goals allowed
+      - name: pp_pct
+        description: Power play percentage
+      - name: pk_pct
+        description: Penalty kill percentage
+      - name: points
+        description: Total points in the standings
+
+  - name: goalies_season_stats_regular
+    description: Compiled season statistics for goalies during the regular season
+    columns:
+      - name: season
+        description: NHL season identifier
+      - name: player_id
+        description: Unique identifier for the goalie
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+      - name: name
+        description: Goalie's name (format typically "F. Lastname")
+      - name: games_played
+        description: Number of games played in the season
+      - name: shots_against
+        description: Total shots faced
+      - name: goals_against
+        description: Total goals allowed
+      - name: shots_saved
+        description: Total saves made
+      - name: save_pct
+        description: Save percentage
+      - name: goals_against_avg
+        description: Goals against average (GAA)
+      - name: total_toi
+        description: Total time on ice (in seconds)
+      - name: avg_toi
+        description: Average time on ice per game
+      - name: first_name
+        description: Goalie's first name
+      - name: last_name
+        description: Goalie's last name
+      - name: position
+        description: Position code (should be 'G' for all records)
+
+  - name: players_history
+    description: Historical player information including team affiliations
+    columns:
+      - name: player_id
+        description: Unique identifier for the player
+      - name: first_name
+        description: Player's first name
+      - name: last_name
+        description: Player's last name
+      - name: position
+        description: Player's position code
+      - name: team_history
+        description: List of teams the player has played for
+      - name: current_team
+        description: Player's current team
+
+  - name: season_dates
+    description: Start and end dates for NHL seasons
+    columns:
+      - name: season
+        description: NHL season identifier
+      - name: season_start
+        description: First day of the season
+      - name: season_end
+        description: Last day of the season
+      - name: reg_season_start
+        description: First day of the regular season
+      - name: reg_season_end
+        description: Last day of the regular season
+      - name: playoff_start
+        description: First day of the playoffs
+      - name: playoff_end
+        description: Last day of the playoffs
+
+  - name: skaters_season_stats_playoff
+    description: Compiled season statistics for skaters during the playoffs
+    columns:
+      - name: season
+        description: NHL season identifier
+      - name: player_id
+        description: Unique identifier for the player
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+      - name: name
+        description: Player's name (format typically "F. Lastname")
+      - name: games_played
+        description: Number of playoff games played
+      - name: goals
+        description: Total playoff goals
+      - name: assists
+        description: Total playoff assists
+      - name: hits
+        description: Total playoff hits
+      - name: shots
+        description: Total playoff shots on goal
+      - name: faceoff_pct
+        description: Playoff faceoff win percentage
+      - name: pim
+        description: Playoff penalty minutes
+      - name: plus_minus
+        description: Playoff plus-minus rating
+      - name: points
+        description: Total playoff points
+      - name: pp_goals
+        description: Playoff power play goals
+      - name: giveaways
+        description: Playoff giveaways
+      - name: takeaways
+        description: Playoff takeaways
+      - name: shifts
+        description: Total playoff shifts
+      - name: total_toi
+        description: Total playoff time on ice (in seconds)
+      - name: avg_toi
+        description: Average playoff time on ice per game
+      - name: first_name
+        description: Player's first name
+      - name: last_name
+        description: Player's last name
+      - name: position
+        description: Player's position code
+
+  - name: skaters_season_stats_regular
+    description: Compiled season statistics for skaters during the regular season
+    columns:
+      - name: season
+        description: NHL season identifier
+      - name: player_id
+        description: Unique identifier for the player
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+      - name: name
+        description: Player's name (format typically "F. Lastname")
+      - name: games_played
+        description: Number of regular season games played
+      - name: goals
+        description: Total regular season goals
+      - name: assists
+        description: Total regular season assists
+      - name: hits
+        description: Total regular season hits
+      - name: shots
+        description: Total regular season shots on goal
+      - name: faceoff_pct
+        description: Regular season faceoff win percentage
+      - name: pim
+        description: Regular season penalty minutes
+      - name: plus_minus
+        description: Regular season plus-minus rating
+      - name: points
+        description: Total regular season points
+      - name: pp_goals
+        description: Regular season power play goals
+      - name: giveaways
+        description: Regular season giveaways
+      - name: takeaways
+        description: Regular season takeaways
+      - name: shifts
+        description: Total regular season shifts
+      - name: total_toi
+        description: Total regular season time on ice (in seconds)
+      - name: avg_toi
+        description: Average regular season time on ice per game
+      - name: first_name
+        description: Player's first name
+      - name: last_name
+        description: Player's last name
+      - name: position
+        description: Player's position code
+
+  - name: standings_by_day
+    description: Daily snapshot of team standings throughout the season
+    columns:
+      - name: date
+        description: Date of the standings snapshot
+      - name: team_id
+        description: Unique identifier for each NHL team
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+      - name: team_name
+        description: Full name of the team
+      - name: points
+        description: Season points total as of this date
+      - name: reg_wins
+        description: Regular wins (excluding overtime/shootout wins) as of this date
+      - name: ot_wins
+        description: Overtime wins as of this date
+      - name: total_wins
+        description: Total wins as of this date
+      - name: losses
+        description: Total losses as of this date
+      - name: ot_losses
+        description: Overtime/shootout losses as of this date
+      - name: games_played
+        description: Games played as of this date
+      - name: points_pct
+        description: Percentage of possible points earned as of this date
+
+  - name: team_season_stats_playoff
+    description: Compiled team statistics for the playoffs
+    columns:
+      - name: season
+        description: NHL season identifier
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+      - name: games_played
+        description: Number of playoff games played
+      - name: shots
+        description: Total playoff shots on goal
+      - name: goals
+        description: Total playoff goals scored
+      - name: goals_against
+        description: Total playoff goals allowed
+      - name: sog
+        description: Total playoff shots on goal (alias)
+      - name: faceoff_pct
+        description: Playoff faceoff win percentage
+      - name: pp_goals
+        description: Playoff power play goals
+      - name: pp_attempts
+        description: Playoff power play opportunities
+      - name: pk_goals_against
+        description: Playoff penalty kill goals allowed
+      - name: pk_attempts
+        description: Number of times shorthanded in playoffs
+      - name: pp_pct
+        description: Playoff power play percentage
+      - name: pk_pct
+        description: Playoff penalty kill percentage
+      - name: pim
+        description: Total playoff penalty minutes
+      - name: hits
+        description: Total playoff hits
+      - name: blocked_shots
+        description: Total playoff blocked shots
+      - name: giveaways
+        description: Total playoff giveaways
+      - name: takeaways
+        description: Total playoff takeaways
+
+  - name: team_season_stats_regular
+    description: Compiled team statistics for the regular season
+    columns:
+      - name: season
+        description: NHL season identifier
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+      - name: games_played
+        description: Number of regular season games played
+      - name: shots
+        description: Total regular season shots on goal
+      - name: goals
+        description: Total regular season goals scored
+      - name: goals_against
+        description: Total regular season goals allowed
+      - name: sog
+        description: Total regular season shots on goal (alias)
+      - name: faceoff_pct
+        description: Regular season faceoff win percentage
+      - name: pp_goals
+        description: Regular season power play goals
+      - name: pp_attempts
+        description: Regular season power play opportunities
+      - name: pk_goals_against
+        description: Regular season penalty kill goals allowed
+      - name: pk_attempts
+        description: Number of times shorthanded in regular season
+      - name: pp_pct
+        description: Regular season power play percentage
+      - name: pk_pct
+        description: Regular season penalty kill percentage
+      - name: pim
+        description: Total regular season penalty minutes
+      - name: hits
+        description: Total regular season hits
+      - name: blocked_shots
+        description: Total regular season blocked shots
+      - name: giveaways
+        description: Total regular season giveaways
+      - name: takeaways
+        description: Total regular season takeaways
+
+  - name: upcoming_games
+    description: Schedule of future NHL games
+    columns:
+      - name: id
+        description: Unique identifier for the game
+      - name: season
+        description: NHL season identifier
+      - name: date
+        description: Scheduled date of the game
+      - name: away_id
+        description: Away team identifier
+      - name: away_abv
+        description: Away team abbreviation
+      - name: home_id
+        description: Home team identifier
+      - name: home_abv
+        description: Home team abbreviation
+      - name: game_type
+        description: Type of game (2=regular season, etc.)
+      - name: game_state
+        description: State of the game (FUT=future)
+      - name: away_logo
+        description: URL to away team logo image
+      - name: home_logo
+        description: URL to home team logo image
+
+  - name: team_power_rankings
+    description: Data-driven team power rankings that blend previous season performance with current season metrics for smooth early-season transitions. Rankings are available before the season starts and gradually shift from previous season basis to current season performance over the first 20 games.
+    columns:
+      - name: ranking_date
+        description: Date when the rankings were calculated
+        tests:
+          - not_null:
+              severity: warn
+      - name: team_id
+        description: Unique identifier for the team
+        tests:
+          - not_null:
+              severity: warn
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+        tests:
+          - not_null:
+              severity: warn
+      - name: team_name
+        description: Full name of the team
+        tests:
+          - not_null:
+              severity: warn
+      - name: power_score
+        description: Overall power ranking score (0-100). Blends previous and current season metrics based on games played.
+        tests:
+          - not_null:
+              severity: warn
+      - name: power_rank
+        description: Numerical rank based on power_score (1 is highest)
+        tests:
+          - not_null:
+              severity: warn
+      - name: points_component
+        description: Component score based on standings points. Blends previous and current season point percentage.
+        tests:
+          - not_null:
+              severity: warn
+      - name: goal_component
+        description: Component score based on goals scored/against metrics. Blends previous and current season goal differentials.
+        tests:
+          - not_null:
+              severity: warn
+      - name: advanced_stats_component
+        description: Component score based on shot metrics and special teams (PP/PK). Only activates after 5 games played.
+        tests:
+          - not_null:
+              severity: warn
+      - name: schedule_component
+        description: Component score based on strength of schedule. Only meaningful after 5 games played.
+        tests:
+          - not_null:
+              severity: warn
+      - name: momentum_component
+        description: Component score based on recent performance. Requires minimum 5 games for basic trend, 10 games for full momentum.
+        tests:
+          - not_null:
+              severity: warn
+      - name: games_played
+        description: Number of games played in the current season
+        tests:
+          - not_null:
+              severity: warn
+      - name: current_season_weight_pct
+        description: Percentage weight given to current season metrics (0% at 0 games, 100% at 20+ games)
+        tests:
+          - not_null:
+              severity: warn
+      - name: previous_season_weight_pct
+        description: Percentage weight given to previous season metrics (100% at 0 games, 0% at 20+ games)
+        tests:
+          - not_null:
+              severity: warn

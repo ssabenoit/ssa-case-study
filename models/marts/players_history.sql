@@ -1,10 +1,14 @@
 -- models/marts/players_history.sql
--- compile history of all teams that a player has played for
+-- Compiles history of all teams that a player has played for
 
-with skaters as (
+with
+
+skaters as (
     select *
-    from {{ ref('skaters_per_game_stats_all') }}
+    from {{ ref('int__skaters_per_game_stats') }}
 )
 
-select distinct player_id, team_abv
-from skaters  
+select distinct 
+    player_id, 
+    team_abv
+from skaters

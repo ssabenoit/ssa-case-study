@@ -1,4 +1,9 @@
-with all_plays as (
+-- models/staging/stg_nhl__play_by_play.sql
+-- Extracts and flattens play-by-play data from the NHL API
+
+with
+
+all_plays as (
     select *
     from {{ source('nhl_staging_data', 'play_by_play') }}
 )
@@ -6,13 +11,10 @@ with all_plays as (
 select 
     id::int as id, 
     season::int as season, 
-    -- gamedate as date,
-    -- gametype::int as game_type,
     awayteam:id::int as away_id,
     awayteam:abbrev::string as away_abv,
     hometeam:id::int as home_id,
     hometeam:abbrev::string as home_abv,
-    -- plays.value as full_play,
     plays.value:eventId::int as event_id,
     plays.value:homeTeamDefendingSide::string as home_side,
     plays.value:periodDescriptor.number::int as period,
@@ -34,6 +36,5 @@ select
     plays.value:details.yCoord::int as y_pos,
     plays.value:details.zoneCode::string as zone_code,
     plays.value:details as full_details
-    -- count(*)
 from all_plays,
-lateral flatten (input => all_plays.plays) plays
+lateral flatten(input => all_plays.plays) plays

@@ -1,8 +1,12 @@
 -- models/marts/season_dates.sql
--- define the start and end dates for each season in the data
+-- Defines the start and end dates for each season in the dataset
 
-with days as (
-    select distinct season, date
+with
+
+days as (
+    select distinct 
+        season, 
+        date
     from {{ ref('standings_by_day') }}
 )
 

@@ -1,0 +1,172 @@
+version: 2
+
+models:
+  - name: stg_nhl__current_standings
+    description: Staged data from NHL API current standings endpoint
+    columns:
+      - name: season
+        description: NHL season identifier (format YYYYZZZZ where YYYY is start year and ZZZZ is end year)
+      - name: team_id
+        description: Unique identifier for each NHL team
+      - name: team_abv
+        description: Three-letter abbreviation for the team (e.g., TOR, NYR)
+      - name: team_name
+        description: Full name of the team
+      - name: points
+        description: Current season points total for the team
+      - name: reg_wins
+        description: Regular season wins (excluding overtime/shootout wins)
+      - name: ot_wins
+        description: Wins achieved in overtime
+      - name: total_wins
+        description: Total number of wins (regulation + overtime)
+      - name: losses
+        description: Total number of losses
+      - name: ot_losses
+        description: Losses in overtime or shootout
+      - name: games_played
+        description: Total number of games played
+
+  - name: stg_nhl__current_teams
+    description: Current active teams in the NHL
+    columns:
+      - name: id
+        description: Unique identifier for the team
+      - name: abbrev
+        description: Three-letter abbreviation for the team
+      - name: name
+        description: Team name object containing default and French versions
+      - name: placename
+        description: Place name object (city/location)
+      - name: commonname
+        description: Common name object for the team
+      - name: french
+        description: Boolean indicating if French version is available
+      - name: logo
+        description: URL to team logo image
+
+  - name: stg_nhl__daily_standings
+    description: NHL standings captured daily
+    columns:
+      - name: date
+        description: Date of the standings snapshot
+      - name: team_id
+        description: Unique identifier for each NHL team
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+      - name: points
+        description: Season points total as of this date
+      - name: reg_wins
+        description: Regular wins (excluding overtime/shootout wins) as of this date
+      - name: ot_wins
+        description: Overtime wins as of this date
+      - name: total_wins
+        description: Total wins as of this date
+      - name: losses
+        description: Total losses as of this date
+      - name: ot_losses
+        description: Overtime/shootout losses as of this date
+      - name: games_played
+        description: Games played as of this date
+
+  - name: stg_nhl__games
+    description: Basic information about NHL games
+    columns:
+      - name: id
+        description: Unique identifier for the game
+      - name: season
+        description: NHL season identifier
+      - name: gametype
+        description: Type of game (2=regular season, 3=playoff, etc.)
+      - name: awayteam
+        description: Information about the away team
+      - name: hometeam
+        description: Information about the home team
+      - name: starttime
+        description: Start time of the game
+      - name: gamedate
+        description: Date of the game
+
+  - name: stg_nhl__game_boxscore
+    description: Detailed boxscore information for each game
+    columns:
+      - name: id
+        description: Unique identifier for the game
+      - name: season
+        description: NHL season identifier
+      - name: gametype
+        description: Type of game (2=regular season, 3=playoff, etc.)
+      - name: awayteam
+        description: Information about the away team
+      - name: hometeam
+        description: Information about the home team
+      - name: playerbygamestats
+        description: Detailed player statistics for this game
+
+  - name: stg_nhl__game_summaries
+    description: Game summary information with team stats
+    columns:
+      - name: id
+        description: Unique identifier for the game
+      - name: season
+        description: NHL season identifier
+      - name: gametype
+        description: Type of game (2=regular season, 3=playoff, etc.)
+      - name: awayteam
+        description: Information about the away team including score
+      - name: hometeam
+        description: Information about the home team including score
+      - name: summary
+        description: Detailed summary information including team stats
+
+  - name: stg_nhl__play_by_play
+    description: Play-by-play data for all games
+    columns:
+      - name: id
+        description: Unique identifier for the game
+      - name: season
+        description: NHL season identifier
+      - name: game_type
+        description: Type of game (regular/playoff)
+      - name: away_team
+        description: Away team identifier
+      - name: home_team
+        description: Home team identifier
+      - name: plays
+        description: JSON array of plays in the game
+
+  - name: stg_nhl__season_schedules
+    description: Complete season schedules for all teams
+    columns:
+      - name: id
+        description: Unique identifier for the game
+      - name: season
+        description: NHL season identifier
+      - name: date
+        description: Date of the game
+      - name: away_id
+        description: Away team identifier
+      - name: away_abv
+        description: Away team abbreviation
+      - name: home_id
+        description: Home team identifier
+      - name: home_abv
+        description: Home team abbreviation
+      - name: game_type
+        description: Type of game
+      - name: game_state
+        description: State of the game (FUT=future, FINAL=completed)
+
+  - name: stg_nhl__team_rosters
+    description: Team roster information with player details
+    columns:
+      - name: team_id
+        description: Unique identifier for the team
+      - name: team_abv
+        description: Three-letter abbreviation for the team
+      - name: forwards
+        description: JSON array of forwards on the team
+      - name: defense
+        description: JSON array of defensemen on the team
+      - name: goalies
+        description: JSON array of goalies on the team

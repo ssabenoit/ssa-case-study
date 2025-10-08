@@ -1,7 +1,9 @@
 -- models/staging/stg_nhl__season_schedules.sql
--- pull every game past and scheduled within the scope of the data
+-- Pulls every game past and scheduled within the scope of the data
 
-with games as (
+with
+
+games as (
     select *
     from {{ source("nhl_staging_data", "season_schedules") }}
 )
@@ -23,5 +25,5 @@ select
     starttimeutc as start_time_utc,
     easternutcoffset as eastern_offset,
     venuetimezone::string as venue_tz,
-    specialevent:name::String as special_event,
+    specialevent:name::string as special_event
 from games

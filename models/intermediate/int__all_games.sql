@@ -1,9 +1,11 @@
+{{ config(materialized='table') }}
+
 -- models/intermediate/int__all_games.sql
--- maintains basic information table for all games in the data set
-{{ config(materialized='table')}}
+-- Maintains basic information table for all games in the dataset
 
+with
 
-with summaries as (
+summaries as (
     select
         id::int as id,
         season::int as season,
@@ -21,7 +23,7 @@ games as (
         id::int as id,
         date,
         venue:default::string as venue,
-        neutralsite::boolean as neutral_site,
+        neutralsite::boolean as neutral_site
     from {{ ref("stg_nhl__games") }}  
 ),
 
@@ -40,6 +42,6 @@ select
     o.game_outcome
 from summaries s
 left join games g
-on g.id = s.id
+    on g.id = s.id
 left join outcomes o
-on g.id = o.id
+    on g.id = o.id

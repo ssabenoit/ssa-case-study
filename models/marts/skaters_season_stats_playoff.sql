@@ -1,14 +1,16 @@
 -- models/marts/skaters_season_stats_playoff.sql
--- compiles stats for each player for each regular season (from the per game stats table)
+-- Compiles stats for each skater for each playoff season
 
-with skaters_info as (
+with
+
+skaters_info as (
     select *
     from {{ ref("int__all_skaters") }}
 ),
 
 skater_stats as (
     select *
-    from {{ ref("skaters_per_game_stats_all") }}
+    from {{ ref("int__skaters_per_game_stats") }}
 ),
 
 skater_season_stats as (
@@ -29,32 +31,26 @@ skater_season_stats as (
         sum(giveaways) as giveaways,
         sum(takeaways) as takeaways,
         sum(shifts) as shifts,
-        SUM(EXTRACT(hour FROM toi) * 3600 +  EXTRACT(minute FROM toi) * 60 + EXTRACT(second FROM toi) ) as total_toi,
-        /*
-        TIMEADD(
+        sum(
+            extract(hour from toi) * 3600 + 
+            extract(minute from toi) * 60 + 
+            extract(second from toi)
+        ) as total_toi,
+        timeadd(
             'second', 
-            SUM(
-                EXTRACT(hour FROM toi) * 3600 + 
-                EXTRACT(minute FROM toi) * 60 + 
-                EXTRACT(second FROM toi)
+            avg(
+                extract(hour from toi) * 3600 + 
+                extract(minute from toi) * 60 + 
+                extract(second from toi)
             ),
-            TO_TIME('00:00:00')
-        ) AS total_toi, -- doesn't allow more than 24 hours (could remove it)
-        */
-        TIMEADD(
-            'second', 
-            AVG(
-                EXTRACT(hour FROM toi) * 3600 + 
-                EXTRACT(minute FROM toi) * 60 + 
-                EXTRACT(second FROM toi)
-            ),
-            TO_TIME('00:00:00')
-        ) AS avg_toi,
-        -- avg(total_toi) as average_toi
-        -- sum(toi) as toi
+            to_time('00:00:00')
+        ) as avg_toi
     from skater_stats
     where game_type = 'playoff'
-    group by season, player_id, name
+    group by 
+        season, 
+        player_id, 
+        name
 )
 
 select 
@@ -64,4 +60,5 @@ select
     si.team_abv,
     si.position
 from skater_season_stats ss
-left join skaters_info si on ss.player_id = si.player_id
+left join skaters_info si 
+    on ss.player_id = si.player_id
