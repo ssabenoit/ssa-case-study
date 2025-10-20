@@ -1,0 +1,11 @@
+# This file was automatically generated
+name: snowflake
+type: snowflake
+options:
+  account: CMTJUVE-LS94358
+  authenticator: userpass
+  database: DBT_ANALYTICS
+  resultPrefetch: 2
+  role: ACCOUNTADMIN
+  schema: PROD
+  warehouse: DBT_WH

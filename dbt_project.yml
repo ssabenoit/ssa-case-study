@@ -34,7 +34,7 @@ models:
       +materialized: view
     intermediate:
       +materialized: view
-    marts:
+    dimensional:
       +materialized: table
 
 # Configure all tests to result in warnings rather than failures

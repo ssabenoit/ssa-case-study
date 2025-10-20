@@ -10,7 +10,7 @@ season_boundaries as (
         season,
         min(date) as season_start_date,
         max(date) as season_end_date
-    from {{ ref('standings_by_day') }}
+    from {{ ref('int__standings_by_day') }}
     group by season
 ),
 
@@ -34,7 +34,7 @@ season_teams as (
     select
         season,
         count(distinct team_abv) as total_teams
-    from {{ ref('standings_by_day') }}
+    from {{ ref('int__standings_by_day') }}
     group by season
 ),
 

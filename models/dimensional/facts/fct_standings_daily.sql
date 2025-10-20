@@ -1,13 +1,36 @@
 {{ config(materialized='table') }}
 
 -- models/dimensional/facts/fct_standings_daily.sql
--- Daily standings snapshot fact table
+-- Daily standings snapshot fact table with complete home/road/shootout records
 
 with
 
 standings_base as (
     select *
-    from {{ ref('standings_by_day') }}
+    from {{ ref('int__standings_by_day') }}
+),
+
+-- Get home/road/shootout stats from raw daily standings
+standings_enhanced as (
+    select 
+        sb.*,
+        -- Parse home/road/shootout data from source if available
+        ds.homewins::int as home_wins_raw,
+        ds.homelosses::int as home_losses_raw,
+        ds.homeotlosses::int as home_ot_losses_raw,
+        ds.roadwins::int as road_wins_raw,
+        ds.roadlosses::int as road_losses_raw,
+        ds.roadotlosses::int as road_ot_losses_raw,
+        ds.shootoutwins::int as shootout_wins_raw,
+        ds.shootoutlosses::int as shootout_losses_raw,
+        -- Get streak info directly from source
+        ds.streakcode as streak_type_raw,
+        ds.streakcount::int as streak_count_raw
+    from standings_base sb
+    left join {{ ref('stg_nhl__daily_standings') }} ds
+        on sb.date = ds.date
+        and sb.team_abv = ds.teamabbrev:default::string
+        and sb.season = cast(ds.seasonid as int)
 ),
 
 -- Calculate last 10 games stats
@@ -17,7 +40,7 @@ standings_with_lag as (
         lag(wins) over (partition by team_abv, season order by date) as prev_wins,
         lag(losses) over (partition by team_abv, season order by date) as prev_losses,
         lag(ot_losses) over (partition by team_abv, season order by date) as prev_ot_losses
-    from standings_base
+    from standings_enhanced
 ),
 
 last_10_games as (
@@ -41,7 +64,7 @@ last_10_games as (
                 and s2.ot_losses > coalesce(s2.prev_ot_losses, 0)
             then 1 else 0 
         end) as last_10_ot_losses
-    from standings_base s1
+    from standings_enhanced s1
     inner join standings_with_lag s2
         on s1.team_abv = s2.team_abv
         and s1.season = s2.season
@@ -51,24 +74,6 @@ last_10_games as (
         s1.date, 
         s1.team_abv, 
         s1.season
-),
-
--- Calculate streaks
-streaks as (
-    select
-        date,
-        team_abv,
-        season,
-        -- Determine current streak
-        case
-            when wins > lag(wins, 1, 0) over (partition by team_abv, season order by date) then 'W'
-            when losses > lag(losses, 1, 0) over (partition by team_abv, season order by date) then 'L'
-            when ot_losses > lag(ot_losses, 1, 0) over (partition by team_abv, season order by date) then 'OT'
-            else null
-        end as last_game_result,
-        -- Running streak count (simplified - would need more complex logic for accurate streaks)
-        1 as streak_count
-    from standings_base
 ),
 
 standings_facts as (
@@ -92,22 +97,26 @@ standings_facts as (
         sb.goals_against,
         sb.goal_diff as goal_differential,
         
-        -- Home/Away splits (would need to calculate from game logs)
-        null::int as home_wins,
-        null::int as home_losses,
-        null::int as home_ot_losses,
-        null::int as away_wins,
-        null::int as away_losses,
-        null::int as away_ot_losses,
+        -- Home/Away splits
+        coalesce(sb.home_wins_raw, 0) as home_wins,
+        coalesce(sb.home_losses_raw, 0) as home_losses,
+        coalesce(sb.home_ot_losses_raw, 0) as home_ot_losses,
+        coalesce(sb.road_wins_raw, 0) as away_wins,
+        coalesce(sb.road_losses_raw, 0) as away_losses,
+        coalesce(sb.road_ot_losses_raw, 0) as away_ot_losses,
+        
+        -- Shootout records
+        coalesce(sb.shootout_wins_raw, 0) as shootout_wins,
+        coalesce(sb.shootout_losses_raw, 0) as shootout_losses,
         
         -- Last 10 games
         coalesce(l10.last_10_wins, 0) as last_10_wins,
         coalesce(l10.last_10_losses, 0) as last_10_losses,
         coalesce(l10.last_10_ot_losses, 0) as last_10_ot_losses,
         
-        -- Streak information
-        s.last_game_result as streak_type,
-        s.streak_count,
+        -- Streak information (use source data directly)
+        sb.streak_type_raw as streak_type,
+        sb.streak_count_raw as streak_count,
         
         -- Rankings
         sb.div_sequence as division_rank,
@@ -152,17 +161,13 @@ standings_facts as (
         sb.team_abv,
         sb.team_name
         
-    from standings_base sb
+    from standings_enhanced sb
     left join {{ ref('dim_teams') }} dt
         on sb.team_abv = dt.team_abv
     left join last_10_games l10
         on sb.date = l10.date
         and sb.team_abv = l10.team_abv
         and sb.season = l10.season
-    left join streaks s
-        on sb.date = s.date
-        and sb.team_abv = s.team_abv
-        and sb.season = s.season
 )
 
 select
@@ -185,6 +190,8 @@ select
     away_wins,
     away_losses,
     away_ot_losses,
+    shootout_wins,
+    shootout_losses,
     last_10_wins,
     last_10_losses,
     last_10_ot_losses,
@@ -220,7 +227,22 @@ select
         when games_played > 0
         then round(goals_against * 82.0 / games_played, 1)
         else 0
-    end as goals_against_pace
+    end as goals_against_pace,
+    -- Build record strings for easier reporting
+    concat(wins, '-', losses, '-', ot_losses) as record,
+    concat(home_wins, '-', home_losses, '-', home_ot_losses) as home_record,
+    concat(away_wins, '-', away_losses, '-', away_ot_losses) as away_record,
+    concat(last_10_wins, '-', last_10_losses, '-', last_10_ot_losses) as last_10_record,
+    concat(shootout_wins, '-', shootout_losses) as shootout_record,
+    case 
+        when goal_differential > 0 then concat('+', goal_differential)
+        else cast(goal_differential as string)
+    end as goal_diff_string,
+    case
+        when streak_type is not null and streak_count is not null
+        then concat(streak_type, streak_count)
+        else null
+    end as streak_string
 from standings_facts
 order by 
     date_key, 

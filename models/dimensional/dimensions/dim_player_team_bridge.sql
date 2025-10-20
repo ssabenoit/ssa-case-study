@@ -60,7 +60,7 @@ player_info_per_stint as (
         p.position,
         p.number as jersey_number
     from player_team_dates ptd
-    left join {{ ref('all_players') }} p
+    left join {{ ref('int__all_players') }} p
         on ptd.player_id = p.player_id
         and ptd.team_abv = p.team_abv
 ),

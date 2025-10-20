@@ -48,7 +48,7 @@ season_boundaries as (
         season,
         start_date as season_start_date,
         end_date as season_end_date
-    from {{ ref('season_dates') }}
+    from {{ ref('int__season_dates') }}
 ),
 
 dates_with_season_info as (

@@ -381,7 +381,7 @@ models:
       - name: home_logo
         description: URL to home team logo image
 
-  - name: team_power_rankings
+  - name: mart_team_power_rankings
     description: Data-driven team power rankings that blend previous season performance with current season metrics for smooth early-season transitions. Rankings are available before the season starts and gradually shift from previous season basis to current season performance over the first 20 games.
     columns:
       - name: ranking_date

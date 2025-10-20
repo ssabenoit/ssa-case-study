@@ -16,6 +16,7 @@ away_team_stats as (
         awayteam:id::int as team_id,
         'away' as type,
         case 
+            when gametype = 1 then 'preseason'
             when gametype = 2 then 'regular'
             when gametype = 3 then 'playoff'
             else 'other'
@@ -48,6 +49,7 @@ home_team_stats as (
         hometeam:id::int as team_id,
         'home' as type,
         case 
+            when gametype = 1 then 'preseason'
             when gametype = 2 then 'regular'
             when gametype = 3 then 'playoff'
             else 'other'

@@ -21,7 +21,7 @@ all_players as (
         birth_country,
         headshot_url,
         team_abv
-    from {{ ref('all_players') }}
+    from {{ ref('int__all_players') }}
 ),
 
 -- Get the most recent team for each player as their current team
@@ -44,7 +44,7 @@ player_stats_summary as (
         sum(assists) as career_assists,
         sum(points) as career_points,
         avg(plus_minus) as avg_plus_minus
-    from {{ ref('skaters_season_stats_regular') }}
+    from {{ ref('int__skaters_season_stats_regular') }}
     group by player_id
 ),
 
@@ -55,7 +55,7 @@ goalie_stats_summary as (
         sum(gp) as career_games,
         avg(save_pct) as career_save_pct,
         avg(gaa) as career_gaa
-    from {{ ref('goalies_season_stats_regular') }}
+    from {{ ref('int__goalies_season_stats_regular') }}
     group by player_id
 ),
 

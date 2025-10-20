@@ -141,7 +141,7 @@ player_game_facts as (
         on ss.team_abv = dt.team_abv
     left join {{ ref('dim_teams') }} opp
         on ss.opponent_abv = opp.team_abv
-    left join {{ ref('all_players') }} ap
+    left join {{ ref('int__all_players') }} ap
         on ss.player_id = ap.player_id
         and ss.team_abv = ap.team_abv
     where ss.game_type in ('regular', 'playoff')
