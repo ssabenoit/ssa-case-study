@@ -1,0 +1,243 @@
+version: 2
+
+models:
+  - name: team_season_metrics
+    description: |
+      Comprehensive team performance metrics for the current season with league rankings.
+      Includes offensive, defensive, special teams, and physical play statistics with
+      rankings and percentiles for comparative analysis.
+    columns:
+      - name: team_key
+        description: Unique identifier for the team
+        tests:
+          - not_null
+          - unique
+      - name: team_abv
+        description: Three-letter team abbreviation
+        tests:
+          - not_null
+      - name: team_name
+        description: Full team name
+        tests:
+          - not_null
+      - name: division
+        description: Team's division
+      - name: conference
+        description: Team's conference (Eastern/Western)
+      
+      # Basic stats
+      - name: games_played
+        description: Number of games played
+        tests:
+          - not_null
+      - name: wins
+        description: Number of wins
+      - name: regulation_losses
+        description: Number of regulation losses
+      - name: ot_losses
+        description: Number of overtime/shootout losses
+      - name: points
+        description: Total points (2 per win, 1 per OT loss)
+      - name: points_pct
+        description: Points percentage (points / possible points)
+      - name: league_rank
+        description: Overall league ranking by points
+      - name: conference_rank
+        description: Ranking within conference
+      - name: division_rank
+        description: Ranking within division
+      
+      # Goals metrics
+      - name: goals_per_game
+        description: Average goals scored per game
+        tests:
+          - not_null
+      - name: goals_per_game_rank
+        description: League rank for goals per game (1 = best)
+        tests:
+          - not_null
+      - name: goals_per_game_percentile
+        description: Percentile rank for goals per game (100 = best)
+      
+      - name: goals_against_average
+        description: Average goals allowed per game
+        tests:
+          - not_null
+      - name: goals_against_rank
+        description: League rank for goals against (1 = fewest allowed)
+        tests:
+          - not_null
+      - name: goals_against_percentile
+        description: Percentile rank for goals against (100 = fewest allowed)
+      
+      # Physical play metrics
+      - name: hits_per_game
+        description: Average hits per game
+        tests:
+          - not_null
+      - name: hits_per_game_rank
+        description: League rank for hits per game (1 = most)
+        tests:
+          - not_null
+      - name: hits_percentile
+        description: Percentile rank for hits (100 = most)
+      
+      - name: blocks_per_game
+        description: Average blocked shots per game
+        tests:
+          - not_null
+      - name: blocks_per_game_rank
+        description: League rank for blocks per game (1 = most)
+        tests:
+          - not_null
+      - name: blocks_percentile
+        description: Percentile rank for blocks (100 = most)
+      
+      # Special teams metrics
+      - name: power_play_pct
+        description: Power play success percentage
+        tests:
+          - not_null
+      - name: power_play_rank
+        description: League rank for power play percentage (1 = best)
+        tests:
+          - not_null
+      - name: power_play_percentile
+        description: Percentile rank for power play (100 = best)
+      
+      - name: penalty_kill_pct
+        description: Penalty kill success percentage
+        tests:
+          - not_null
+      - name: penalty_kill_rank
+        description: League rank for penalty kill percentage (1 = best)
+        tests:
+          - not_null
+      - name: penalty_kill_percentile
+        description: Percentile rank for penalty kill (100 = best)
+      
+      # Additional metrics
+      - name: shots_per_game
+        description: Average shots on goal per game
+      - name: shots_per_game_rank
+        description: League rank for shots per game
+      - name: shots_against_per_game
+        description: Average shots against per game
+      - name: shots_against_rank
+        description: League rank for shots against (1 = fewest)
+      - name: shooting_pct
+        description: Team shooting percentage (goals/shots)
+      - name: shooting_pct_rank
+        description: League rank for shooting percentage
+      - name: save_pct
+        description: Team save percentage
+      - name: save_pct_rank
+        description: League rank for save percentage
+      - name: faceoff_win_pct
+        description: Faceoff win percentage
+      - name: faceoff_rank
+        description: League rank for faceoff wins
+      - name: takeaways_per_game
+        description: Average takeaways per game
+      - name: takeaways_rank
+        description: League rank for takeaways
+      - name: giveaways_per_game
+        description: Average giveaways per game
+      - name: giveaways_rank
+        description: League rank for giveaways (1 = fewest)
+      - name: penalty_minutes_per_game
+        description: Average penalty minutes per game
+      - name: goal_diff_per_game
+        description: Goal differential per game
+      - name: goal_differential
+        description: Total goal differential for the season
+      - name: total_pp_opportunities
+        description: Total power play opportunities
+      - name: total_pp_goals
+        description: Total power play goals scored
+      - name: total_times_shorthanded
+        description: Total times shorthanded
+      - name: last_updated
+        description: Timestamp of when the metrics were last calculated
+
+  - name: team_power_rankings
+    description: |
+      Data-driven team power rankings that blend previous season performance with current 
+      season metrics for smooth early-season transitions. Rankings are available before 
+      the season starts and gradually shift from previous season basis to current season 
+      performance over the first 20 games.
+    columns:
+      - name: ranking_date
+        description: Date when the rankings were calculated
+        tests:
+          - not_null
+      - name: team_id
+        description: Unique identifier for the team
+        tests:
+          - not_null
+      - name: team_abv
+        description: Three-letter team abbreviation
+        tests:
+          - not_null
+      - name: team_name
+        description: Full team name
+        tests:
+          - not_null
+      - name: games_played
+        description: Number of games played in current season
+        tests:
+          - not_null
+      - name: current_season_weight_pct
+        description: Percentage weight given to current season metrics
+        tests:
+          - not_null
+      - name: previous_season_weight_pct
+        description: Percentage weight given to previous season metrics
+        tests:
+          - not_null
+      - name: points_component
+        description: Points-based component of power score
+        tests:
+          - not_null
+      - name: goal_component
+        description: Goal differential component of power score
+        tests:
+          - not_null
+      - name: advanced_stats_component
+        description: Advanced statistics component of power score
+        tests:
+          - not_null
+      - name: momentum_component
+        description: Recent performance momentum component
+        tests:
+          - not_null
+      - name: schedule_component
+        description: Strength of schedule component
+        tests:
+          - not_null
+      - name: power_score
+        description: Overall power score (weighted combination of all components)
+        tests:
+          - not_null
+      - name: power_rank
+        description: Team's power ranking (1 = best)
+        tests:
+          - not_null
+      - name: record
+        description: Team's win-loss-overtime loss record
+      - name: points
+        description: Total points earned
+      - name: points_pct
+        description: Points percentage
+      - name: goals_for_per_game
+        description: Average goals scored per game
+      - name: goals_against_per_game
+        description: Average goals allowed per game
+      - name: goal_diff_per_game
+        description: Goal differential per game
+      - name: shot_diff_per_game
+        description: Shot differential per game
+      - name: recent_points_pct
+        description: Points percentage in recent games
+      - name: strength_of_schedule
+        description: Opponent strength metric

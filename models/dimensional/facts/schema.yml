@@ -559,3 +559,73 @@ models:
         description: "82-game pace for goals scored"
       - name: goals_against_pace
         description: "82-game pace for goals allowed"
+
+  - name: fct_upcoming_games
+    description: |
+      Fact table containing upcoming NHL games with dimensional keys.
+      Includes team matchup information, scheduling metadata, and convenience flags.
+    columns:
+      - name: game_id
+        description: Unique identifier for the game
+        tests:
+          - unique
+          - not_null
+      - name: game_key
+        description: Surrogate key for the game
+        tests:
+          - unique
+          - not_null
+      - name: date_key
+        description: Foreign key to dim_dates
+        tests:
+          - not_null
+      - name: season_key
+        description: Foreign key to dim_seasons
+        tests:
+          - not_null
+      - name: home_team_key
+        description: Foreign key to dim_teams for home team
+        tests:
+          - not_null:
+              severity: warn
+      - name: away_team_key
+        description: Foreign key to dim_teams for away team
+        tests:
+          - not_null:
+              severity: warn
+      - name: game_date
+        description: Scheduled date and time of the game
+        tests:
+          - not_null
+      - name: game_type
+        description: Type of game (2 = regular season)
+      - name: game_state
+        description: State of the game (FUT = future)
+      - name: home_id
+        description: Home team identifier
+      - name: home_abv
+        description: Home team abbreviation
+      - name: home_team_name
+        description: Full name of home team
+      - name: home_logo
+        description: URL to home team logo
+      - name: away_id
+        description: Away team identifier
+      - name: away_abv
+        description: Away team abbreviation
+      - name: away_team_name
+        description: Full name of away team
+      - name: away_logo
+        description: URL to away team logo
+      - name: is_weekend
+        description: True if game is on Saturday or Sunday
+      - name: game_time_category
+        description: Categorization of game start time (Afternoon/Early Evening/Late Evening)
+      - name: days_until_game
+        description: Number of days from current date until game
+      - name: is_divisional_game
+        description: True if teams are in the same division
+      - name: is_conference_game
+        description: True if teams are in the same conference
+      - name: last_updated
+        description: Timestamp when record was last refreshed

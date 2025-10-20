@@ -120,6 +120,8 @@ team_game_facts as (
         
         -- Metadata
         tgs.game_type,
+        tgs.date,
+        tgs.game_outcome,
         tgs.game_id,
         tgs.team_abv
         
@@ -167,6 +169,21 @@ select
     lead_after_1st,
     lead_after_2nd,
     comeback_win_flag,
+    -- Metadata columns
+    game_type,
+    date as game_date,
+    game_outcome,
+    -- Additional derived columns
+    case
+        when game_outcome = 'OT' then true
+        else false
+    end as is_overtime,
+    case
+        when game_outcome = 'SO' then true
+        else false
+    end as is_shootout,
+    penalty_kill_goals_against as shorthanded_goals_against,
+    penalty_kill_situations as times_shorthanded,
     -- Calculated metrics
     shots_for - shots_against as shot_differential,
     case
