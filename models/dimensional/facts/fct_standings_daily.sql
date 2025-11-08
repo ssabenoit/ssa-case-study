@@ -10,27 +10,23 @@ standings_base as (
     from {{ ref('int__standings_by_day') }}
 ),
 
--- Get home/road/shootout stats from raw daily standings
+-- Get home/road/shootout stats from intermediate model
 standings_enhanced as (
-    select 
+    select
         sb.*,
-        -- Parse home/road/shootout data from source if available
-        ds.homewins::int as home_wins_raw,
-        ds.homelosses::int as home_losses_raw,
-        ds.homeotlosses::int as home_ot_losses_raw,
-        ds.roadwins::int as road_wins_raw,
-        ds.roadlosses::int as road_losses_raw,
-        ds.roadotlosses::int as road_ot_losses_raw,
-        ds.shootoutwins::int as shootout_wins_raw,
-        ds.shootoutlosses::int as shootout_losses_raw,
-        -- Get streak info directly from source
-        ds.streakcode as streak_type_raw,
-        ds.streakcount::int as streak_count_raw
+        -- Home/road/shootout data is now available in int__standings_by_day
+        sb.home_wins as home_wins_raw,
+        sb.home_losses as home_losses_raw,
+        sb.home_ot_losses as home_ot_losses_raw,
+        sb.road_wins as road_wins_raw,
+        sb.road_losses as road_losses_raw,
+        sb.road_ot_losses as road_ot_losses_raw,
+        sb.shootout_wins as shootout_wins_raw,
+        sb.shootout_losses as shootout_losses_raw,
+        -- Get streak info from intermediate model
+        sb.streak_code as streak_type_raw,
+        sb.streak_count as streak_count_raw
     from standings_base sb
-    left join {{ ref('stg_nhl__daily_standings') }} ds
-        on sb.date = ds.date
-        and sb.team_abv = ds.teamabbrev:default::string
-        and sb.season = cast(ds.seasonid as int)
 ),
 
 -- Calculate last 10 games stats

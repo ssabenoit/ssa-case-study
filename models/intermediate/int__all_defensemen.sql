@@ -4,9 +4,9 @@
 with
 
 all_defensemen as (
-    select 
-        team_abv, 
-        defensemen
+    select
+        "team_abv"::string as team_abv,
+        parse_json("defensemen") as defensemen
     from {{ ref("stg_nhl__team_rosters") }}
 )
 

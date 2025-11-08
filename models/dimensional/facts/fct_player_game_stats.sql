@@ -101,22 +101,14 @@ player_game_facts as (
             else 0
         end as misconduct_penalties,
         
-        -- Time on ice
-        extract(hour from ss.toi) * 3600 + 
-        extract(minute from ss.toi) * 60 + 
-        extract(second from ss.toi) as time_on_ice_seconds,
-        
+        -- Time on ice (toi is already in seconds)
+        ss.toi as time_on_ice_seconds,
+
         -- Estimate TOI by strength (would need detailed shift data)
         -- Using rough estimates based on typical distributions
-        (extract(hour from ss.toi) * 3600 + 
-         extract(minute from ss.toi) * 60 + 
-         extract(second from ss.toi)) * 0.8 as even_strength_toi,
-        (extract(hour from ss.toi) * 3600 + 
-         extract(minute from ss.toi) * 60 + 
-         extract(second from ss.toi)) * 0.15 as powerplay_toi,
-        (extract(hour from ss.toi) * 3600 + 
-         extract(minute from ss.toi) * 60 + 
-         extract(second from ss.toi)) * 0.05 as shorthanded_toi,
+        ss.toi * 0.8 as even_strength_toi,
+        ss.toi * 0.15 as powerplay_toi,
+        ss.toi * 0.05 as shorthanded_toi,
         
         -- Special goals (would need play-by-play for accuracy)
         0 as sh_goals,

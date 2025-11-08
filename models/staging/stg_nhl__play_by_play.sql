@@ -4,17 +4,21 @@
 with
 
 all_plays as (
-    select *
+    select
+        *,
+        parse_json("awayTeam") as awayTeam_json,
+        parse_json("homeTeam") as homeTeam_json,
+        parse_json("plays") as plays_json
     from {{ source('nhl_staging_data', 'play_by_play') }}
 )
 
-select 
-    id::int as id, 
-    season::int as season, 
-    awayteam:id::int as away_id,
-    awayteam:abbrev::string as away_abv,
-    hometeam:id::int as home_id,
-    hometeam:abbrev::string as home_abv,
+select
+    "id"::int as id,
+    "season"::int as season,
+    awayTeam_json:id::int as away_id,
+    awayTeam_json:abbrev::string as away_abv,
+    homeTeam_json:id::int as home_id,
+    homeTeam_json:abbrev::string as home_abv,
     plays.value:eventId::int as event_id,
     plays.value:homeTeamDefendingSide::string as home_side,
     plays.value:periodDescriptor.number::int as period,
@@ -37,4 +41,4 @@ select
     plays.value:details.zoneCode::string as zone_code,
     plays.value:details as full_details
 from all_plays,
-lateral flatten(input => all_plays.plays) plays
+lateral flatten(input => plays_json) plays

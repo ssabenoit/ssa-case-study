@@ -4,26 +4,33 @@
 with
 
 games as (
-    select *
+    select
+        *,
+        parse_json("venue") as venue_json,
+        parse_json("awayTeam") as awayTeam_json,
+        parse_json("homeTeam") as homeTeam_json,
+        parse_json("winningGoalie") as winningGoalie_json,
+        parse_json("winningGoalScorer") as winningGoalScorer_json,
+        parse_json("specialEvent") as specialEvent_json
     from {{ source("nhl_staging_data", "season_schedules") }}
 )
 
 select
-    id::int as id,
-    venue:default::string as venue,
-    season::int as season,
-    awayteam:abbrev::string as away_abv,
-    awayteam:id::int as away_id,
-    hometeam:abbrev::string as home_abv,
-    hometeam:id::int as home_id,
-    gamedate as game_date,
-    gametype::int as game_type,
-    gamestate as game_state,
-    winninggoalie:playerId::int as winning_goalie_id,
-    winninggoalscorer:playerId::int as winning_scorer_id,
-    neutralsite::boolean as neutral,
-    starttimeutc as start_time_utc,
-    easternutcoffset as eastern_offset,
-    venuetimezone::string as venue_tz,
-    specialevent:name::string as special_event
+    "id"::int as id,
+    venue_json:default::string as venue,
+    "season"::int as season,
+    awayTeam_json:abbrev::string as away_abv,
+    awayTeam_json:id::int as away_id,
+    homeTeam_json:abbrev::string as home_abv,
+    homeTeam_json:id::int as home_id,
+    "gameDate" as game_date,
+    "gameType"::int as game_type,
+    "gameState" as game_state,
+    winningGoalie_json:playerId::int as winning_goalie_id,
+    winningGoalScorer_json:playerId::int as winning_scorer_id,
+    "neutralSite"::boolean as neutral,
+    "startTimeUTC" as start_time_utc,
+    "easternUTCOffset" as eastern_offset,
+    "venueTimezone"::string as venue_tz,
+    specialEvent_json:name::string as special_event
 from games

@@ -11,14 +11,14 @@ games as (
 ),
 
 away_team_forwards as (
-    select 
-        id::int as game_id,
-        season::int as season,
-        awayteam:abbrev::string as team_abv,
+    select
+        "id"::int as game_id,
+        "season"::int as season,
+        parse_json("awayTeam"):abbrev::string as team_abv,
         'away' as type,
-        case 
-            when gametype = 2 then 'regular'
-            when gametype = 3 then 'playoff'
+        case
+            when "gameType" = 2 then 'regular'
+            when "gameType" = 3 then 'playoff'
             else 'other'
         end as game_type,
         player.value:playerId::int as player_id,
@@ -36,21 +36,21 @@ away_team_forwards as (
         player.value:takeaways::int as takeaways,
         player.value:blockedShots::int as blocks,
         player.value:shifts::int as shifts,
-        to_time(player.value:toi::string, 'MI:SS') as toi
+        cast(split_part(player.value:toi::string, ':', 1) as int) * 60 + cast(split_part(player.value:toi::string, ':', 2) as int) as toi
     from
         games,
-        lateral flatten(input => games.playerbygamestats, path => 'awayTeam.forwards') player
+        lateral flatten(input => parse_json(games."playerByGameStats"), path => 'awayTeam.forwards') player
 ),
 
 away_team_defense as (
-    select 
-        id::int as game_id,
-        season::int as season,
-        awayteam:abbrev::string as team_abv,
+    select
+        "id"::int as game_id,
+        "season"::int as season,
+        parse_json("awayTeam"):abbrev::string as team_abv,
         'away' as type,
-        case 
-            when gametype = 2 then 'regular'
-            when gametype = 3 then 'playoff'
+        case
+            when "gameType" = 2 then 'regular'
+            when "gameType" = 3 then 'playoff'
             else 'other'
         end as game_type,
         player.value:playerId::int as player_id,
@@ -68,21 +68,21 @@ away_team_defense as (
         player.value:takeaways::int as takeaways,
         player.value:blockedShots::int as blocks,
         player.value:shifts::int as shifts,
-        to_time(player.value:toi::string, 'MI:SS') as toi
+        cast(split_part(player.value:toi::string, ':', 1) as int) * 60 + cast(split_part(player.value:toi::string, ':', 2) as int) as toi
     from
         games,
-        lateral flatten(input => games.playerbygamestats, path => 'awayTeam.defense') player
+        lateral flatten(input => parse_json(games."playerByGameStats"), path => 'awayTeam.defense') player
 ),
 
 home_team_forwards as (
-    select 
-        id::int as game_id,
-        season::int as season,
-        hometeam:abbrev::string as team_abv,
+    select
+        "id"::int as game_id,
+        "season"::int as season,
+        parse_json("homeTeam"):abbrev::string as team_abv,
         'home' as type,
-        case 
-            when gametype = 2 then 'regular'
-            when gametype = 3 then 'playoff'
+        case
+            when "gameType" = 2 then 'regular'
+            when "gameType" = 3 then 'playoff'
             else 'other'
         end as game_type,
         player.value:playerId::int as player_id,
@@ -100,21 +100,21 @@ home_team_forwards as (
         player.value:takeaways::int as takeaways,
         player.value:blockedShots::int as blocks,
         player.value:shifts::int as shifts,
-        to_time(player.value:toi::string, 'MI:SS') as toi
+        cast(split_part(player.value:toi::string, ':', 1) as int) * 60 + cast(split_part(player.value:toi::string, ':', 2) as int) as toi
     from
         games,
-        lateral flatten(input => games.playerbygamestats, path => 'homeTeam.forwards') player
+        lateral flatten(input => parse_json(games."playerByGameStats"), path => 'homeTeam.forwards') player
 ),
 
 home_team_defense as (
-    select 
-        id::int as game_id,
-        season::int as season,
-        hometeam:abbrev::string as team_abv,
+    select
+        "id"::int as game_id,
+        "season"::int as season,
+        parse_json("homeTeam"):abbrev::string as team_abv,
         'home' as type,
-        case 
-            when gametype = 2 then 'regular'
-            when gametype = 3 then 'playoff'
+        case
+            when "gameType" = 2 then 'regular'
+            when "gameType" = 3 then 'playoff'
             else 'other'
         end as game_type,
         player.value:playerId::int as player_id,
@@ -132,10 +132,10 @@ home_team_defense as (
         player.value:takeaways::int as takeaways,
         player.value:blockedShots::int as blocks,
         player.value:shifts::int as shifts,
-        to_time(player.value:toi::string, 'MI:SS') as toi
+        cast(split_part(player.value:toi::string, ':', 1) as int) * 60 + cast(split_part(player.value:toi::string, ':', 2) as int) as toi
     from
         games,
-        lateral flatten(input => games.playerbygamestats, path => 'homeTeam.defense') player
+        lateral flatten(input => parse_json(games."playerByGameStats"), path => 'homeTeam.defense') player
 ),
 
 full_away_teams_stats as (

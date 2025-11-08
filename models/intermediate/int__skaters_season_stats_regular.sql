@@ -34,20 +34,8 @@ skater_season_stats as (
         sum(giveaways) as giveaways,
         sum(takeaways) as takeaways,
         sum(shifts) as shifts,
-        sum(
-            extract(hour from toi) * 3600 + 
-            extract(minute from toi) * 60 + 
-            extract(second from toi)
-        ) as total_toi,
-        timeadd(
-            'second', 
-            avg(
-                extract(hour from toi) * 3600 + 
-                extract(minute from toi) * 60 + 
-                extract(second from toi)
-            ),
-            to_time('00:00:00')
-        ) as avg_toi
+        sum(toi) as total_toi,
+        avg(toi) as avg_toi
     from skater_stats
     where game_type = 'regular'
     group by 

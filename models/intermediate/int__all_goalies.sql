@@ -4,9 +4,9 @@
 with
 
 all_goalies as (
-    select 
-        team_abv, 
-        goalies
+    select
+        "team_abv"::string as team_abv,
+        parse_json("goalies") as goalies
     from {{ ref("stg_nhl__team_rosters") }}
 )
 

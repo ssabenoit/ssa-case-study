@@ -4,13 +4,13 @@
 with
 
 all_forwards as (
-    select 
-        team_abv, 
-        forwards
+    select
+        "team_abv"::string as team_abv,
+        parse_json("forwards") as forwards
     from {{ ref("stg_nhl__team_rosters") }}
 )
 
-select 
+select
     team_abv,
     player.value:id::int as player_id,
     player.value:firstName.default::string as first_name,
@@ -25,6 +25,6 @@ select
     player.value:birthStateProvince.default::string as birth_state,
     player.value:birthCountry::string as birth_country,
     player.value:headshot::string as headshot_url
-from 
+from
     all_forwards,
     lateral flatten(input => forwards) player

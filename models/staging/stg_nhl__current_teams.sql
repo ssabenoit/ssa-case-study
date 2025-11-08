@@ -9,13 +9,13 @@ source as (
 
 renamed as (
     select
-        id as team_id,
-        abbrev as team_abbrev,
-        name as team_name,
-        placename as team_place_name,
-        commonname as team_common_name,
-        french as team_french_name,
-        logo as team_logo_url
+        "id" as team_id,
+        "abbrev" as team_abbrev,
+        "name" as team_name,
+        "placeName" as team_place_name,
+        "commonName" as team_common_name,
+        "french" as team_french_name,
+        "logo" as team_logo_url
     from source
 )
 

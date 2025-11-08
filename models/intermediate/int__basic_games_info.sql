@@ -9,13 +9,13 @@ raw_games as (
 )
 
 select
-    id::int as game_id,
-    date as date,
-    season::int as season,
-    venue:default::string as venue,
-    to_timestamp(starttimeutc, 'YYYY-MM-DDTHH24:MI:SSZ') as start_time_utc,
-    venuetimezone as venue_tz,
-    venueutcoffset::string as venue_utc_offset,
-    easternutcoffset::string as eastern_utc_offset,
-    neutralsite::boolean as is_neutral
+    "id"::int as game_id,
+    "gameDate" as date,
+    "season"::int as season,
+    parse_json("venue"):default::string as venue,
+    to_timestamp("startTimeUTC", 'YYYY-MM-DDTHH24:MI:SSZ') as start_time_utc,
+    "venueTimezone" as venue_tz,
+    "venueUTCOffset"::string as venue_utc_offset,
+    "easternUTCOffset"::string as eastern_utc_offset,
+    "neutralSite"::boolean as is_neutral
 from raw_games
