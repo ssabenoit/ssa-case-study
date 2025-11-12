@@ -26,12 +26,13 @@ games_base as (
         gi.start_time_utc,
         gi.venue_tz,
         gi.venue_utc_offset
-    from {{ ref('int__all_games') }} g
-    left join {{ ref('int__basic_games_info') }} gi
+    from {{ ref('int__all_games') }} g 
+    left join {{ ref('int__basic_games_info') }} gi 
         on g.id = gi.game_id
-    left join {{ ref('stg_nhl__season_schedules') }} sg
+    left join {{ ref('stg_nhl__season_schedules') }} sg 
         on g.id = sg.id
 )
+
 ,
 
 game_stats as (

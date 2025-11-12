@@ -34,3 +34,4 @@ select
     "venueTimezone"::string as venue_tz,
     specialEvent_json:name::string as special_event
 from games
+qualify row_number() over (partition by id order by "id" desc) = 1
