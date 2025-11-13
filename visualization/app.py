@@ -12,6 +12,11 @@ import requests
 import cairosvg
 from PIL import Image
 from io import BytesIO
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 class nhl_snowflake():
@@ -19,11 +24,11 @@ class nhl_snowflake():
     def __init__(self):
         # create the connection
         self.conn = snowflake.connector.connect(
-            user='ssabenoit',
-            password='Ben_032603',
-            account='jp55454.us-east-2.aws',
-            warehouse='DBT_WH',
-            database='DBT_ANALYTICS',
+            user=os.getenv('SNOWFLAKE_USER'),
+            password=os.getenv('VIZ_DB_PASSWORD'),
+            account=os.getenv('SNOWFLAKE_ACCOUNT'),
+            warehouse=os.getenv('SNOWFLAKE_WAREHOUSE'),
+            database=os.getenv('SNOWFLAKE_DATABASE'),
             schema='PROD'
         )
 
