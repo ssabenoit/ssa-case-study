@@ -1,0 +1,14 @@
+# NHL Data Extractor Requirements
+
+# Core dependencies
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# Snowflake integration
+snowflake-connector-python>=3.6.0
+
+# Optional: Dagster integration
+# Uncomment to use Dagster orchestration
+# dagster>=1.5.0
+# dagster-webserver>=1.5.0
+# dagster-snowflake>=0.21.0

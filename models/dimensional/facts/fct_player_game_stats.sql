@@ -73,17 +73,6 @@ player_game_facts as (
         ss.takeaways,
         ss.giveaways,
         
-        -- Faceoff stats
-        case
-            when ss.faceoff_pct is not null and ss.faceoff_pct > 0 
-            then round(ss.shifts * ss.faceoff_pct / 100) -- Rough estimate
-            else 0
-        end as faceoff_wins,
-        case
-            when ss.faceoff_pct is not null and ss.faceoff_pct > 0 
-            then round(ss.shifts * (1 - ss.faceoff_pct / 100)) -- Rough estimate
-            else 0
-        end as faceoff_losses,
         ss.faceoff_pct,
         
         -- Penalty stats
@@ -161,8 +150,6 @@ select
     blocks,
     giveaways,
     takeaways,
-    faceoff_wins,
-    faceoff_losses,
     faceoff_pct,
     penalty_minutes,
     minor_penalties,

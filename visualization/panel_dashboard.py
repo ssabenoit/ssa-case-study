@@ -16,28 +16,7 @@ import requests
 import cairosvg
 import snowflake.connector
 
-"""# def get_stats():
-#     conn = snowflake.connector.connect(
-#         user='ssabenoit',
-#         password='Ben_032603',
-#         account='jp55454.us-east-2.aws',
-#         warehouse='DBT_WH',
-#         database='DBT_ANALYTICS',
-#         schema='PROD'
-#     )
-
-#     # create a cursor and run the query
-#     cur = conn.cursor()
-#     query = 'select * from TEAM_SEASON_STATS_REGULAR'
-#     cur.execute(query)
-
-#     # pull and format the results into a df
-#     df = pd.DataFrame(cur.fetchall(), columns=[desc[0] for desc in cur.description])
-    
-#     # close the connection and return the data
-#     cur.close()
-#     conn.close()
-#     return df"""
+# Old get_stats function - now using app.py nhl_snowflake class which loads credentials from .env
 
 def main_scatter(x_stat=None, y_stat=None, season=None):
     ''' creates the main scatter plot of the two given stats accross all 32 NHL teams with each 

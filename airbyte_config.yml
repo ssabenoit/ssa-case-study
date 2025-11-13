@@ -1,0 +1,4310 @@
+version: 6.48.15
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - game_boxscore
+
+streams:
+  - type: DeclarativeStream
+    name: game_boxscore
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api-web.nhle.com/v1/gamecenter/{{ stream_partition.game_id
+          }}/boxscore
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/4"
+            parent_key: id
+            partition_field: game_id
+            incremental_dependency: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          clock:
+            type:
+              - object
+              - "null"
+            properties:
+              running:
+                type:
+                  - boolean
+                  - "null"
+              timeRemaining:
+                type:
+                  - string
+                  - "null"
+              inIntermission:
+                type:
+                  - boolean
+                  - "null"
+              secondsRemaining:
+                type:
+                  - number
+                  - "null"
+          venue:
+            type:
+              - object
+              - "null"
+            properties:
+              default:
+                type:
+                  - string
+                  - "null"
+          season:
+            type:
+              - number
+              - "null"
+          summary:
+            type:
+              - object
+              - "null"
+          awayTeam:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              sog:
+                type:
+                  - number
+                  - "null"
+              logo:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fr:
+                    type:
+                      - string
+                      - "null"
+                  default:
+                    type:
+                      - string
+                      - "null"
+              score:
+                type:
+                  - number
+                  - "null"
+              abbrev:
+                type:
+                  - string
+                  - "null"
+              darkLogo:
+                type:
+                  - string
+                  - "null"
+              placeName:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  default:
+                    type:
+                      - string
+                      - "null"
+              placeNameWithPreposition:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fr:
+                    type:
+                      - string
+                      - "null"
+                  default:
+                    type:
+                      - string
+                      - "null"
+          gameDate:
+            type:
+              - string
+              - "null"
+          gameType:
+            type:
+              - number
+              - "null"
+          homeTeam:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              sog:
+                type:
+                  - number
+                  - "null"
+              logo:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  default:
+                    type:
+                      - string
+                      - "null"
+              score:
+                type:
+                  - number
+                  - "null"
+              abbrev:
+                type:
+                  - string
+                  - "null"
+              darkLogo:
+                type:
+                  - string
+                  - "null"
+              placeName:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fr:
+                    type:
+                      - string
+                      - "null"
+                  default:
+                    type:
+                      - string
+                      - "null"
+              placeNameWithPreposition:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fr:
+                    type:
+                      - string
+                      - "null"
+                  default:
+                    type:
+                      - string
+                      - "null"
+          gameState:
+            type:
+              - string
+              - "null"
+          regPeriods:
+            type:
+              - number
+              - "null"
+          gameOutcome:
+            type:
+              - object
+              - "null"
+            properties:
+              lastPeriodType:
+                type:
+                  - string
+                  - "null"
+          startTimeUTC:
+            type:
+              - string
+              - "null"
+          tvBroadcasts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                market:
+                  type:
+                    - string
+                    - "null"
+                network:
+                  type:
+                    - string
+                    - "null"
+                countryCode:
+                  type:
+                    - string
+                    - "null"
+                sequenceNumber:
+                  type:
+                    - number
+                    - "null"
+          venueLocation:
+            type:
+              - object
+              - "null"
+            properties:
+              default:
+                type:
+                  - string
+                  - "null"
+          limitedScoring:
+            type:
+              - boolean
+              - "null"
+          venueUTCOffset:
+            type:
+              - string
+              - "null"
+          easternUTCOffset:
+            type:
+              - string
+              - "null"
+          periodDescriptor:
+            type:
+              - object
+              - "null"
+            properties:
+              number:
+                type:
+                  - number
+                  - "null"
+              periodType:
+                type:
+                  - string
+                  - "null"
+              maxRegulationPeriods:
+                type:
+                  - number
+                  - "null"
+          gameScheduleState:
+            type:
+              - string
+              - "null"
+          playerByGameStats:
+            type:
+              - object
+              - "null"
+            properties:
+              awayTeam:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  defense:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        pim:
+                          type:
+                            - number
+                            - "null"
+                        sog:
+                          type:
+                            - number
+                            - "null"
+                        toi:
+                          type:
+                            - string
+                            - "null"
+                        hits:
+                          type:
+                            - number
+                            - "null"
+                        name:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            cs:
+                              type:
+                                - string
+                                - "null"
+                            fi:
+                              type:
+                                - string
+                                - "null"
+                            sk:
+                              type:
+                                - string
+                                - "null"
+                            default:
+                              type:
+                                - string
+                                - "null"
+                        goals:
+                          type:
+                            - number
+                            - "null"
+                        points:
+                          type:
+                            - number
+                            - "null"
+                        shifts:
+                          type:
+                            - number
+                            - "null"
+                        assists:
+                          type:
+                            - number
+                            - "null"
+                        playerId:
+                          type:
+                            - number
+                            - "null"
+                        position:
+                          type:
+                            - string
+                            - "null"
+                        giveaways:
+                          type:
+                            - number
+                            - "null"
+                        plusMinus:
+                          type:
+                            - number
+                            - "null"
+                        takeaways:
+                          type:
+                            - number
+                            - "null"
+                        blockedShots:
+                          type:
+                            - number
+                            - "null"
+                        sweaterNumber:
+                          type:
+                            - number
+                            - "null"
+                        powerPlayGoals:
+                          type:
+                            - number
+                            - "null"
+                        faceoffWinningPctg:
+                          type:
+                            - number
+                            - "null"
+                  goalies:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        pim:
+                          type:
+                            - number
+                            - "null"
+                        toi:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            cs:
+                              type:
+                                - string
+                                - "null"
+                            sk:
+                              type:
+                                - string
+                                - "null"
+                            default:
+                              type:
+                                - string
+                                - "null"
+                        saves:
+                          type:
+                            - number
+                            - "null"
+                        starter:
+                          type:
+                            - boolean
+                            - "null"
+                        decision:
+                          type:
+                            - string
+                            - "null"
+                        playerId:
+                          type:
+                            - number
+                            - "null"
+                        position:
+                          type:
+                            - string
+                            - "null"
+                        savePctg:
+                          type:
+                            - number
+                            - "null"
+                        goalsAgainst:
+                          type:
+                            - number
+                            - "null"
+                        shotsAgainst:
+                          type:
+                            - number
+                            - "null"
+                        sweaterNumber:
+                          type:
+                            - number
+                            - "null"
+                        saveShotsAgainst:
+                          type:
+                            - string
+                            - "null"
+                        powerPlayGoalsAgainst:
+                          type:
+                            - number
+                            - "null"
+                        powerPlayShotsAgainst:
+                          type:
+                            - string
+                            - "null"
+                        shorthandedGoalsAgainst:
+                          type:
+                            - number
+                            - "null"
+                        shorthandedShotsAgainst:
+                          type:
+                            - string
+                            - "null"
+                        evenStrengthGoalsAgainst:
+                          type:
+                            - number
+                            - "null"
+                        evenStrengthShotsAgainst:
+                          type:
+                            - string
+                            - "null"
+                  forwards:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        pim:
+                          type:
+                            - number
+                            - "null"
+                        sog:
+                          type:
+                            - number
+                            - "null"
+                        toi:
+                          type:
+                            - string
+                            - "null"
+                        hits:
+                          type:
+                            - number
+                            - "null"
+                        name:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            cs:
+                              type:
+                                - string
+                                - "null"
+                            sk:
+                              type:
+                                - string
+                                - "null"
+                            default:
+                              type:
+                                - string
+                                - "null"
+                        goals:
+                          type:
+                            - number
+                            - "null"
+                        points:
+                          type:
+                            - number
+                            - "null"
+                        shifts:
+                          type:
+                            - number
+                            - "null"
+                        assists:
+                          type:
+                            - number
+                            - "null"
+                        playerId:
+                          type:
+                            - number
+                            - "null"
+                        position:
+                          type:
+                            - string
+                            - "null"
+                        giveaways:
+                          type:
+                            - number
+                            - "null"
+                        plusMinus:
+                          type:
+                            - number
+                            - "null"
+                        takeaways:
+                          type:
+                            - number
+                            - "null"
+                        blockedShots:
+                          type:
+                            - number
+                            - "null"
+                        sweaterNumber:
+                          type:
+                            - number
+                            - "null"
+                        powerPlayGoals:
+                          type:
+                            - number
+                            - "null"
+                        faceoffWinningPctg:
+                          type:
+                            - number
+                            - "null"
+              homeTeam:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  defense:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        pim:
+                          type:
+                            - number
+                            - "null"
+                        sog:
+                          type:
+                            - number
+                            - "null"
+                        toi:
+                          type:
+                            - string
+                            - "null"
+                        hits:
+                          type:
+                            - number
+                            - "null"
+                        name:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            cs:
+                              type:
+                                - string
+                                - "null"
+                            fi:
+                              type:
+                                - string
+                                - "null"
+                            sk:
+                              type:
+                                - string
+                                - "null"
+                            default:
+                              type:
+                                - string
+                                - "null"
+                        goals:
+                          type:
+                            - number
+                            - "null"
+                        points:
+                          type:
+                            - number
+                            - "null"
+                        shifts:
+                          type:
+                            - number
+                            - "null"
+                        assists:
+                          type:
+                            - number
+                            - "null"
+                        playerId:
+                          type:
+                            - number
+                            - "null"
+                        position:
+                          type:
+                            - string
+                            - "null"
+                        giveaways:
+                          type:
+                            - number
+                            - "null"
+                        plusMinus:
+                          type:
+                            - number
+                            - "null"
+                        takeaways:
+                          type:
+                            - number
+                            - "null"
+                        blockedShots:
+                          type:
+                            - number
+                            - "null"
+                        sweaterNumber:
+                          type:
+                            - number
+                            - "null"
+                        powerPlayGoals:
+                          type:
+                            - number
+                            - "null"
+                        faceoffWinningPctg:
+                          type:
+                            - number
+                            - "null"
+                  goalies:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        pim:
+                          type:
+                            - number
+                            - "null"
+                        toi:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            fi:
+                              type:
+                                - string
+                                - "null"
+                            default:
+                              type:
+                                - string
+                                - "null"
+                        saves:
+                          type:
+                            - number
+                            - "null"
+                        starter:
+                          type:
+                            - boolean
+                            - "null"
+                        decision:
+                          type:
+                            - string
+                            - "null"
+                        playerId:
+                          type:
+                            - number
+                            - "null"
+                        position:
+                          type:
+                            - string
+                            - "null"
+                        savePctg:
+                          type:
+                            - number
+                            - "null"
+                        goalsAgainst:
+                          type:
+                            - number
+                            - "null"
+                        shotsAgainst:
+                          type:
+                            - number
+                            - "null"
+                        sweaterNumber:
+                          type:
+                            - number
+                            - "null"
+                        saveShotsAgainst:
+                          type:
+                            - string
+                            - "null"
+                        powerPlayGoalsAgainst:
+                          type:
+                            - number
+                            - "null"
+                        powerPlayShotsAgainst:
+                          type:
+                            - string
+                            - "null"
+                        shorthandedGoalsAgainst:
+                          type:
+                            - number
+                            - "null"
+                        shorthandedShotsAgainst:
+                          type:
+                            - string
+                            - "null"
+                        evenStrengthGoalsAgainst:
+                          type:
+                            - number
+                            - "null"
+                        evenStrengthShotsAgainst:
+                          type:
+                            - string
+                            - "null"
+                  forwards:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        pim:
+                          type:
+                            - number
+                            - "null"
+                        sog:
+                          type:
+                            - number
+                            - "null"
+                        toi:
+                          type:
+                            - string
+                            - "null"
+                        hits:
+                          type:
+                            - number
+                            - "null"
+                        name:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            cs:
+                              type:
+                                - string
+                                - "null"
+                            de:
+                              type:
+                                - string
+                                - "null"
+                            fi:
+                              type:
+                                - string
+                                - "null"
+                            sk:
+                              type:
+                                - string
+                                - "null"
+                            sv:
+                              type:
+                                - string
+                                - "null"
+                            default:
+                              type:
+                                - string
+                                - "null"
+                        goals:
+                          type:
+                            - number
+                            - "null"
+                        points:
+                          type:
+                            - number
+                            - "null"
+                        shifts:
+                          type:
+                            - number
+                            - "null"
+                        assists:
+                          type:
+                            - number
+                            - "null"
+                        playerId:
+                          type:
+                            - number
+                            - "null"
+                        position:
+                          type:
+                            - string
+                            - "null"
+                        giveaways:
+                          type:
+                            - number
+                            - "null"
+                        plusMinus:
+                          type:
+                            - number
+                            - "null"
+                        takeaways:
+                          type:
+                            - number
+                            - "null"
+                        blockedShots:
+                          type:
+                            - number
+                            - "null"
+                        sweaterNumber:
+                          type:
+                            - number
+                            - "null"
+                        powerPlayGoals:
+                          type:
+                            - number
+                            - "null"
+                        faceoffWinningPctg:
+                          type:
+                            - number
+                            - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: current_standings
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: https://api-web.nhle.com/v1/standings/now
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - standings
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          ties:
+            type:
+              - number
+              - "null"
+          wins:
+            type:
+              - number
+              - "null"
+          losses:
+            type:
+              - number
+              - "null"
+          points:
+            type:
+              - number
+              - "null"
+          goalFor:
+            type:
+              - number
+              - "null"
+          l10Ties:
+            type:
+              - number
+              - "null"
+          l10Wins:
+            type:
+              - number
+              - "null"
+          winPctg:
+            type:
+              - number
+              - "null"
+          homeTies:
+            type:
+              - number
+              - "null"
+          homeWins:
+            type:
+              - number
+              - "null"
+          otLosses:
+            type:
+              - number
+              - "null"
+          roadTies:
+            type:
+              - number
+              - "null"
+          roadWins:
+            type:
+              - number
+              - "null"
+          seasonId:
+            type:
+              - number
+              - "null"
+          teamLogo:
+            type:
+              - string
+              - "null"
+          teamName:
+            type:
+              - object
+              - "null"
+            properties:
+              fr:
+                type:
+                  - string
+                  - "null"
+              default:
+                type:
+                  - string
+                  - "null"
+          l10Losses:
+            type:
+              - number
+              - "null"
+          l10Points:
+            type:
+              - number
+              - "null"
+          placeName:
+            type:
+              - object
+              - "null"
+            properties:
+              fr:
+                type:
+                  - string
+                  - "null"
+              default:
+                type:
+                  - string
+                  - "null"
+          pointPctg:
+            type:
+              - number
+              - "null"
+          gameTypeId:
+            type:
+              - number
+              - "null"
+          homeLosses:
+            type:
+              - number
+              - "null"
+          homePoints:
+            type:
+              - number
+              - "null"
+          roadLosses:
+            type:
+              - number
+              - "null"
+          roadPoints:
+            type:
+              - number
+              - "null"
+          streakCode:
+            type:
+              - string
+              - "null"
+          teamAbbrev:
+            type:
+              - object
+              - "null"
+            properties:
+              default:
+                type:
+                  - string
+                  - "null"
+          gamesPlayed:
+            type:
+              - number
+              - "null"
+          goalAgainst:
+            type:
+              - number
+              - "null"
+          l10GoalsFor:
+            type:
+              - number
+              - "null"
+          l10OtLosses:
+            type:
+              - number
+              - "null"
+          streakCount:
+            type:
+              - number
+              - "null"
+          divisionName:
+            type:
+              - string
+              - "null"
+          goalsForPctg:
+            type:
+              - number
+              - "null"
+          homeGoalsFor:
+            type:
+              - number
+              - "null"
+          homeOtLosses:
+            type:
+              - number
+              - "null"
+          roadGoalsFor:
+            type:
+              - number
+              - "null"
+          roadOtLosses:
+            type:
+              - number
+              - "null"
+          shootoutWins:
+            type:
+              - number
+              - "null"
+          conferenceName:
+            type:
+              - string
+              - "null"
+          divisionAbbrev:
+            type:
+              - string
+              - "null"
+          l10GamesPlayed:
+            type:
+              - number
+              - "null"
+          leagueSequence:
+            type:
+              - number
+              - "null"
+          regulationWins:
+            type:
+              - number
+              - "null"
+          shootoutLosses:
+            type:
+              - number
+              - "null"
+          teamCommonName:
+            type:
+              - object
+              - "null"
+            properties:
+              fr:
+                type:
+                  - string
+                  - "null"
+              default:
+                type:
+                  - string
+                  - "null"
+          homeGamesPlayed:
+            type:
+              - number
+              - "null"
+          l10GoalsAgainst:
+            type:
+              - number
+              - "null"
+          roadGamesPlayed:
+            type:
+              - number
+              - "null"
+          waiversSequence:
+            type:
+              - number
+              - "null"
+          conferenceAbbrev:
+            type:
+              - string
+              - "null"
+          divisionSequence:
+            type:
+              - number
+              - "null"
+          goalDifferential:
+            type:
+              - number
+              - "null"
+          homeGoalsAgainst:
+            type:
+              - number
+              - "null"
+          roadGoalsAgainst:
+            type:
+              - number
+              - "null"
+          wildcardSequence:
+            type:
+              - number
+              - "null"
+          l10RegulationWins:
+            type:
+              - number
+              - "null"
+          leagueL10Sequence:
+            type:
+              - number
+              - "null"
+          regulationWinPctg:
+            type:
+              - number
+              - "null"
+          conferenceSequence:
+            type:
+              - number
+              - "null"
+          homeRegulationWins:
+            type:
+              - number
+              - "null"
+          leagueHomeSequence:
+            type:
+              - number
+              - "null"
+          leagueRoadSequence:
+            type:
+              - number
+              - "null"
+          roadRegulationWins:
+            type:
+              - number
+              - "null"
+          divisionL10Sequence:
+            type:
+              - number
+              - "null"
+          l10GoalDifferential:
+            type:
+              - number
+              - "null"
+          divisionHomeSequence:
+            type:
+              - number
+              - "null"
+          divisionRoadSequence:
+            type:
+              - number
+              - "null"
+          goalDifferentialPctg:
+            type:
+              - number
+              - "null"
+          homeGoalDifferential:
+            type:
+              - number
+              - "null"
+          regulationPlusOtWins:
+            type:
+              - number
+              - "null"
+          roadGoalDifferential:
+            type:
+              - number
+              - "null"
+          conferenceL10Sequence:
+            type:
+              - number
+              - "null"
+          conferenceHomeSequence:
+            type:
+              - number
+              - "null"
+          conferenceRoadSequence:
+            type:
+              - number
+              - "null"
+          l10RegulationPlusOtWins:
+            type:
+              - number
+              - "null"
+          regulationPlusOtWinPctg:
+            type:
+              - number
+              - "null"
+          homeRegulationPlusOtWins:
+            type:
+              - number
+              - "null"
+          roadRegulationPlusOtWins:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: current_teams
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: https://api-web.nhle.com/v1/schedule-calendar/now
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - teams
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          logo:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - object
+              - "null"
+            properties:
+              fr:
+                type:
+                  - string
+                  - "null"
+              default:
+                type:
+                  - string
+                  - "null"
+          abbrev:
+            type:
+              - string
+              - "null"
+          french:
+            type:
+              - boolean
+              - "null"
+          darkLogo:
+            type:
+              - string
+              - "null"
+          seasonId:
+            type:
+              - number
+              - "null"
+          placeName:
+            type:
+              - object
+              - "null"
+            properties:
+              fr:
+                type:
+                  - string
+                  - "null"
+              default:
+                type:
+                  - string
+                  - "null"
+          commonName:
+            type:
+              - object
+              - "null"
+            properties:
+              fr:
+                type:
+                  - string
+                  - "null"
+              default:
+                type:
+                  - string
+                  - "null"
+          placeNameWithPreposition:
+            type:
+              - object
+              - "null"
+            properties:
+              fr:
+                type:
+                  - string
+                  - "null"
+              default:
+                type:
+                  - string
+                  - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: team_rosters
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api-web.nhle.com/v1/roster/{{ stream_partition.team_abv
+          }}/current
+        http_method: GET
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: SUCCESS
+                  http_codes:
+                    - 404
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/2"
+            parent_key: abbrev
+            partition_field: team_abv
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          goalies:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                headshot:
+                  type:
+                    - string
+                    - "null"
+                lastName:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    cs:
+                      type:
+                        - string
+                        - "null"
+                    fi:
+                      type:
+                        - string
+                        - "null"
+                    sk:
+                      type:
+                        - string
+                        - "null"
+                    default:
+                      type:
+                        - string
+                        - "null"
+                birthCity:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    cs:
+                      type:
+                        - string
+                        - "null"
+                    de:
+                      type:
+                        - string
+                        - "null"
+                    fi:
+                      type:
+                        - string
+                        - "null"
+                    fr:
+                      type:
+                        - string
+                        - "null"
+                    sk:
+                      type:
+                        - string
+                        - "null"
+                    sv:
+                      type:
+                        - string
+                        - "null"
+                    default:
+                      type:
+                        - string
+                        - "null"
+                birthDate:
+                  type:
+                    - string
+                    - "null"
+                firstName:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    cs:
+                      type:
+                        - string
+                        - "null"
+                    fi:
+                      type:
+                        - string
+                        - "null"
+                    sk:
+                      type:
+                        - string
+                        - "null"
+                    default:
+                      type:
+                        - string
+                        - "null"
+                birthCountry:
+                  type:
+                    - string
+                    - "null"
+                positionCode:
+                  type:
+                    - string
+                    - "null"
+                shootsCatches:
+                  type:
+                    - string
+                    - "null"
+                sweaterNumber:
+                  type:
+                    - number
+                    - "null"
+                heightInInches:
+                  type:
+                    - number
+                    - "null"
+                weightInPounds:
+                  type:
+                    - number
+                    - "null"
+                weightInKilograms:
+                  type:
+                    - number
+                    - "null"
+                birthStateProvince:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    fr:
+                      type:
+                        - string
+                        - "null"
+                    sk:
+                      type:
+                        - string
+                        - "null"
+                    default:
+                      type:
+                        - string
+                        - "null"
+                heightInCentimeters:
+                  type:
+                    - number
+                    - "null"
+          forwards:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                headshot:
+                  type:
+                    - string
+                    - "null"
+                lastName:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    cs:
+                      type:
+                        - string
+                        - "null"
+                    sk:
+                      type:
+                        - string
+                        - "null"
+                    default:
+                      type:
+                        - string
+                        - "null"
+                birthCity:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    cs:
+                      type:
+                        - string
+                        - "null"
+                    de:
+                      type:
+                        - string
+                        - "null"
+                    fi:
+                      type:
+                        - string
+                        - "null"
+                    fr:
+                      type:
+                        - string
+                        - "null"
+                    sk:
+                      type:
+                        - string
+                        - "null"
+                    sv:
+                      type:
+                        - string
+                        - "null"
+                    default:
+                      type:
+                        - string
+                        - "null"
+                birthDate:
+                  type:
+                    - string
+                    - "null"
+                firstName:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    cs:
+                      type:
+                        - string
+                        - "null"
+                    fi:
+                      type:
+                        - string
+                        - "null"
+                    sk:
+                      type:
+                        - string
+                        - "null"
+                    default:
+                      type:
+                        - string
+                        - "null"
+                birthCountry:
+                  type:
+                    - string
+                    - "null"
+                positionCode:
+                  type:
+                    - string
+                    - "null"
+                shootsCatches:
+                  type:
+                    - string
+                    - "null"
+                sweaterNumber:
+                  type:
+                    - number
+                    - "null"
+                heightInInches:
+                  type:
+                    - number
+                    - "null"
+                weightInPounds:
+                  type:
+                    - number
+                    - "null"
+                weightInKilograms:
+                  type:
+                    - number
+                    - "null"
+                birthStateProvince:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    fr:
+                      type:
+                        - string
+                        - "null"
+                    sk:
+                      type:
+                        - string
+                        - "null"
+                    sv:
+                      type:
+                        - string
+                        - "null"
+                    default:
+                      type:
+                        - string
+                        - "null"
+                heightInCentimeters:
+                  type:
+                    - number
+                    - "null"
+          team_abv:
+            type:
+              - string
+              - "null"
+          defensemen:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                headshot:
+                  type:
+                    - string
+                    - "null"
+                lastName:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    default:
+                      type:
+                        - string
+                        - "null"
+                birthCity:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    cs:
+                      type:
+                        - string
+                        - "null"
+                    de:
+                      type:
+                        - string
+                        - "null"
+                    fi:
+                      type:
+                        - string
+                        - "null"
+                    fr:
+                      type:
+                        - string
+                        - "null"
+                    sk:
+                      type:
+                        - string
+                        - "null"
+                    sv:
+                      type:
+                        - string
+                        - "null"
+                    default:
+                      type:
+                        - string
+                        - "null"
+                birthDate:
+                  type:
+                    - string
+                    - "null"
+                firstName:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    cs:
+                      type:
+                        - string
+                        - "null"
+                    de:
+                      type:
+                        - string
+                        - "null"
+                    es:
+                      type:
+                        - string
+                        - "null"
+                    fi:
+                      type:
+                        - string
+                        - "null"
+                    sk:
+                      type:
+                        - string
+                        - "null"
+                    sv:
+                      type:
+                        - string
+                        - "null"
+                    default:
+                      type:
+                        - string
+                        - "null"
+                birthCountry:
+                  type:
+                    - string
+                    - "null"
+                positionCode:
+                  type:
+                    - string
+                    - "null"
+                shootsCatches:
+                  type:
+                    - string
+                    - "null"
+                sweaterNumber:
+                  type:
+                    - number
+                    - "null"
+                heightInInches:
+                  type:
+                    - number
+                    - "null"
+                weightInPounds:
+                  type:
+                    - number
+                    - "null"
+                weightInKilograms:
+                  type:
+                    - number
+                    - "null"
+                birthStateProvince:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    fr:
+                      type:
+                        - string
+                        - "null"
+                    sk:
+                      type:
+                        - string
+                        - "null"
+                    sv:
+                      type:
+                        - string
+                        - "null"
+                    default:
+                      type:
+                        - string
+                        - "null"
+                heightInCentimeters:
+                  type:
+                    - number
+                    - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - team_abv
+            value: "{{ stream_partition.team_abv }}"
+  - type: DeclarativeStream
+    name: games
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: https://api-web.nhle.com/v1/score/{{ stream_interval.start_time }}
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - games
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - date
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          date:
+            type: string
+          clock:
+            type:
+              - object
+              - "null"
+            properties:
+              running:
+                type:
+                  - boolean
+                  - "null"
+              timeRemaining:
+                type:
+                  - string
+                  - "null"
+              inIntermission:
+                type:
+                  - boolean
+                  - "null"
+              secondsRemaining:
+                type:
+                  - number
+                  - "null"
+          venue:
+            type:
+              - object
+              - "null"
+            properties:
+              default:
+                type:
+                  - string
+                  - "null"
+          period:
+            type:
+              - number
+              - "null"
+          season:
+            type:
+              - number
+              - "null"
+          neutralSite:
+            type:
+              - boolean
+              - "null"
+          startTimeUTC:
+            type:
+              - string
+              - "null"
+          tvBroadcasts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                market:
+                  type:
+                    - string
+                    - "null"
+                network:
+                  type:
+                    - string
+                    - "null"
+                countryCode:
+                  type:
+                    - string
+                    - "null"
+                sequenceNumber:
+                  type:
+                    - number
+                    - "null"
+          condensedGame:
+            type:
+              - string
+              - "null"
+          threeMinRecap:
+            type:
+              - string
+              - "null"
+          venueTimezone:
+            type:
+              - string
+              - "null"
+          venueUTCOffset:
+            type:
+              - string
+              - "null"
+          threeMinRecapFr:
+            type:
+              - string
+              - "null"
+          easternUTCOffset:
+            type:
+              - string
+              - "null"
+          periodDescriptor:
+            type:
+              - object
+              - "null"
+            properties:
+              number:
+                type:
+                  - number
+                  - "null"
+              periodType:
+                type:
+                  - string
+                  - "null"
+              maxRegulationPeriods:
+                type:
+                  - number
+                  - "null"
+        additionalProperties: true
+    transformations:
+      - type: RemoveFields
+        field_pointers:
+          - - "**"
+            - g*
+      - type: RemoveFields
+        field_pointers:
+          - - "**"
+            - h*
+      - type: RemoveFields
+        field_pointers:
+          - - "**"
+            - a*
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{ stream_interval.start_time }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config[\"start_date\"] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: daily_standings
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: https://api-web.nhle.com/v1/standings/{{ stream_interval.start_time }}
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - standings
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - date
+        properties:
+          date:
+            type: string
+          ties:
+            type:
+              - number
+              - "null"
+          wins:
+            type:
+              - number
+              - "null"
+          losses:
+            type:
+              - number
+              - "null"
+          points:
+            type:
+              - number
+              - "null"
+          goalFor:
+            type:
+              - number
+              - "null"
+          l10Ties:
+            type:
+              - number
+              - "null"
+          l10Wins:
+            type:
+              - number
+              - "null"
+          winPctg:
+            type:
+              - number
+              - "null"
+          homeTies:
+            type:
+              - number
+              - "null"
+          homeWins:
+            type:
+              - number
+              - "null"
+          otLosses:
+            type:
+              - number
+              - "null"
+          roadTies:
+            type:
+              - number
+              - "null"
+          roadWins:
+            type:
+              - number
+              - "null"
+          seasonId:
+            type:
+              - number
+              - "null"
+          teamLogo:
+            type:
+              - string
+              - "null"
+          teamName:
+            type:
+              - object
+              - "null"
+            properties:
+              fr:
+                type:
+                  - string
+                  - "null"
+              default:
+                type:
+                  - string
+                  - "null"
+          l10Losses:
+            type:
+              - number
+              - "null"
+          l10Points:
+            type:
+              - number
+              - "null"
+          placeName:
+            type:
+              - object
+              - "null"
+            properties:
+              fr:
+                type:
+                  - string
+                  - "null"
+              default:
+                type:
+                  - string
+                  - "null"
+          pointPctg:
+            type:
+              - number
+              - "null"
+          gameTypeId:
+            type:
+              - number
+              - "null"
+          homeLosses:
+            type:
+              - number
+              - "null"
+          homePoints:
+            type:
+              - number
+              - "null"
+          roadLosses:
+            type:
+              - number
+              - "null"
+          roadPoints:
+            type:
+              - number
+              - "null"
+          streakCode:
+            type:
+              - string
+              - "null"
+          teamAbbrev:
+            type:
+              - object
+              - "null"
+            properties:
+              default:
+                type:
+                  - string
+                  - "null"
+          gamesPlayed:
+            type:
+              - number
+              - "null"
+          goalAgainst:
+            type:
+              - number
+              - "null"
+          l10GoalsFor:
+            type:
+              - number
+              - "null"
+          l10OtLosses:
+            type:
+              - number
+              - "null"
+          streakCount:
+            type:
+              - number
+              - "null"
+          divisionName:
+            type:
+              - string
+              - "null"
+          goalsForPctg:
+            type:
+              - number
+              - "null"
+          homeGoalsFor:
+            type:
+              - number
+              - "null"
+          homeOtLosses:
+            type:
+              - number
+              - "null"
+          roadGoalsFor:
+            type:
+              - number
+              - "null"
+          roadOtLosses:
+            type:
+              - number
+              - "null"
+          shootoutWins:
+            type:
+              - number
+              - "null"
+          conferenceName:
+            type:
+              - string
+              - "null"
+          divisionAbbrev:
+            type:
+              - string
+              - "null"
+          l10GamesPlayed:
+            type:
+              - number
+              - "null"
+          leagueSequence:
+            type:
+              - number
+              - "null"
+          regulationWins:
+            type:
+              - number
+              - "null"
+          shootoutLosses:
+            type:
+              - number
+              - "null"
+          teamCommonName:
+            type:
+              - object
+              - "null"
+            properties:
+              fr:
+                type:
+                  - string
+                  - "null"
+              default:
+                type:
+                  - string
+                  - "null"
+          homeGamesPlayed:
+            type:
+              - number
+              - "null"
+          l10GoalsAgainst:
+            type:
+              - number
+              - "null"
+          roadGamesPlayed:
+            type:
+              - number
+              - "null"
+          waiversSequence:
+            type:
+              - number
+              - "null"
+          conferenceAbbrev:
+            type:
+              - string
+              - "null"
+          divisionSequence:
+            type:
+              - number
+              - "null"
+          goalDifferential:
+            type:
+              - number
+              - "null"
+          homeGoalsAgainst:
+            type:
+              - number
+              - "null"
+          roadGoalsAgainst:
+            type:
+              - number
+              - "null"
+          wildcardSequence:
+            type:
+              - number
+              - "null"
+          l10RegulationWins:
+            type:
+              - number
+              - "null"
+          leagueL10Sequence:
+            type:
+              - number
+              - "null"
+          regulationWinPctg:
+            type:
+              - number
+              - "null"
+          conferenceSequence:
+            type:
+              - number
+              - "null"
+          homeRegulationWins:
+            type:
+              - number
+              - "null"
+          leagueHomeSequence:
+            type:
+              - number
+              - "null"
+          leagueRoadSequence:
+            type:
+              - number
+              - "null"
+          roadRegulationWins:
+            type:
+              - number
+              - "null"
+          divisionL10Sequence:
+            type:
+              - number
+              - "null"
+          l10GoalDifferential:
+            type:
+              - number
+              - "null"
+          divisionHomeSequence:
+            type:
+              - number
+              - "null"
+          divisionRoadSequence:
+            type:
+              - number
+              - "null"
+          goalDifferentialPctg:
+            type:
+              - number
+              - "null"
+          homeGoalDifferential:
+            type:
+              - number
+              - "null"
+          regulationPlusOtWins:
+            type:
+              - number
+              - "null"
+          roadGoalDifferential:
+            type:
+              - number
+              - "null"
+          conferenceL10Sequence:
+            type:
+              - number
+              - "null"
+          conferenceHomeSequence:
+            type:
+              - number
+              - "null"
+          conferenceRoadSequence:
+            type:
+              - number
+              - "null"
+          l10RegulationPlusOtWins:
+            type:
+              - number
+              - "null"
+          regulationPlusOtWinPctg:
+            type:
+              - number
+              - "null"
+          homeRegulationPlusOtWins:
+            type:
+              - number
+              - "null"
+          roadRegulationPlusOtWins:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{ stream_interval.start_time }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config[\"start_date\"] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: game_summaries
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api-web.nhle.com/v1/wsc/game-story/{{ stream_partition.game_id
+          }}
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/4"
+            parent_key: id
+            partition_field: game_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          clock:
+            type:
+              - object
+              - "null"
+            properties:
+              running:
+                type:
+                  - boolean
+                  - "null"
+              timeRemaining:
+                type:
+                  - string
+                  - "null"
+              inIntermission:
+                type:
+                  - boolean
+                  - "null"
+              secondsRemaining:
+                type:
+                  - number
+                  - "null"
+          venue:
+            type:
+              - object
+              - "null"
+            properties:
+              default:
+                type:
+                  - string
+                  - "null"
+          season:
+            type:
+              - number
+              - "null"
+          otInUse:
+            type:
+              - boolean
+              - "null"
+          summary:
+            type:
+              - object
+              - "null"
+            properties:
+              scoring:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    goals:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          name:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              cs:
+                                type:
+                                  - string
+                                  - "null"
+                              fi:
+                                type:
+                                  - string
+                                  - "null"
+                              sk:
+                                type:
+                                  - string
+                                  - "null"
+                              default:
+                                type:
+                                  - string
+                                  - "null"
+                          assists:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                name:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    cs:
+                                      type:
+                                        - string
+                                        - "null"
+                                    de:
+                                      type:
+                                        - string
+                                        - "null"
+                                    fi:
+                                      type:
+                                        - string
+                                        - "null"
+                                    sk:
+                                      type:
+                                        - string
+                                        - "null"
+                                    sv:
+                                      type:
+                                        - string
+                                        - "null"
+                                    default:
+                                      type:
+                                        - string
+                                        - "null"
+                                lastName:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    cs:
+                                      type:
+                                        - string
+                                        - "null"
+                                    de:
+                                      type:
+                                        - string
+                                        - "null"
+                                    fi:
+                                      type:
+                                        - string
+                                        - "null"
+                                    sk:
+                                      type:
+                                        - string
+                                        - "null"
+                                    sv:
+                                      type:
+                                        - string
+                                        - "null"
+                                    default:
+                                      type:
+                                        - string
+                                        - "null"
+                                playerId:
+                                  type:
+                                    - number
+                                    - "null"
+                                firstName:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    cs:
+                                      type:
+                                        - string
+                                        - "null"
+                                    de:
+                                      type:
+                                        - string
+                                        - "null"
+                                    es:
+                                      type:
+                                        - string
+                                        - "null"
+                                    fi:
+                                      type:
+                                        - string
+                                        - "null"
+                                    sk:
+                                      type:
+                                        - string
+                                        - "null"
+                                    sv:
+                                      type:
+                                        - string
+                                        - "null"
+                                    default:
+                                      type:
+                                        - string
+                                        - "null"
+                                assistsToDate:
+                                  type:
+                                    - number
+                                    - "null"
+                          headshot:
+                            type:
+                              - string
+                              - "null"
+                          lastName:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              cs:
+                                type:
+                                  - string
+                                  - "null"
+                              fi:
+                                type:
+                                  - string
+                                  - "null"
+                              sk:
+                                type:
+                                  - string
+                                  - "null"
+                              default:
+                                type:
+                                  - string
+                                  - "null"
+                          playerId:
+                            type:
+                              - number
+                              - "null"
+                          shotType:
+                            type:
+                              - string
+                              - "null"
+                          strength:
+                            type:
+                              - string
+                              - "null"
+                          awayScore:
+                            type:
+                              - number
+                              - "null"
+                          firstName:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              cs:
+                                type:
+                                  - string
+                                  - "null"
+                              de:
+                                type:
+                                  - string
+                                  - "null"
+                              es:
+                                type:
+                                  - string
+                                  - "null"
+                              fi:
+                                type:
+                                  - string
+                                  - "null"
+                              sk:
+                                type:
+                                  - string
+                                  - "null"
+                              sv:
+                                type:
+                                  - string
+                                  - "null"
+                              default:
+                                type:
+                                  - string
+                                  - "null"
+                          homeScore:
+                            type:
+                              - number
+                              - "null"
+                          teamAbbrev:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              default:
+                                type:
+                                  - string
+                                  - "null"
+                          goalsToDate:
+                            type:
+                              - number
+                              - "null"
+                          goalModifier:
+                            type:
+                              - string
+                              - "null"
+                          timeInPeriod:
+                            type:
+                              - string
+                              - "null"
+                          highlightClip:
+                            type:
+                              - number
+                              - "null"
+                          situationCode:
+                            type:
+                              - string
+                              - "null"
+                          highlightClipFr:
+                            type:
+                              - number
+                              - "null"
+                          leadingTeamAbbrev:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              default:
+                                type:
+                                  - string
+                                  - "null"
+                          homeTeamDefendingSide:
+                            type:
+                              - string
+                              - "null"
+                          highlightClipSharingUrl:
+                            type:
+                              - string
+                              - "null"
+                          highlightClipSharingUrlFr:
+                            type:
+                              - string
+                              - "null"
+                    periodDescriptor:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        number:
+                          type:
+                            - number
+                            - "null"
+                        periodType:
+                          type:
+                            - string
+                            - "null"
+                        maxRegulationPeriods:
+                          type:
+                            - number
+                            - "null"
+              shootout:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    result:
+                      type:
+                        - string
+                        - "null"
+                    headshot:
+                      type:
+                        - string
+                        - "null"
+                    lastName:
+                      type:
+                        - string
+                        - "null"
+                    playerId:
+                      type:
+                        - number
+                        - "null"
+                    sequence:
+                      type:
+                        - number
+                        - "null"
+                    shotType:
+                      type:
+                        - string
+                        - "null"
+                    firstName:
+                      type:
+                        - string
+                        - "null"
+                    gameWinner:
+                      type:
+                        - boolean
+                        - "null"
+                    teamAbbrev:
+                      type:
+                        - string
+                        - "null"
+              threeStars:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    star:
+                      type:
+                        - number
+                        - "null"
+                    goals:
+                      type:
+                        - number
+                        - "null"
+                    points:
+                      type:
+                        - number
+                        - "null"
+                    assists:
+                      type:
+                        - number
+                        - "null"
+                    headshot:
+                      type:
+                        - string
+                        - "null"
+                    playerId:
+                      type:
+                        - number
+                        - "null"
+                    position:
+                      type:
+                        - string
+                        - "null"
+                    savePctg:
+                      type:
+                        - number
+                        - "null"
+                    sweaterNo:
+                      type:
+                        - number
+                        - "null"
+                    teamAbbrev:
+                      type:
+                        - string
+                        - "null"
+                    goalsAgainstAverage:
+                      type:
+                        - number
+                        - "null"
+              teamGameStats:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    category:
+                      type:
+                        - string
+                        - "null"
+                    awayValue:
+                      type:
+                        - number
+                        - string
+                        - "null"
+                    homeValue:
+                      type:
+                        - number
+                        - string
+                        - "null"
+          awayTeam:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              sog:
+                type:
+                  - number
+                  - "null"
+              logo:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fr:
+                    type:
+                      - string
+                      - "null"
+                  default:
+                    type:
+                      - string
+                      - "null"
+              score:
+                type:
+                  - number
+                  - "null"
+              abbrev:
+                type:
+                  - string
+                  - "null"
+              placeName:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  default:
+                    type:
+                      - string
+                      - "null"
+          gameDate:
+            type:
+              - string
+              - "null"
+          gameType:
+            type:
+              - number
+              - "null"
+          homeTeam:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              sog:
+                type:
+                  - number
+                  - "null"
+              logo:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  default:
+                    type:
+                      - string
+                      - "null"
+              score:
+                type:
+                  - number
+                  - "null"
+              abbrev:
+                type:
+                  - string
+                  - "null"
+              placeName:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fr:
+                    type:
+                      - string
+                      - "null"
+                  default:
+                    type:
+                      - string
+                      - "null"
+          gameState:
+            type:
+              - string
+              - "null"
+          tiesInUse:
+            type:
+              - boolean
+              - "null"
+          maxPeriods:
+            type:
+              - number
+              - "null"
+          regPeriods:
+            type:
+              - number
+              - "null"
+          startTimeUTC:
+            type:
+              - string
+              - "null"
+          tvBroadcasts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                market:
+                  type:
+                    - string
+                    - "null"
+                network:
+                  type:
+                    - string
+                    - "null"
+                countryCode:
+                  type:
+                    - string
+                    - "null"
+                sequenceNumber:
+                  type:
+                    - number
+                    - "null"
+          shootoutInUse:
+            type:
+              - boolean
+              - "null"
+          venueLocation:
+            type:
+              - object
+              - "null"
+            properties:
+              default:
+                type:
+                  - string
+                  - "null"
+          venueTimezone:
+            type:
+              - string
+              - "null"
+          limitedScoring:
+            type:
+              - boolean
+              - "null"
+          venueUTCOffset:
+            type:
+              - string
+              - "null"
+          easternUTCOffset:
+            type:
+              - string
+              - "null"
+          periodDescriptor:
+            type:
+              - object
+              - "null"
+            properties:
+              number:
+                type:
+                  - number
+                  - "null"
+              periodType:
+                type:
+                  - string
+                  - "null"
+              maxRegulationPeriods:
+                type:
+                  - number
+                  - "null"
+          gameScheduleState:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: play_by_play
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api-web.nhle.com/v1/gamecenter/{{ stream_partition.game_id
+          }}/play-by-play
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/4"
+            parent_key: id
+            partition_field: game_id
+            incremental_dependency: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          plays:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                details:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    reason:
+                      type:
+                        - string
+                        - "null"
+                    xCoord:
+                      type:
+                        - number
+                        - "null"
+                    yCoord:
+                      type:
+                        - number
+                        - "null"
+                    awaySOG:
+                      type:
+                        - number
+                        - "null"
+                    descKey:
+                      type:
+                        - string
+                        - "null"
+                    homeSOG:
+                      type:
+                        - number
+                        - "null"
+                    duration:
+                      type:
+                        - number
+                        - "null"
+                    playerId:
+                      type:
+                        - number
+                        - "null"
+                    shotType:
+                      type:
+                        - string
+                        - "null"
+                    typeCode:
+                      type:
+                        - string
+                        - "null"
+                    zoneCode:
+                      type:
+                        - string
+                        - "null"
+                    awayScore:
+                      type:
+                        - number
+                        - "null"
+                    homeScore:
+                      type:
+                        - number
+                        - "null"
+                    goalieInNetId:
+                      type:
+                        - number
+                        - "null"
+                    highlightClip:
+                      type:
+                        - number
+                        - "null"
+                    hitteePlayerId:
+                      type:
+                        - number
+                        - "null"
+                    losingPlayerId:
+                      type:
+                        - number
+                        - "null"
+                    assist1PlayerId:
+                      type:
+                        - number
+                        - "null"
+                    assist2PlayerId:
+                      type:
+                        - number
+                        - "null"
+                    drawnByPlayerId:
+                      type:
+                        - number
+                        - "null"
+                    highlightClipFr:
+                      type:
+                        - number
+                        - "null"
+                    hittingPlayerId:
+                      type:
+                        - number
+                        - "null"
+                    scoringPlayerId:
+                      type:
+                        - number
+                        - "null"
+                    secondaryReason:
+                      type:
+                        - string
+                        - "null"
+                    winningPlayerId:
+                      type:
+                        - number
+                        - "null"
+                    blockingPlayerId:
+                      type:
+                        - number
+                        - "null"
+                    eventOwnerTeamId:
+                      type:
+                        - number
+                        - "null"
+                    servedByPlayerId:
+                      type:
+                        - number
+                        - "null"
+                    shootingPlayerId:
+                      type:
+                        - number
+                        - "null"
+                    assist1PlayerTotal:
+                      type:
+                        - number
+                        - "null"
+                    assist2PlayerTotal:
+                      type:
+                        - number
+                        - "null"
+                    scoringPlayerTotal:
+                      type:
+                        - number
+                        - "null"
+                    committedByPlayerId:
+                      type:
+                        - number
+                        - "null"
+                    highlightClipSharingUrl:
+                      type:
+                        - string
+                        - "null"
+                    highlightClipSharingUrlFr:
+                      type:
+                        - string
+                        - "null"
+                eventId:
+                  type:
+                    - number
+                    - "null"
+                typeCode:
+                  type:
+                    - number
+                    - "null"
+                sortOrder:
+                  type:
+                    - number
+                    - "null"
+                typeDescKey:
+                  type:
+                    - string
+                    - "null"
+                pptReplayUrl:
+                  type:
+                    - string
+                    - "null"
+                timeInPeriod:
+                  type:
+                    - string
+                    - "null"
+                situationCode:
+                  type:
+                    - string
+                    - "null"
+                timeRemaining:
+                  type:
+                    - string
+                    - "null"
+                periodDescriptor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    number:
+                      type:
+                        - number
+                        - "null"
+                    periodType:
+                      type:
+                        - string
+                        - "null"
+                    maxRegulationPeriods:
+                      type:
+                        - number
+                        - "null"
+                homeTeamDefendingSide:
+                  type:
+                    - string
+                    - "null"
+          season:
+            type:
+              - number
+              - "null"
+          otInUse:
+            type:
+              - boolean
+              - "null"
+          summary:
+            type:
+              - object
+              - "null"
+          awayTeam:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              sog:
+                type:
+                  - number
+                  - "null"
+              logo:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fr:
+                    type:
+                      - string
+                      - "null"
+                  default:
+                    type:
+                      - string
+                      - "null"
+              score:
+                type:
+                  - number
+                  - "null"
+              abbrev:
+                type:
+                  - string
+                  - "null"
+              darkLogo:
+                type:
+                  - string
+                  - "null"
+              placeName:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  default:
+                    type:
+                      - string
+                      - "null"
+              placeNameWithPreposition:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fr:
+                    type:
+                      - string
+                      - "null"
+                  default:
+                    type:
+                      - string
+                      - "null"
+          gameDate:
+            type:
+              - string
+              - "null"
+          gameType:
+            type:
+              - number
+              - "null"
+          homeTeam:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              sog:
+                type:
+                  - number
+                  - "null"
+              logo:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  default:
+                    type:
+                      - string
+                      - "null"
+              score:
+                type:
+                  - number
+                  - "null"
+              abbrev:
+                type:
+                  - string
+                  - "null"
+              darkLogo:
+                type:
+                  - string
+                  - "null"
+              placeName:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fr:
+                    type:
+                      - string
+                      - "null"
+                  default:
+                    type:
+                      - string
+                      - "null"
+              placeNameWithPreposition:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fr:
+                    type:
+                      - string
+                      - "null"
+                  default:
+                    type:
+                      - string
+                      - "null"
+          gameState:
+            type:
+              - string
+              - "null"
+          maxPeriods:
+            type:
+              - number
+              - "null"
+          regPeriods:
+            type:
+              - number
+              - "null"
+          gameOutcome:
+            type:
+              - object
+              - "null"
+            properties:
+              lastPeriodType:
+                type:
+                  - string
+                  - "null"
+          rosterSpots:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                teamId:
+                  type:
+                    - number
+                    - "null"
+                headshot:
+                  type:
+                    - string
+                    - "null"
+                lastName:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    cs:
+                      type:
+                        - string
+                        - "null"
+                    de:
+                      type:
+                        - string
+                        - "null"
+                    fi:
+                      type:
+                        - string
+                        - "null"
+                    sk:
+                      type:
+                        - string
+                        - "null"
+                    sv:
+                      type:
+                        - string
+                        - "null"
+                    default:
+                      type:
+                        - string
+                        - "null"
+                playerId:
+                  type:
+                    - number
+                    - "null"
+                firstName:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    cs:
+                      type:
+                        - string
+                        - "null"
+                    de:
+                      type:
+                        - string
+                        - "null"
+                    es:
+                      type:
+                        - string
+                        - "null"
+                    fi:
+                      type:
+                        - string
+                        - "null"
+                    sk:
+                      type:
+                        - string
+                        - "null"
+                    sv:
+                      type:
+                        - string
+                        - "null"
+                    default:
+                      type:
+                        - string
+                        - "null"
+                positionCode:
+                  type:
+                    - string
+                    - "null"
+                sweaterNumber:
+                  type:
+                    - number
+                    - "null"
+          startTimeUTC:
+            type:
+              - string
+              - "null"
+          tvBroadcasts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                market:
+                  type:
+                    - string
+                    - "null"
+                network:
+                  type:
+                    - string
+                    - "null"
+                countryCode:
+                  type:
+                    - string
+                    - "null"
+                sequenceNumber:
+                  type:
+                    - number
+                    - "null"
+          displayPeriod:
+            type:
+              - number
+              - "null"
+          shootoutInUse:
+            type:
+              - boolean
+              - "null"
+          limitedScoring:
+            type:
+              - boolean
+              - "null"
+          easternUTCOffset:
+            type:
+              - string
+              - "null"
+          periodDescriptor:
+            type:
+              - object
+              - "null"
+            properties:
+              number:
+                type:
+                  - number
+                  - "null"
+              periodType:
+                type:
+                  - string
+                  - "null"
+              maxRegulationPeriods:
+                type:
+                  - number
+                  - "null"
+          gameScheduleState:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: RemoveFields
+        field_pointers:
+          - - v*
+      - type: RemoveFields
+        field_pointers:
+          - - clock
+  - type: DeclarativeStream
+    name: season_schedules
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api-web.nhle.com/v1/club-schedule-season/{{
+          stream_partition.team_abv }}/now
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - games
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/2"
+            parent_key: abbrev
+            partition_field: team_abv
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          venue:
+            type:
+              - object
+              - "null"
+            properties:
+              cs:
+                type:
+                  - string
+                  - "null"
+              es:
+                type:
+                  - string
+                  - "null"
+              fi:
+                type:
+                  - string
+                  - "null"
+              fr:
+                type:
+                  - string
+                  - "null"
+              sk:
+                type:
+                  - string
+                  - "null"
+              default:
+                type:
+                  - string
+                  - "null"
+          season:
+            type:
+              - number
+              - "null"
+          awayTeam:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              logo:
+                type:
+                  - string
+                  - "null"
+              score:
+                type:
+                  - number
+                  - "null"
+              abbrev:
+                type:
+                  - string
+                  - "null"
+              darkLogo:
+                type:
+                  - string
+                  - "null"
+              hotelDesc:
+                type:
+                  - string
+                  - "null"
+              hotelLink:
+                type:
+                  - string
+                  - "null"
+              placeName:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fr:
+                    type:
+                      - string
+                      - "null"
+                  default:
+                    type:
+                      - string
+                      - "null"
+              promoDesc:
+                type:
+                  - string
+                  - "null"
+              promoLink:
+                type:
+                  - string
+                  - "null"
+              radioLink:
+                type:
+                  - string
+                  - "null"
+              commonName:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fr:
+                    type:
+                      - string
+                      - "null"
+                  default:
+                    type:
+                      - string
+                      - "null"
+              airlineDesc:
+                type:
+                  - string
+                  - "null"
+              airlineLink:
+                type:
+                  - string
+                  - "null"
+              awaySplitSquad:
+                type:
+                  - boolean
+                  - "null"
+              placeNameWithPreposition:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fr:
+                    type:
+                      - string
+                      - "null"
+                  default:
+                    type:
+                      - string
+                      - "null"
+          gameDate:
+            type:
+              - string
+              - "null"
+          gameType:
+            type:
+              - number
+              - "null"
+          homeTeam:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              logo:
+                type:
+                  - string
+                  - "null"
+              score:
+                type:
+                  - number
+                  - "null"
+              abbrev:
+                type:
+                  - string
+                  - "null"
+              darkLogo:
+                type:
+                  - string
+                  - "null"
+              hotelDesc:
+                type:
+                  - string
+                  - "null"
+              hotelLink:
+                type:
+                  - string
+                  - "null"
+              placeName:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fr:
+                    type:
+                      - string
+                      - "null"
+                  default:
+                    type:
+                      - string
+                      - "null"
+              promoDesc:
+                type:
+                  - string
+                  - "null"
+              promoLink:
+                type:
+                  - string
+                  - "null"
+              radioLink:
+                type:
+                  - string
+                  - "null"
+              commonName:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fr:
+                    type:
+                      - string
+                      - "null"
+                  default:
+                    type:
+                      - string
+                      - "null"
+              airlineDesc:
+                type:
+                  - string
+                  - "null"
+              airlineLink:
+                type:
+                  - string
+                  - "null"
+              homeSplitSquad:
+                type:
+                  - boolean
+                  - "null"
+              placeNameWithPreposition:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fr:
+                    type:
+                      - string
+                      - "null"
+                  default:
+                    type:
+                      - string
+                      - "null"
+          gameState:
+            type:
+              - string
+              - "null"
+          gameOutcome:
+            type:
+              - object
+              - "null"
+            properties:
+              lastPeriodType:
+                type:
+                  - string
+                  - "null"
+          neutralSite:
+            type:
+              - boolean
+              - "null"
+          ticketsLink:
+            type:
+              - string
+              - "null"
+          specialEvent:
+            type:
+              - object
+              - "null"
+            properties:
+              default:
+                type:
+                  - string
+                  - "null"
+          startTimeUTC:
+            type:
+              - string
+              - "null"
+          tvBroadcasts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                market:
+                  type:
+                    - string
+                    - "null"
+                network:
+                  type:
+                    - string
+                    - "null"
+                countryCode:
+                  type:
+                    - string
+                    - "null"
+                sequenceNumber:
+                  type:
+                    - number
+                    - "null"
+          condensedGame:
+            type:
+              - string
+              - "null"
+          threeMinRecap:
+            type:
+              - string
+              - "null"
+          ticketsLinkFr:
+            type:
+              - string
+              - "null"
+          venueTimezone:
+            type:
+              - string
+              - "null"
+          winningGoalie:
+            type:
+              - object
+              - "null"
+            properties:
+              lastName:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  cs:
+                    type:
+                      - string
+                      - "null"
+                  fi:
+                    type:
+                      - string
+                      - "null"
+                  sk:
+                    type:
+                      - string
+                      - "null"
+                  default:
+                    type:
+                      - string
+                      - "null"
+              playerId:
+                type:
+                  - number
+                  - "null"
+              firstInitial:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  default:
+                    type:
+                      - string
+                      - "null"
+          gameCenterLink:
+            type:
+              - string
+              - "null"
+          venueUTCOffset:
+            type:
+              - string
+              - "null"
+          condensedGameFr:
+            type:
+              - string
+              - "null"
+          threeMinRecapFr:
+            type:
+              - string
+              - "null"
+          easternUTCOffset:
+            type:
+              - string
+              - "null"
+          periodDescriptor:
+            type:
+              - object
+              - "null"
+            properties:
+              periodType:
+                type:
+                  - string
+                  - "null"
+              maxRegulationPeriods:
+                type:
+                  - number
+                  - "null"
+          specialEventLogo:
+            type:
+              - string
+              - "null"
+          gameScheduleState:
+            type:
+              - string
+              - "null"
+          winningGoalScorer:
+            type:
+              - object
+              - "null"
+            properties:
+              lastName:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  cs:
+                    type:
+                      - string
+                      - "null"
+                  sk:
+                    type:
+                      - string
+                      - "null"
+                  default:
+                    type:
+                      - string
+                      - "null"
+              playerId:
+                type:
+                  - number
+                  - "null"
+              firstInitial:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  default:
+                    type:
+                      - string
+                      - "null"
+        additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - start_date
+    properties:
+      start_date:
+        type: string
+        order: 0
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    games:
+      hasRecords: true
+      streamHash: 6e9009e6eaf2e840c63558040baa641eda2dfea2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    play_by_play:
+      hasRecords: true
+      streamHash: afc4bd084340d5e4fc6d7fa7a397641aadd1fe3c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    team_rosters:
+      hasRecords: true
+      streamHash: 8be4ed6ea1295277ae7aaac66ec6edeb9ec8e43f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    current_teams:
+      isStale: false
+      hasRecords: true
+      streamHash: 9da0bcb27f6bc3906a3e88cc07df08de3498e4b9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    game_boxscore:
+      hasRecords: true
+      streamHash: 3a752f0e11b756e883ea57dc5d7f80622def96f4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    game_summaries:
+      hasRecords: true
+      streamHash: b1a1983d18d7f32253421ffadfad2d24023bd453
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    daily_standings:
+      hasRecords: true
+      streamHash: 2e384f35884c4047357845bfd2cc898dd9da184f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    season_schedules:
+      hasRecords: true
+      streamHash: 10909e72573f529f25b636f15bb6d5e3518f7066
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    current_standings:
+      hasRecords: true
+      streamHash: 052710abd39045fa7bc335f81084d77d7dac8f4d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    games: true
+    play_by_play: true
+    team_rosters: true
+    current_teams: true
+    game_boxscore: true
+    game_summaries: true
+    daily_standings: true
+    season_schedules: true
+    current_standings: true
+  applied_migrations:
+    - migration: HttpRequesterUrlBaseToUrl
+      to_version: "*"
+      migrated_at: "2025-10-01T16:19:08.551659+00:00"
+      from_version: 6.48.15
+    - migration: HttpRequesterPathToUrl
+      to_version: "*"
+      migrated_at: "2025-10-01T16:19:08.563952+00:00"
+      from_version: 6.48.15
