@@ -46,6 +46,66 @@ def get_snowflake_config():
     }
 
 
+def get_parquet_columns(cursor, stage_name: str, file_name: str) -> dict:
+    """
+    Get column names and types from a staged parquet file using INFER_SCHEMA.
+
+    Returns:
+        dict mapping column_name (uppercase) -> column_type
+    """
+    cursor.execute(f"""
+        SELECT COLUMN_NAME, TYPE
+        FROM TABLE(
+            INFER_SCHEMA(
+                LOCATION => '@{stage_name}/{file_name}',
+                FILE_FORMAT => 'nhl_parquet_format'
+            )
+        )
+    """)
+    return {row[0].upper(): row[1] for row in cursor.fetchall()}
+
+
+def get_table_columns(cursor, schema: str, table_name: str) -> dict:
+    """
+    Get column names and types from an existing table.
+
+    Returns:
+        dict mapping column_name (uppercase) -> column_type
+    """
+    cursor.execute(f"""
+        SELECT COLUMN_NAME, DATA_TYPE
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = '{schema.upper()}'
+        AND TABLE_NAME = '{table_name.upper()}'
+    """)
+    return {row[0].upper(): row[1] for row in cursor.fetchall()}
+
+
+def add_missing_columns(cursor, table_name: str, parquet_cols: dict, table_cols: dict):
+    """
+    Add any columns that exist in parquet but not in the table.
+
+    Args:
+        cursor: Snowflake cursor
+        table_name: Target table name
+        parquet_cols: dict of column_name -> type from parquet
+        table_cols: dict of column_name -> type from existing table
+
+    Returns:
+        list of column names that were added
+    """
+    new_columns = set(parquet_cols.keys()) - set(table_cols.keys())
+    added = []
+
+    for col_name in new_columns:
+        col_type = parquet_cols[col_name]
+        logger.info(f"  Adding new column: {col_name} ({col_type})")
+        cursor.execute(f'ALTER TABLE {table_name} ADD COLUMN "{col_name}" {col_type}')
+        added.append(col_name)
+
+    return added
+
+
 def load_parquet_to_snowflake(
     input_dir: str,
     drop_tables: bool = False,
@@ -179,11 +239,31 @@ def load_parquet_to_snowflake(
                     cursor.execute(copy_sql)
 
                 else:
-                    # Table exists - use temp table for incremental load
-                    temp_table = f"{table_name}_temp"
-                    logger.info(f"Table exists. Using temp table for incremental load...")
+                    # Table exists - handle schema drift and do incremental load
+                    logger.info(f"Table exists. Checking for schema changes...")
 
-                    # Create temp table
+                    # Get columns from parquet file and existing table
+                    parquet_cols = get_parquet_columns(cursor, stage_name, parquet_file.name)
+                    table_cols = get_table_columns(cursor, config['schema'], table_name)
+
+                    logger.info(f"  Parquet has {len(parquet_cols)} columns, table has {len(table_cols)} columns")
+
+                    # Add any new columns from parquet to the table
+                    added_cols = add_missing_columns(cursor, table_name, parquet_cols, table_cols)
+                    if added_cols:
+                        logger.info(f"  Added {len(added_cols)} new column(s) to table")
+                        # Refresh table columns after adding new ones
+                        table_cols = get_table_columns(cursor, config['schema'], table_name)
+
+                    # Find columns that exist in BOTH parquet and table (for INSERT)
+                    common_cols = set(parquet_cols.keys()) & set(table_cols.keys())
+                    missing_in_parquet = set(table_cols.keys()) - set(parquet_cols.keys())
+
+                    if missing_in_parquet:
+                        logger.info(f"  Columns in table but not in parquet (will be NULL): {missing_in_parquet}")
+
+                    # Create temp table from parquet schema
+                    temp_table = f"{table_name}_temp"
                     create_temp_sql = f"""
                     CREATE OR REPLACE TABLE {temp_table}
                     USING TEMPLATE (
@@ -213,9 +293,12 @@ def load_parquet_to_snowflake(
                     cursor.execute(f"SELECT COUNT(*) FROM {temp_table}")
                     new_records = cursor.fetchone()[0]
 
-                    # Append from temp table to main table
-                    logger.info(f"Appending {new_records} new records to {table_name}...")
-                    cursor.execute(f"INSERT INTO {table_name} SELECT * FROM {temp_table}")
+                    # Build column list for INSERT (only columns that exist in both)
+                    col_list = ', '.join(f'"{col}"' for col in sorted(common_cols))
+
+                    # Append from temp table to main table using explicit column list
+                    logger.info(f"Appending {new_records} new records to {table_name} ({len(common_cols)} columns)...")
+                    cursor.execute(f"INSERT INTO {table_name} ({col_list}) SELECT {col_list} FROM {temp_table}")
 
                     # Drop temp table
                     cursor.execute(f"DROP TABLE {temp_table}")
