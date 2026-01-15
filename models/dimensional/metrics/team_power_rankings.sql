@@ -675,7 +675,7 @@ select
     ranking_date,
     team_id,
     team_abv,
-    parse_json(team_name):default::string as team_name,
+    team_name::string as team_name,
     power_score,
     row_number() over (order by power_score desc) as power_rank,
     

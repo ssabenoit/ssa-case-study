@@ -22,8 +22,8 @@ parsed_standings as (
     select
         "date" as date,
         cast("seasonId" as int) as season,
-        parse_json("teamName"):default::string as team_name,
-        parse_json("teamAbbrev"):default::string as team_abv,
+        "teamName_default"::string as team_name,
+        "teamAbbrev_default"::string as team_abv,
         cast("gamesPlayed" as int) as games_played,
         cast("points" as int) as points,
         cast("wins" as int) as wins,

@@ -22,7 +22,7 @@ games as (
     select
         "id"::int as id,
         "gameDate" as date,
-        parse_json("venue"):default::string as venue,
+        "venue_default"::string as venue,
         "neutralSite"::boolean as neutral_site
     from {{ ref("stg_nhl__games") }}
 ),

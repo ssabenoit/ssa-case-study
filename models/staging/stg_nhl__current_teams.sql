@@ -11,9 +11,9 @@ renamed as (
     select
         "id" as team_id,
         "abbrev" as team_abbrev,
-        "name" as team_name,
-        "placeName" as team_place_name,
-        "commonName" as team_common_name,
+        "name_default" as team_name,
+        "placeName_default" as team_place_name,
+        "commonName_default" as team_common_name,
         "french" as team_french_name,
         "logo" as team_logo_url
     from source

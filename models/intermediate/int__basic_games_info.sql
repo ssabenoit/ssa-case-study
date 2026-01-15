@@ -12,7 +12,7 @@ select
     "id"::int as game_id,
     "gameDate" as date,
     "season"::int as season,
-    parse_json("venue"):default::string as venue,
+    "venue_default"::string as venue,
     to_timestamp("startTimeUTC", 'YYYY-MM-DDTHH24:MI:SSZ') as start_time_utc,
     "venueTimezone" as venue_tz,
     "venueUTCOffset"::string as venue_utc_offset,

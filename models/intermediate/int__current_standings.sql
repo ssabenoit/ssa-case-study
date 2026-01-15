@@ -11,8 +11,8 @@ raw_standings as (
 )
 
 select
-    parse_json("teamName"):default::string as team,
-    parse_json("teamAbbrev"):default::string as team_abv,
+    "teamName_default"::string as team,
+    "teamAbbrev_default"::string as team_abv,
     "divisionName" as division,
     "divisionAbbrev" as division_abv,
     "conferenceName" as conference,

@@ -12,6 +12,5 @@ select
     "team_abv" as "team_abv",
     parse_json("forwards") as "forwards",
     parse_json("defensemen") as "defensemen",
-    parse_json("goalies") as "goalies",
-    "_etl_loaded_at" as "_etl_loaded_at"
+    parse_json("goalies") as "goalies"
 from source
