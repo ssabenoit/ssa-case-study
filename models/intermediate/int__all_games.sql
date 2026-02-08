@@ -21,7 +21,7 @@ summaries as (
 games as (
     select
         "id"::int as id,
-        "gameDate" as date,
+        "gameDate"::date as date,
         "venue_default"::string as venue,
         "neutralSite"::boolean as neutral_site
     from {{ ref("stg_nhl__games") }}
