@@ -5,12 +5,12 @@ with
 
 all_defensemen as (
     select
-        "team_abv"::string as team_abv,
-        parse_json("defensemen") as defensemen
+        TEAM_ABV::string as team_abv,
+        DEFENSEMEN as defensemen
     from {{ ref("stg_nhl__team_rosters") }}
 )
 
-select 
+select
     team_abv,
     player.value:id::int as player_id,
     player.value:firstName.default::string as first_name,
@@ -25,6 +25,6 @@ select
     player.value:birthStateProvince.default::string as birth_state,
     player.value:birthCountry::string as birth_country,
     player.value:headshot::string as headshot_url
-from 
+from
     all_defensemen,
     lateral flatten(input => defensemen) player

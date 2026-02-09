@@ -18,26 +18,26 @@ date_cte as (
 -- Parse the source standings into our format
 parsed_standings as (
     select
-        "date" as date,
-        cast("seasonId" as int) as season,
-        "teamName_default"::string as team_name,
-        "teamAbbrev_default"::string as team_abv,
-        cast("gamesPlayed" as int) as games_played,
-        cast("points" as int) as points,
-        cast("wins" as int) as wins,
-        cast("losses" as int) as losses,
-        cast("otLosses" as int) as ot_losses,
-        concat(cast("wins" as int), '-', cast("losses" as int), '-', cast("otLosses" as int)) as record,
-        cast("goalFor" as int) as goals_for,
-        cast("goalAgainst" as int) as goals_against,
-        cast("goalFor" as int) - cast("goalAgainst" as int) as goal_diff,
-        cast("points" as float) / nullif(cast("gamesPlayed" as int) * 2, 0) as point_pct,
-        "divisionName" as division,
-        "conferenceName" as conference,
-        cast("divisionSequence" as int) as div_sequence,
-        cast("wildcardSequence" as int) as wc_sequence,
-        cast("conferenceSequence" as int) as conf_sequence,
-        cast("leagueSequence" as int) as league_sequence
+        DATE as date,
+        cast(SEASONID as int) as season,
+        TEAMNAME_DEFAULT::string as team_name,
+        TEAMABBREV_DEFAULT::string as team_abv,
+        cast(GAMESPLAYED as int) as games_played,
+        cast(POINTS as int) as points,
+        cast(WINS as int) as wins,
+        cast(LOSSES as int) as losses,
+        cast(OTLOSSES as int) as ot_losses,
+        concat(cast(WINS as int), '-', cast(LOSSES as int), '-', cast(OTLOSSES as int)) as record,
+        cast(GOALFOR as int) as goals_for,
+        cast(GOALAGAINST as int) as goals_against,
+        cast(GOALFOR as int) - cast(GOALAGAINST as int) as goal_diff,
+        cast(POINTS as float) / nullif(cast(GAMESPLAYED as int) * 2, 0) as point_pct,
+        DIVISIONNAME as division,
+        CONFERENCENAME as conference,
+        cast(DIVISIONSEQUENCE as int) as div_sequence,
+        cast(WILDCARDSEQUENCE as int) as wc_sequence,
+        cast(CONFERENCESEQUENCE as int) as conf_sequence,
+        cast(LEAGUESEQUENCE as int) as league_sequence
     from source_standings
 ),
 
@@ -131,8 +131,8 @@ filled_standings as (
         coalesce(
             games_played,
             last_value(games_played ignore nulls) over (
-                partition by season, team_abv 
-                order by date 
+                partition by season, team_abv
+                order by date
                 rows between unbounded preceding and current row
             ),
             0
@@ -140,8 +140,8 @@ filled_standings as (
         coalesce(
             points,
             last_value(points ignore nulls) over (
-                partition by season, team_abv 
-                order by date 
+                partition by season, team_abv
+                order by date
                 rows between unbounded preceding and current row
             ),
             0
@@ -149,8 +149,8 @@ filled_standings as (
         coalesce(
             wins,
             last_value(wins ignore nulls) over (
-                partition by season, team_abv 
-                order by date 
+                partition by season, team_abv
+                order by date
                 rows between unbounded preceding and current row
             ),
             0
@@ -158,8 +158,8 @@ filled_standings as (
         coalesce(
             losses,
             last_value(losses ignore nulls) over (
-                partition by season, team_abv 
-                order by date 
+                partition by season, team_abv
+                order by date
                 rows between unbounded preceding and current row
             ),
             0
@@ -167,8 +167,8 @@ filled_standings as (
         coalesce(
             ot_losses,
             last_value(ot_losses ignore nulls) over (
-                partition by season, team_abv 
-                order by date 
+                partition by season, team_abv
+                order by date
                 rows between unbounded preceding and current row
             ),
             0
@@ -176,8 +176,8 @@ filled_standings as (
         coalesce(
             record,
             last_value(record ignore nulls) over (
-                partition by season, team_abv 
-                order by date 
+                partition by season, team_abv
+                order by date
                 rows between unbounded preceding and current row
             ),
             '0-0-0'
@@ -185,8 +185,8 @@ filled_standings as (
         coalesce(
             goals_for,
             last_value(goals_for ignore nulls) over (
-                partition by season, team_abv 
-                order by date 
+                partition by season, team_abv
+                order by date
                 rows between unbounded preceding and current row
             ),
             0
@@ -194,8 +194,8 @@ filled_standings as (
         coalesce(
             goals_against,
             last_value(goals_against ignore nulls) over (
-                partition by season, team_abv 
-                order by date 
+                partition by season, team_abv
+                order by date
                 rows between unbounded preceding and current row
             ),
             0
@@ -203,8 +203,8 @@ filled_standings as (
         coalesce(
             goal_diff,
             last_value(goal_diff ignore nulls) over (
-                partition by season, team_abv 
-                order by date 
+                partition by season, team_abv
+                order by date
                 rows between unbounded preceding and current row
             ),
             0
@@ -212,8 +212,8 @@ filled_standings as (
         coalesce(
             point_pct,
             last_value(point_pct ignore nulls) over (
-                partition by season, team_abv 
-                order by date 
+                partition by season, team_abv
+                order by date
                 rows between unbounded preceding and current row
             ),
             0
@@ -221,32 +221,32 @@ filled_standings as (
         coalesce(
             div_sequence,
             last_value(div_sequence ignore nulls) over (
-                partition by season, team_abv 
-                order by date 
+                partition by season, team_abv
+                order by date
                 rows between unbounded preceding and current row
             )
         ) as div_sequence,
         coalesce(
             wc_sequence,
             last_value(wc_sequence ignore nulls) over (
-                partition by season, team_abv 
-                order by date 
+                partition by season, team_abv
+                order by date
                 rows between unbounded preceding and current row
             )
         ) as wc_sequence,
         coalesce(
             conf_sequence,
             last_value(conf_sequence ignore nulls) over (
-                partition by season, team_abv 
-                order by date 
+                partition by season, team_abv
+                order by date
                 rows between unbounded preceding and current row
             )
         ) as conf_sequence,
         coalesce(
             league_sequence,
             last_value(league_sequence ignore nulls) over (
-                partition by season, team_abv 
-                order by date 
+                partition by season, team_abv
+                order by date
                 rows between unbounded preceding and current row
             )
         ) as league_sequence
@@ -275,7 +275,7 @@ select
     conf_sequence,
     league_sequence
 from filled_standings
-order by 
+order by
     season,
     date,
     team_abv

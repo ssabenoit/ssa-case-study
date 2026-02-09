@@ -1,44 +1,47 @@
 -- models/staging/stg_nhl__play_by_play.sql
--- Extracts and flattens play-by-play data from the NHL API
+-- Standardizes play-by-play event data from the NHL API
+-- Data is already flattened to one row per event
 
 with
 
-all_plays as (
-    select
-        *,
-        parse_json("awayTeam") as awayTeam_json,
-        parse_json("homeTeam") as homeTeam_json,
-        parse_json("plays") as plays_json
+source as (
+    select *
     from {{ source('nhl_staging_data', 'play_by_play') }}
 )
 
 select
-    "id"::int as id,
-    "season"::int as season,
-    awayTeam_json:id::int as away_id,
-    awayTeam_json:abbrev::string as away_abv,
-    homeTeam_json:id::int as home_id,
-    homeTeam_json:abbrev::string as home_abv,
-    plays.value:eventId::int as event_id,
-    plays.value:homeTeamDefendingSide::string as home_side,
-    plays.value:periodDescriptor.number::int as period,
-    plays.value:periodDescriptor.periodType::string as period_type,
-    plays.value:situationCode::int as situation_code,
-    plays.value:sortOrder::int as sort_order,
-    plays.value:timeInPeriod::string as time_in_period,
-    split_part(time_in_period, ':', 1)::int * 60 + split_part(time_in_period, ':', -1)::int as elapsed_seconds,
-    plays.value:timeRemaining::string as time_remaining,
-    plays.value:typeCode::int as type_code,
-    plays.value:details.eventOwnerTeamId::int as play_team_id,
-    case
-        when play_team_id = home_id then home_abv
-        when play_team_id = away_id then away_abv
-        else null
-    end as play_team_abv,
-    plays.value:typeDescKey::string as description,
-    plays.value:details.xCoord::int as x_pos,
-    plays.value:details.yCoord::int as y_pos,
-    plays.value:details.zoneCode::string as zone_code,
-    plays.value:details as full_details
-from all_plays,
-lateral flatten(input => plays_json) plays
+    GAME_ID::int as game_id,
+    EVENTID::int as event_id,
+    HOMETEAMDEFENDINGSIDE::string as home_side,
+    PERIODDESCRIPTOR_NUMBER::int as period,
+    PERIODDESCRIPTOR_PERIODTYPE::string as period_type,
+    SITUATIONCODE::string as situation_code,
+    SORTORDER::int as sort_order,
+    TIMEINPERIOD::string as time_in_period,
+    split_part(TIMEINPERIOD, ':', 1)::int * 60 + split_part(TIMEINPERIOD, ':', -1)::int as elapsed_seconds,
+    TIMEREMAINING::string as time_remaining,
+    TYPECODE::int as type_code,
+    DETAILS_EVENTOWNERTEAMID::int as play_team_id,
+    TYPEDESCKEY::string as description,
+    DETAILS_XCOORD::float as x_pos,
+    DETAILS_YCOORD::float as y_pos,
+    DETAILS_ZONECODE::string as zone_code,
+    DETAILS_SHOTTYPE::string as shot_type,
+    DETAILS_REASON::string as penalty_reason,
+    DETAILS_DURATION::int as penalty_duration,
+    DETAILS_SCORINGPLAYERID::int as scoring_player_id,
+    DETAILS_ASSIST1PLAYERID::int as assist1_player_id,
+    DETAILS_ASSIST2PLAYERID::int as assist2_player_id,
+    DETAILS_SHOOTINGPLAYERID::int as shooting_player_id,
+    DETAILS_GOALIEINNETID::int as goalie_in_net_id,
+    DETAILS_HITTINGPLAYERID::int as hitting_player_id,
+    DETAILS_HITTEEPLAYERID::int as hittee_player_id,
+    DETAILS_BLOCKINGPLAYERID::int as blocking_player_id,
+    DETAILS_COMMITTEDBYPLAYERID::int as committed_by_player_id,
+    DETAILS_DRAWNBYPLAYERID::int as drawn_by_player_id,
+    DETAILS_AWAYSCORE::int as away_score,
+    DETAILS_HOMESCORE::int as home_score,
+    DETAILS_AWAYSOG::int as away_sog,
+    DETAILS_HOMESOG::int as home_sog
+from source
+qualify row_number() over (partition by GAME_ID, EVENTID order by SORTORDER) = 1

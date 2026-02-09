@@ -12,13 +12,13 @@ games as (
 
 away_team_forwards as (
     select
-        "id"::int as game_id,
-        "season"::int as season,
-        parse_json("awayTeam"):abbrev::string as team_abv,
+        ID::int as game_id,
+        SEASON::int as season,
+        AWAYTEAM_ABBREV::string as team_abv,
         'away' as type,
         case
-            when "gameType" = 2 then 'regular'
-            when "gameType" = 3 then 'playoff'
+            when GAMETYPE = 2 then 'regular'
+            when GAMETYPE = 3 then 'playoff'
             else 'other'
         end as game_type,
         player.value:playerId::int as player_id,
@@ -39,18 +39,18 @@ away_team_forwards as (
         cast(split_part(player.value:toi::string, ':', 1) as int) * 60 + cast(split_part(player.value:toi::string, ':', 2) as int) as toi
     from
         games,
-        lateral flatten(input => parse_json(games."playerByGameStats"), path => 'awayTeam.forwards') player
+        lateral flatten(input => parse_json(PLAYERBYGAMESTATS_AWAYTEAM_FORWARDS)) player
 ),
 
 away_team_defense as (
     select
-        "id"::int as game_id,
-        "season"::int as season,
-        parse_json("awayTeam"):abbrev::string as team_abv,
+        ID::int as game_id,
+        SEASON::int as season,
+        AWAYTEAM_ABBREV::string as team_abv,
         'away' as type,
         case
-            when "gameType" = 2 then 'regular'
-            when "gameType" = 3 then 'playoff'
+            when GAMETYPE = 2 then 'regular'
+            when GAMETYPE = 3 then 'playoff'
             else 'other'
         end as game_type,
         player.value:playerId::int as player_id,
@@ -71,18 +71,18 @@ away_team_defense as (
         cast(split_part(player.value:toi::string, ':', 1) as int) * 60 + cast(split_part(player.value:toi::string, ':', 2) as int) as toi
     from
         games,
-        lateral flatten(input => parse_json(games."playerByGameStats"), path => 'awayTeam.defense') player
+        lateral flatten(input => parse_json(PLAYERBYGAMESTATS_AWAYTEAM_DEFENSE)) player
 ),
 
 home_team_forwards as (
     select
-        "id"::int as game_id,
-        "season"::int as season,
-        parse_json("homeTeam"):abbrev::string as team_abv,
+        ID::int as game_id,
+        SEASON::int as season,
+        HOMETEAM_ABBREV::string as team_abv,
         'home' as type,
         case
-            when "gameType" = 2 then 'regular'
-            when "gameType" = 3 then 'playoff'
+            when GAMETYPE = 2 then 'regular'
+            when GAMETYPE = 3 then 'playoff'
             else 'other'
         end as game_type,
         player.value:playerId::int as player_id,
@@ -103,18 +103,18 @@ home_team_forwards as (
         cast(split_part(player.value:toi::string, ':', 1) as int) * 60 + cast(split_part(player.value:toi::string, ':', 2) as int) as toi
     from
         games,
-        lateral flatten(input => parse_json(games."playerByGameStats"), path => 'homeTeam.forwards') player
+        lateral flatten(input => parse_json(PLAYERBYGAMESTATS_HOMETEAM_FORWARDS)) player
 ),
 
 home_team_defense as (
     select
-        "id"::int as game_id,
-        "season"::int as season,
-        parse_json("homeTeam"):abbrev::string as team_abv,
+        ID::int as game_id,
+        SEASON::int as season,
+        HOMETEAM_ABBREV::string as team_abv,
         'home' as type,
         case
-            when "gameType" = 2 then 'regular'
-            when "gameType" = 3 then 'playoff'
+            when GAMETYPE = 2 then 'regular'
+            when GAMETYPE = 3 then 'playoff'
             else 'other'
         end as game_type,
         player.value:playerId::int as player_id,
@@ -135,11 +135,11 @@ home_team_defense as (
         cast(split_part(player.value:toi::string, ':', 1) as int) * 60 + cast(split_part(player.value:toi::string, ':', 2) as int) as toi
     from
         games,
-        lateral flatten(input => parse_json(games."playerByGameStats"), path => 'homeTeam.defense') player
+        lateral flatten(input => parse_json(PLAYERBYGAMESTATS_HOMETEAM_DEFENSE)) player
 ),
 
 full_away_teams_stats as (
-    select * 
+    select *
     from away_team_defense
     union all
     select *
@@ -147,7 +147,7 @@ full_away_teams_stats as (
 ),
 
 full_home_teams_stats as (
-    select * 
+    select *
     from home_team_defense
     union all
     select *
@@ -162,5 +162,5 @@ all_skaters_per_game_stats as (
     from full_home_teams_stats
 )
 
-select * 
+select *
 from all_skaters_per_game_stats

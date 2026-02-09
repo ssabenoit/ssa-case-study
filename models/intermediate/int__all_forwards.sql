@@ -5,8 +5,8 @@ with
 
 all_forwards as (
     select
-        "team_abv"::string as team_abv,
-        parse_json("forwards") as forwards
+        TEAM_ABV::string as team_abv,
+        FORWARDS as forwards
     from {{ ref("stg_nhl__team_rosters") }}
 )
 

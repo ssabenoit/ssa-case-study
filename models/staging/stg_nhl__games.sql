@@ -8,5 +8,6 @@ source as (
     from {{ source('nhl_staging_data', 'games') }}
 )
 
-select * 
+select *
 from source
+qualify row_number() over (partition by ID order by ID) = 1

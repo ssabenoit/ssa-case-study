@@ -12,14 +12,14 @@ games as (
 
 away_team_goalies as (
     select
-        "id"::int as game_id,
-        "season"::int as season,
+        ID::int as game_id,
+        SEASON::int as season,
         case
-            when "gameType" = 2 then 'regular'
-            when "gameType" = 3 then 'playoff'
+            when GAMETYPE = 2 then 'regular'
+            when GAMETYPE = 3 then 'playoff'
             else 'other'
         end as game_type,
-        parse_json("awayTeam"):abbrev::string as team_abv,
+        AWAYTEAM_ABBREV::string as team_abv,
         'away' as type,
         player.value:playerId::int as player_id,
         player.value:name:default::string as name,
@@ -50,19 +50,19 @@ away_team_goalies as (
         ) as toi
     from
         games,
-        lateral flatten(input => parse_json(games."playerByGameStats"), path => 'awayTeam.goalies') player
+        lateral flatten(input => parse_json(PLAYERBYGAMESTATS_AWAYTEAM_GOALIES)) player
 ),
 
 home_team_goalies as (
     select
-        "id"::int as game_id,
-        "season"::int as season,
+        ID::int as game_id,
+        SEASON::int as season,
         case
-            when "gameType" = 2 then 'regular'
-            when "gameType" = 3 then 'playoff'
+            when GAMETYPE = 2 then 'regular'
+            when GAMETYPE = 3 then 'playoff'
             else 'other'
         end as game_type,
-        parse_json("homeTeam"):abbrev::string as team_abv,
+        HOMETEAM_ABBREV::string as team_abv,
         'home' as type,
         player.value:playerId::int as player_id,
         player.value:name:default::string as name,
@@ -93,11 +93,11 @@ home_team_goalies as (
         ) as toi
     from
         games,
-        lateral flatten(input => parse_json(games."playerByGameStats"), path => 'homeTeam.goalies') player
+        lateral flatten(input => parse_json(PLAYERBYGAMESTATS_HOMETEAM_GOALIES)) player
 ),
 
 all_goalies_per_game_stats as (
-    select * 
+    select *
     from home_team_goalies
     union all
     select *

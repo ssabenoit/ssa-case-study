@@ -1,85 +1,87 @@
 -- models/staging/stg_nhl__game_summaries.sql
--- Pulls team information and high-level stat summary (mainly PP/PK) for each game
+-- Pulls team information and high-level stat summary for each game
+-- Note: teamGameStats (PP/PK/hits/blocks/etc.) not available in flattened format.
+-- Those fields will populate once summary_teamGameStats column is loaded.
 
 with
 
 summaries as (
-    select
-        *,
-        parse_json("awayTeam") as awayTeam_json,
-        parse_json("homeTeam") as homeTeam_json,
-        parse_json("summary") as summary_json
+    select *
     from {{ source('nhl_staging_data', 'game_summaries') }}
 ),
 
 away_team_stats as (
     select
-        "season"::string as season,
-        "id"::int as game_id,
-        awayTeam_json:abbrev::string as team_abv,
-        awayTeam_json:id::int as team_id,
+        SEASON::string as season,
+        ID::int as game_id,
+        AWAYTEAM_ABBREV::string as team_abv,
+        AWAYTEAM_ID::int as team_id,
         'away' as type,
         case
-            when "gameType" = 1 then 'preseason'
-            when "gameType" = 2 then 'regular'
-            when "gameType" = 3 then 'playoff'
+            when GAMETYPE = 1 then 'preseason'
+            when GAMETYPE = 2 then 'regular'
+            when GAMETYPE = 3 then 'playoff'
             else 'other'
         end as game_type,
-        awayTeam_json:sog::int as shots,
-        awayTeam_json:score::int as goals,
-        homeTeam_json:score::int as goals_against,
-        summary_json:teamGameStats[0]:awayValue::int as sog,
-        summary_json:teamGameStats[1]:awayValue::float as faceoff_pct,
-        summary_json:teamGameStats[2]:awayValue::string as power_play,
-        cast(split_part(power_play, '/', 0) as int) as pp_goals,
-        cast(split_part(power_play, '/', -1) as int) as pp_attempts,
-        summary_json:teamGameStats[2]:homeValue::string as penalty_kill,
-        cast(split_part(penalty_kill, '/', 0) as int) as pk_goals_against,
-        cast(split_part(penalty_kill, '/', -1) as int) as pk_attempts,
-        summary_json:teamGameStats[3]:awayValue::float as pp_pct,
-        summary_json:teamGameStats[4]:awayValue::int as pim,
-        summary_json:teamGameStats[5]:awayValue::int as hits,
-        summary_json:teamGameStats[6]:awayValue::int as blocked_shots,
-        summary_json:teamGameStats[7]:awayValue::int as giveaways,
-        summary_json:teamGameStats[8]:awayValue::int as takeaways
+        AWAYTEAM_SOG::int as shots,
+        AWAYTEAM_SCORE::int as goals,
+        HOMETEAM_SCORE::int as goals_against,
+        AWAYTEAM_SOG::int as sog,
+        null::float as faceoff_pct,
+        null::string as power_play,
+        null::int as pp_goals,
+        null::int as pp_attempts,
+        null::string as penalty_kill,
+        null::int as pk_goals_against,
+        null::int as pk_attempts,
+        null::float as pp_pct,
+        null::int as pim,
+        null::int as hits,
+        null::int as blocks,
+        null::int as giveaways,
+        null::int as takeaways
     from summaries
 ),
 
 home_team_stats as (
     select
-        "season"::string as season,
-        "id"::int as game_id,
-        homeTeam_json:abbrev::string as team_abv,
-        homeTeam_json:id::int as team_id,
+        SEASON::string as season,
+        ID::int as game_id,
+        HOMETEAM_ABBREV::string as team_abv,
+        HOMETEAM_ID::int as team_id,
         'home' as type,
         case
-            when "gameType" = 1 then 'preseason'
-            when "gameType" = 2 then 'regular'
-            when "gameType" = 3 then 'playoff'
+            when GAMETYPE = 1 then 'preseason'
+            when GAMETYPE = 2 then 'regular'
+            when GAMETYPE = 3 then 'playoff'
             else 'other'
         end as game_type,
-        homeTeam_json:sog::int as shots,
-        homeTeam_json:score::int as goals,
-        awayTeam_json:score::int as goals_against,
-        summary_json:teamGameStats[0]:homeValue::int as sog,
-        summary_json:teamGameStats[1]:homeValue::float as faceoff_pct,
-        summary_json:teamGameStats[2]:homeValue::string as power_play,
-        cast(split_part(power_play, '/', 0) as int) as pp_goals,
-        cast(split_part(power_play, '/', -1) as int) as pp_attempts,
-        summary_json:teamGameStats[2]:awayValue::string as penalty_kill,
-        cast(split_part(penalty_kill, '/', 0) as int) as pk_goals_against,
-        cast(split_part(penalty_kill, '/', -1) as int) as pk_attempts,
-        summary_json:teamGameStats[3]:homeValue::float as pp_pct,
-        summary_json:teamGameStats[4]:homeValue::int as pim,
-        summary_json:teamGameStats[5]:homeValue::int as hits,
-        summary_json:teamGameStats[6]:homeValue::int as blocks,
-        summary_json:teamGameStats[7]:homeValue::int as giveaways,
-        summary_json:teamGameStats[8]:homeValue::int as takeaways
+        HOMETEAM_SOG::int as shots,
+        HOMETEAM_SCORE::int as goals,
+        AWAYTEAM_SCORE::int as goals_against,
+        HOMETEAM_SOG::int as sog,
+        null::float as faceoff_pct,
+        null::string as power_play,
+        null::int as pp_goals,
+        null::int as pp_attempts,
+        null::string as penalty_kill,
+        null::int as pk_goals_against,
+        null::int as pk_attempts,
+        null::float as pp_pct,
+        null::int as pim,
+        null::int as hits,
+        null::int as blocks,
+        null::int as giveaways,
+        null::int as takeaways
     from summaries
 )
 
-select * 
-from home_team_stats
-union all
-select * 
-from away_team_stats
+select *
+from (
+    select *
+    from home_team_stats
+    union all
+    select *
+    from away_team_stats
+)
+qualify row_number() over (partition by game_id, team_id order by game_id) = 1

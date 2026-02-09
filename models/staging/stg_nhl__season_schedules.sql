@@ -4,34 +4,27 @@
 with
 
 games as (
-    select
-        *,
-        parse_json("venue") as venue_json,
-        parse_json("awayTeam") as awayTeam_json,
-        parse_json("homeTeam") as homeTeam_json,
-        parse_json("winningGoalie") as winningGoalie_json,
-        parse_json("winningGoalScorer") as winningGoalScorer_json,
-        parse_json("specialEvent") as specialEvent_json
+    select *
     from {{ source("nhl_staging_data", "season_schedules") }}
 )
 
 select
-    "id"::int as id,
-    venue_json:default::string as venue,
-    "season"::int as season,
-    awayTeam_json:abbrev::string as away_abv,
-    awayTeam_json:id::int as away_id,
-    homeTeam_json:abbrev::string as home_abv,
-    homeTeam_json:id::int as home_id,
-    "gameDate" as game_date,
-    "gameType"::int as game_type,
-    "gameState" as game_state,
-    winningGoalie_json:playerId::int as winning_goalie_id,
-    winningGoalScorer_json:playerId::int as winning_scorer_id,
-    "neutralSite"::boolean as neutral,
-    "startTimeUTC" as start_time_utc,
-    "easternUTCOffset" as eastern_offset,
-    "venueTimezone"::string as venue_tz,
-    specialEvent_json:name::string as special_event
+    ID::int as id,
+    VENUE_DEFAULT::string as venue,
+    SEASON::int as season,
+    AWAYTEAM_ABBREV::string as away_abv,
+    AWAYTEAM_ID::int as away_id,
+    HOMETEAM_ABBREV::string as home_abv,
+    HOMETEAM_ID::int as home_id,
+    GAMEDATE as game_date,
+    GAMETYPE::int as game_type,
+    GAMESTATE as game_state,
+    WINNINGGOALIE_PLAYERID::int as winning_goalie_id,
+    WINNINGGOALSCORER_PLAYERID::int as winning_scorer_id,
+    NEUTRALSITE::boolean as neutral,
+    STARTTIMEUTC as start_time_utc,
+    EASTERNUTCOFFSET as eastern_offset,
+    VENUETIMEZONE::string as venue_tz,
+    SPECIALEVENT_NAME_DEFAULT::string as special_event
 from games
-qualify row_number() over (partition by id order by "id" desc) = 1
+qualify row_number() over (partition by ID order by ID desc) = 1

@@ -9,8 +9,9 @@ source as (
 )
 
 select
-    "team_abv" as "team_abv",
-    parse_json("forwards") as "forwards",
-    parse_json("defensemen") as "defensemen",
-    parse_json("goalies") as "goalies"
+    TEAM_ABV as team_abv,
+    parse_json(FORWARDS) as forwards,
+    parse_json(DEFENSEMEN) as defensemen,
+    parse_json(GOALIES) as goalies
 from source
+qualify row_number() over (partition by TEAM_ABV order by _loaded_at desc) = 1

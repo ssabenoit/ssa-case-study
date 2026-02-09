@@ -9,13 +9,14 @@ source as (
 
 renamed as (
     select
-        "id" as team_id,
-        "abbrev" as team_abbrev,
-        "name_default" as team_name,
-        "placeName_default" as team_place_name,
-        "commonName_default" as team_common_name,
-        "french" as team_french_name,
-        "logo" as team_logo_url
+        ID as team_id,
+        ABBREV as team_abbrev,
+        NAME_DEFAULT as team_name,
+        PLACENAME_DEFAULT as team_place_name,
+        COMMONNAME_DEFAULT as team_common_name,
+        FRENCH as team_french_name,
+        LOGO as team_logo_url,
+        _loaded_at
     from source
 )
 
@@ -28,3 +29,4 @@ select
     team_french_name,
     team_logo_url
 from renamed
+qualify row_number() over (partition by team_id order by _loaded_at desc) = 1

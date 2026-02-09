@@ -10,3 +10,4 @@ source as (
 select
     *
 from source
+qualify row_number() over (partition by TEAMABBREV_DEFAULT order by _loaded_at desc) = 1

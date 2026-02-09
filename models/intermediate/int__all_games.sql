@@ -7,31 +7,25 @@ with
 
 summaries as (
     select
-        "id"::int as id,
-        "season"::int as season,
-        parse_json("awayTeam"):id::int as away_id,
-        parse_json("awayTeam"):abbrev::string as away_abv,
-        parse_json("awayTeam"):score::int as away_score,
-        parse_json("homeTeam"):id::int as home_id,
-        parse_json("homeTeam"):abbrev::string as home_abv,
-        parse_json("homeTeam"):score::int as home_score
+        ID::int as id,
+        SEASON::int as season,
+        AWAYTEAM_ID::int as away_id,
+        AWAYTEAM_ABBREV::string as away_abv,
+        AWAYTEAM_SCORE::int as away_score,
+        HOMETEAM_ID::int as home_id,
+        HOMETEAM_ABBREV::string as home_abv,
+        HOMETEAM_SCORE::int as home_score
     from {{ source('nhl_staging_data', 'game_summaries') }}
 ),
 
 games as (
     select
-        "id"::int as id,
-        "gameDate"::date as date,
-        "venue_default"::string as venue,
-        "neutralSite"::boolean as neutral_site
+        ID::int as id,
+        GAMEDATE::date as date,
+        VENUE_DEFAULT::string as venue,
+        NEUTRALSITE::boolean as neutral_site,
+        GAMEOUTCOME_LASTPERIODTYPE::string as game_outcome
     from {{ ref("stg_nhl__games") }}
-),
-
-outcomes as (
-    select
-        "id"::int as id,
-        parse_json("gameOutcome"):lastPeriodType::string as game_outcome
-    from {{ source('nhl_staging_data', 'play_by_play') }}
 )
 
 select
@@ -39,9 +33,7 @@ select
     g.date,
     g.venue,
     g.neutral_site,
-    o.game_outcome
+    g.game_outcome
 from summaries s
 left join games g
     on g.id = s.id
-left join outcomes o
-    on g.id = o.id

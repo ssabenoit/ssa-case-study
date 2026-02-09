@@ -34,7 +34,7 @@ goalies_per_game as (
         sum(goals_against) as goals_against,
         sum(shots_saved) as saves,
         sum(shots_against) as shots_against,
-        cast(sum(shots_saved) as int) / cast(sum(shots_against) as int) as save_pct,
+        cast(sum(shots_saved) as int) / nullif(cast(sum(shots_against) as int), 0) as save_pct,
         sum(pim) as pim,
         cast(sum(pp_shots_against) as int) as pp_shots_against,
         cast(sum(pp_shots_saved) as int) as pp_saves
