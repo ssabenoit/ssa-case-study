@@ -16,6 +16,7 @@ summaries as (
         HOMETEAM_ABBREV::string as home_abv,
         HOMETEAM_SCORE::int as home_score
     from {{ source('nhl_staging_data', 'game_summaries') }}
+    qualify row_number() over (partition by ID order by ID) = 1
 ),
 
 games as (
