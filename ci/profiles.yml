@@ -1,0 +1,15 @@
+# CI-only dbt profile: credentials come from GitHub Actions secrets via env vars.
+# Local development continues to use ~/.dbt/profiles.yml.
+nhl_analytics:
+  target: ci
+  outputs:
+    ci:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: "{{ env_var('SNOWFLAKE_ROLE', 'ACCOUNTADMIN') }}"
+      database: DBT_ANALYTICS
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE', 'DBT_WH') }}"
+      schema: DBT_CI
+      threads: 4
