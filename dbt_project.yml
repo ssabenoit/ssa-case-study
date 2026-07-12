@@ -36,6 +36,15 @@ models:
       +materialized: view
     dimensional:
       +materialized: table
+    marts:
+      # dashboard-serving models re-aggregate on every query as views;
+      # small tables are cheaper and faster for Metabase
+      +materialized: table
+
+vars:
+  regular_season_games: 82
+  league_team_count: 32
+  league_avg_save_pct: 0.910
 
 # Configure all tests to result in warnings rather than failures
 tests:

@@ -119,7 +119,7 @@ previous_season_metrics as (
         case
             when ppw.playoff_games_played > 0 then
                 -- Teams that made playoffs
-                (100.0 * (32 - psf.final_rank) / 31.0) * 0.5 +  -- Regular season component (40%)
+                (100.0 * ({{ var('league_team_count') }} - psf.final_rank) / ({{ var('league_team_count') }} - 1.0)) * 0.5 +  -- Regular season component (40%)
                 (
                     -- Playoff component (40%)
                     ((ppw.playoff_wins / 16) * 100 * 0.6) +  -- Total playoff wins (60% of playoff score, max ~16 wins * 5 = 80 points)
@@ -128,7 +128,7 @@ previous_season_metrics as (
                 ) * 0.5
             else
                 -- Teams that missed playoffs get only regular season score, penalized
-                (100.0 * (32 - psf.final_rank) / 31.0) * 0.8  -- Reduced weight for missing playoffs
+                (100.0 * ({{ var('league_team_count') }} - psf.final_rank) / ({{ var('league_team_count') }} - 1.0)) * 0.8  -- Reduced weight for missing playoffs
         end as prev_power_score
     from previous_season_final psf
     left join previous_playoff_performance ppp

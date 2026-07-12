@@ -1,0 +1,49 @@
+version: 2
+
+seeds:
+  - name: nhl_team_colors
+    description: Brand colors per franchise, used for visualization styling.
+    columns:
+      - name: team_abv
+        description: Three-letter team abbreviation
+        tests:
+          - unique
+          - not_null
+      - name: primary_color
+        description: Primary brand color (hex)
+        tests:
+          - not_null
+      - name: secondary_color
+        description: Secondary brand color (hex)
+
+  - name: nhl_team_arenas
+    description: Home arena, capacity, and location per franchise.
+    columns:
+      - name: team_abv
+        tests:
+          - unique
+          - not_null
+      - name: arena_name
+        tests:
+          - not_null
+      - name: arena_capacity
+        description: Listed hockey capacity
+
+  - name: nhl_team_history
+    description: Franchise founding years, relocation lineage, and expansion flags.
+    columns:
+      - name: team_abv
+        tests:
+          - unique
+          - not_null
+      - name: founded_year
+        tests:
+          - not_null
+      - name: previous_name
+        description: Prior franchise name if relocated/renamed
+      - name: current_location_since
+        description: Year the franchise began playing in its current market
+      - name: is_expansion_team
+        description: True for modern expansion franchises (VGK, SEA)
+      - name: is_original_or_relocated
+        description: True for franchises that predate the modern expansion era or relocated

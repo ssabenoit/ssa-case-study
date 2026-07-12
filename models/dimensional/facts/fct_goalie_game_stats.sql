@@ -200,8 +200,8 @@ select
     -- Quality starts metric
     (is_starting_goalie and save_percentage >= 0.917 and goals_against <= 2) as quality_start,
     (is_starting_goalie and save_percentage < 0.850) as really_bad_start,
-    -- Saves above/below average (0.910 league average; parameterized in Phase 3)
-    saves - (shots_faced * 0.910) as saves_above_average
+    -- Saves above/below what a league-average goalie would stop
+    saves - (shots_faced * {{ var('league_avg_save_pct') }}) as saves_above_average
 from goalie_game_facts
 order by
     game_key,
