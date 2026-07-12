@@ -9,7 +9,8 @@ sources:
     database: dbt_analytics
     schema: staging
     loader: python_api_extract  # the technology used to load the data
-    loaded_at_field: _etl_loaded_at  # used to calculate data freshness
+    # actual audit column on every table is _loaded_at (text) — cast for freshness
+    loaded_at_field: "_loaded_at::timestamp"
     
     tables:
       - name: current_standings

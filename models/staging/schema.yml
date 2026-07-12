@@ -2,168 +2,211 @@ version: 2
 
 models:
   - name: stg_nhl__current_standings
-    description: Staged data from NHL API current standings endpoint
+    description: >
+      Latest NHL standings snapshot, one row per team. Passes through all raw
+      columns (80+ standings metrics incl. home/road/L10 splits, regulation
+      wins, streaks) deduplicated to the latest load per team.
     columns:
-      - name: season
-        description: NHL season identifier (format YYYYZZZZ where YYYY is start year and ZZZZ is end year)
-      - name: team_id
-        description: Unique identifier for each NHL team
-      - name: team_abv
-        description: Three-letter abbreviation for the team (e.g., TOR, NYR)
-      - name: team_name
-        description: Full name of the team
+      - name: seasonid
+        description: NHL season identifier (YYYYZZZZ)
+      - name: teamabbrev_default
+        description: Three-letter team abbreviation (e.g., NSH, COL)
       - name: points
-        description: Current season points total for the team
-      - name: reg_wins
-        description: Regular season wins (excluding overtime/shootout wins)
-      - name: ot_wins
-        description: Wins achieved in overtime
-      - name: total_wins
-        description: Total number of wins (regulation + overtime)
-      - name: losses
-        description: Total number of losses
-      - name: ot_losses
-        description: Losses in overtime or shootout
-      - name: games_played
-        description: Total number of games played
+        description: Current season points total
 
   - name: stg_nhl__current_teams
-    description: Current active teams in the NHL
+    description: Current active NHL franchises, one row per team.
     columns:
-      - name: id
-        description: Unique identifier for the team
-      - name: abbrev
-        description: Three-letter abbreviation for the team
-      - name: name
-        description: Team name object containing default and French versions
-      - name: placename
-        description: Place name object (city/location)
-      - name: commonname
-        description: Common name object for the team
-      - name: french
-        description: Boolean indicating if French version is available
-      - name: logo
-        description: URL to team logo image
+      - name: team_id
+        description: Unique NHL team identifier
+        tests:
+          - not_null
+      - name: team_abbrev
+        description: Three-letter team abbreviation
+      - name: team_name
+        description: Full team name
+      - name: team_logo_url
+        description: URL to the team logo SVG
 
   - name: stg_nhl__daily_standings
-    description: NHL standings captured daily
+    description: >
+      Daily standings snapshots, one row per (date, team), deduplicated to the
+      latest load. Carries the full raw standings payload: points, wins,
+      losses, OT losses, regulation and regulation+OT wins, home/road/L10
+      splits, shootout records, streak code/count, and division/conference/
+      wildcard/league sequences.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - date
+            - teamabbrev_default
     columns:
       - name: date
         description: Date of the standings snapshot
-      - name: team_id
-        description: Unique identifier for each NHL team
-      - name: team_abv
-        description: Three-letter abbreviation for the team
-      - name: points
-        description: Season points total as of this date
-      - name: reg_wins
-        description: Regular wins (excluding overtime/shootout wins) as of this date
-      - name: ot_wins
-        description: Overtime wins as of this date
-      - name: total_wins
-        description: Total wins as of this date
-      - name: losses
-        description: Total losses as of this date
-      - name: ot_losses
-        description: Overtime/shootout losses as of this date
-      - name: games_played
-        description: Games played as of this date
+        tests:
+          - not_null
+      - name: teamabbrev_default
+        description: Three-letter team abbreviation
+        tests:
+          - not_null
+      - name: seasonid
+        description: NHL season identifier (YYYYZZZZ)
 
   - name: stg_nhl__games
-    description: Basic information about NHL games
+    description: >
+      One row per NHL API game record (all game types, including special
+      events), deduplicated to the most recent load so post-game corrections
+      win. Passes through all raw columns.
     columns:
       - name: id
-        description: Unique identifier for the game
+        description: Unique game identifier
+        tests:
+          - unique
+          - not_null
       - name: season
         description: NHL season identifier
       - name: gametype
-        description: Type of game (2=regular season, 3=playoff, etc.)
-      - name: awayteam
-        description: Information about the away team
-      - name: hometeam
-        description: Information about the home team
-      - name: starttime
-        description: Start time of the game
-      - name: gamedate
-        description: Date of the game
+        description: "Game type: 1=preseason, 2=regular season, 3=playoffs"
+      - name: gameoutcome_lastperiodtype
+        description: Period the game ended in (REG/OT/SO)
+      - name: starttimeutc
+        description: Scheduled puck drop in UTC
 
   - name: stg_nhl__game_boxscore
-    description: Detailed boxscore information for each game
+    description: >
+      One row per game boxscore, deduplicated to the most recent load (final
+      boxscores beat in-progress snapshots). Player statistics live in the
+      playerbygamestats_* JSON columns parsed by the intermediate layer.
     columns:
       - name: id
-        description: Unique identifier for the game
-      - name: season
-        description: NHL season identifier
-      - name: gametype
-        description: Type of game (2=regular season, 3=playoff, etc.)
-      - name: awayteam
-        description: Information about the away team
-      - name: hometeam
-        description: Information about the home team
-      - name: playerbygamestats
-        description: Detailed player statistics for this game
+        description: Unique game identifier
+        tests:
+          - unique
+          - not_null
 
   - name: stg_nhl__game_summaries
-    description: Game summary information with team stats
+    description: >
+      Team-level view of each game summary: one row per (game_id, team_id),
+      two rows per game. Scores and shots-on-goal come from this source;
+      team counting stats (hits, blocks, PIM, power play, faceoffs) are NOT
+      loaded here and are assembled in int__team_per_game_stats from the
+      boxscore and play-by-play models.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - game_id
+            - team_id
     columns:
-      - name: id
-        description: Unique identifier for the game
       - name: season
         description: NHL season identifier
-      - name: gametype
-        description: Type of game (2=regular season, 3=playoff, etc.)
-      - name: awayteam
-        description: Information about the away team including score
-      - name: hometeam
-        description: Information about the home team including score
-      - name: summary
-        description: Detailed summary information including team stats
+        tests:
+          - not_null
+      - name: game_id
+        description: Unique game identifier
+        tests:
+          - not_null
+      - name: team_abv
+        description: Three-letter team abbreviation
+        tests:
+          - not_null
+      - name: team_id
+        description: Unique NHL team identifier
+      - name: type
+        description: Whether this row is the home or away side of the game
+        tests:
+          - accepted_values:
+              values: ['home', 'away']
+      - name: game_type
+        description: Game type label
+        tests:
+          - accepted_values:
+              values: ['preseason', 'regular', 'playoff', 'other']
+      - name: shots
+        description: Shots on goal for this team
+      - name: goals
+        description: Goals scored by this team
+      - name: goals_against
+        description: Goals scored by the opponent
+      - name: sog
+        description: Shots on goal (alias of shots)
+      - name: game_date
+        description: Calendar date of the game
+      - name: start_time_utc
+        description: Scheduled puck drop in UTC (ISO-8601 string)
+      - name: venue
+        description: Venue name
+      - name: last_period_type
+        description: Period the game ended in (REG/OT/SO)
 
   - name: stg_nhl__play_by_play
-    description: Play-by-play data for all games
+    description: >
+      One row per play-by-play event, deduplicated to the latest load.
+      Exposes event coordinates, situation code, and the player IDs involved
+      in scoring plays, shots, hits, blocks, faceoffs, and penalties.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - game_id
+            - event_id
     columns:
-      - name: id
-        description: Unique identifier for the game
-      - name: season
-        description: NHL season identifier
-      - name: game_type
-        description: Type of game (regular/playoff)
-      - name: away_team
-        description: Away team identifier
-      - name: home_team
-        description: Home team identifier
-      - name: plays
-        description: JSON array of plays in the game
+      - name: game_id
+        description: Unique game identifier
+        tests:
+          - not_null
+      - name: event_id
+        description: Event identifier, unique within a game
+        tests:
+          - not_null
+      - name: description
+        description: Event type key (goal, shot-on-goal, faceoff, penalty, ...)
+      - name: situation_code
+        description: >
+          Four-digit on-ice situation code ordered
+          [away goalie][away skaters][home skaters][home goalie],
+          e.g. 1551 = five-on-five with both goalies in.
+      - name: play_team_id
+        description: Team that owns the event (winner for faceoffs, penalized team for penalties)
+      - name: penalty_duration
+        description: Penalty minutes for penalty events (2/4/5/10)
+      - name: penalty_type_code
+        description: Penalty class code (MIN/MAJ/BEN/MIS/MAT)
+      - name: faceoff_winner_player_id
+        description: Player who won the faceoff (faceoff events only)
+      - name: faceoff_loser_player_id
+        description: Player who lost the faceoff (faceoff events only)
+      - name: served_by_player_id
+        description: Player serving the penalty (bench/team penalties)
 
   - name: stg_nhl__season_schedules
-    description: Complete season schedules for all teams
+    description: >
+      Full season schedule, one row per game (past and upcoming), deduplicated
+      to the most recent load so the latest game state wins (FUT -> OFF).
     columns:
       - name: id
-        description: Unique identifier for the game
+        description: Unique game identifier
+        tests:
+          - unique
+          - not_null
       - name: season
         description: NHL season identifier
-      - name: date
-        description: Date of the game
-      - name: away_id
-        description: Away team identifier
+      - name: game_date
+        description: Scheduled date of the game
+      - name: game_type
+        description: "Game type: 1=preseason, 2=regular season, 3=playoffs"
+      - name: game_state
+        description: State of the game (FUT=future, OFF/FINAL=completed)
       - name: away_abv
         description: Away team abbreviation
-      - name: home_id
-        description: Home team identifier
       - name: home_abv
         description: Home team abbreviation
-      - name: game_type
-        description: Type of game
-      - name: game_state
-        description: State of the game (FUT=future, FINAL=completed)
+      - name: special_event
+        description: Name of the special event this game belongs to, if any (All-Star, 4 Nations, ...)
 
   - name: stg_nhl__team_rosters
-    description: Team roster information with player details
+    description: Team roster information with player details as JSON arrays per position group.
     columns:
-      - name: team_id
-        description: Unique identifier for the team
       - name: team_abv
-        description: Three-letter abbreviation for the team
+        description: Three-letter team abbreviation
       - name: forwards
         description: JSON array of forwards on the team
       - name: defense

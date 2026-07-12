@@ -1,16 +1,23 @@
 -- models/staging/stg_nhl__game_summaries.sql
--- Pulls team information and high-level stat summary for each game
--- Note: teamGameStats (PP/PK/hits/blocks/etc.) not available in flattened format.
--- Those fields will populate once summary_teamGameStats column is loaded.
+-- Team-level view of each game summary: one row per (game_id, team_id),
+-- i.e. two rows per game (home and away).
+--
+-- Team counting stats (hits, blocks, PIM, power play, faceoffs) are NOT
+-- available here: the loader does not land summary.teamGameStats as a column.
+-- Those metrics are assembled in int__team_per_game_stats from the player
+-- boxscore (int__skaters_per_game_stats) and play-by-play events
+-- (int__game_penalties, int__game_faceoffs).
 
 with
 
 summaries as (
     select *
     from {{ source('nhl_staging_data', 'game_summaries') }}
+    -- loader appends re-extractions; latest load per game wins
+    qualify row_number() over (partition by ID order by _loaded_at desc) = 1
 ),
 
-away_team_stats as (
+away_team as (
     select
         SEASON::string as season,
         ID::int as game_id,
@@ -27,23 +34,14 @@ away_team_stats as (
         AWAYTEAM_SCORE::int as goals,
         HOMETEAM_SCORE::int as goals_against,
         AWAYTEAM_SOG::int as sog,
-        null::float as faceoff_pct,
-        null::string as power_play,
-        null::int as pp_goals,
-        null::int as pp_attempts,
-        null::string as penalty_kill,
-        null::int as pk_goals_against,
-        null::int as pk_attempts,
-        null::float as pp_pct,
-        null::int as pim,
-        null::int as hits,
-        null::int as blocks,
-        null::int as giveaways,
-        null::int as takeaways
+        GAMEDATE::date as game_date,
+        STARTTIMEUTC::string as start_time_utc,
+        VENUE_DEFAULT::string as venue,
+        PERIODDESCRIPTOR_PERIODTYPE::string as last_period_type
     from summaries
 ),
 
-home_team_stats as (
+home_team as (
     select
         SEASON::string as season,
         ID::int as game_id,
@@ -60,28 +58,15 @@ home_team_stats as (
         HOMETEAM_SCORE::int as goals,
         AWAYTEAM_SCORE::int as goals_against,
         HOMETEAM_SOG::int as sog,
-        null::float as faceoff_pct,
-        null::string as power_play,
-        null::int as pp_goals,
-        null::int as pp_attempts,
-        null::string as penalty_kill,
-        null::int as pk_goals_against,
-        null::int as pk_attempts,
-        null::float as pp_pct,
-        null::int as pim,
-        null::int as hits,
-        null::int as blocks,
-        null::int as giveaways,
-        null::int as takeaways
+        GAMEDATE::date as game_date,
+        STARTTIMEUTC::string as start_time_utc,
+        VENUE_DEFAULT::string as venue,
+        PERIODDESCRIPTOR_PERIODTYPE::string as last_period_type
     from summaries
 )
 
 select *
-from (
-    select *
-    from home_team_stats
-    union all
-    select *
-    from away_team_stats
-)
-qualify row_number() over (partition by game_id, team_id order by game_id) = 1
+from home_team
+union all
+select *
+from away_team
