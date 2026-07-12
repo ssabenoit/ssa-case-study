@@ -6,9 +6,9 @@ with
 games as (
     select *
     from {{ ref('stg_nhl__season_schedules') }}
-    where 
-        game_state = 'FUT' 
-        and game_type = 2
+    where
+        game_state in ('FUT', 'PRE')       -- scheduled + pregame
+        and game_type in (2, 3)            -- regular season and playoffs
 ),
 
 teams as (

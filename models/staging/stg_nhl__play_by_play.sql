@@ -28,6 +28,7 @@ select
     DETAILS_YCOORD::float as y_pos,
     DETAILS_ZONECODE::string as zone_code,
     DETAILS_SHOTTYPE::string as shot_type,
+    DETAILS_PLAYERID::int as event_player_id,
     DETAILS_REASON::string as penalty_reason,
     DETAILS_TYPECODE::string as penalty_type_code,
     DETAILS_DESCKEY::string as penalty_desc_key,

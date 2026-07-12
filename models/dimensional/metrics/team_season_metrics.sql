@@ -13,8 +13,7 @@ current_season as (
 
 team_game_stats as (
     select
-        tgs.*,
-        dt.team_abv,
+        tgs.*,  -- already carries team_abv
         dt.team_name,
         dt.division,
         dt.conference

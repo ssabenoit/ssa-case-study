@@ -1,8 +1,9 @@
 {{ config(materialized='table') }}
 
--- models/marts/team_power_rankings.sql
+-- models/dimensional/metrics/team_power_rankings.sql
 -- Power rankings incorporating various team performance metrics with recency weighting
 -- Enhanced to handle early season by blending with previous season's final rankings
+-- (the blend degrades gracefully to current-season-only when no prior season is loaded)
 
 with
 
@@ -167,66 +168,31 @@ team_stats as (
         ts.season = (select season from current_season)
 ),
 
-daily_standings as (
-    select
-        date,
-        team_abv,
-        points,
-        wins as total_wins,
-        losses,
-        ot_losses,
-        games_played,
-        case 
-            when games_played > 0 then (wins + ot_losses) / games_played 
-            else 0 
-        end as point_pct
-    from {{ ref('int__standings_by_day') }}
-    where season = (select season from current_season)
-),
-
+-- The league's own last-10-games split from the latest standings snapshot
+-- (true games, not calendar days)
 last_10_games as (
     select
         team_abv,
-        avg(point_pct) as last_10_points_pct,
-        count(*) as games_in_sample
-    from (
-        select
-            team_abv,
-            date,
-            point_pct,
-            row_number() over (partition by team_abv order by date desc) as game_recency_rank
-        from daily_standings
-        where games_played > 0
-    )
-    where game_recency_rank <= 10
-    group by team_abv
+        l10_points / nullif(2.0 * (l10_wins + l10_losses + l10_ot_losses), 0) as last_10_points_pct,
+        l10_wins + l10_losses + l10_ot_losses as games_in_sample
+    from {{ ref('int__standings_by_day') }}
+    where season = (select season from current_season)
+    qualify row_number() over (partition by team_abv order by date desc) = 1
 ),
 
 recent_games as (
+    -- each int__team_per_game_stats row is already from the team's own
+    -- perspective, so a win is simply goals > goals_against
     select
-        g.date as game_date,
+        ts.game_date,
         ts.team_abv,
-        case 
-            when g.away_abv = ts.team_abv then 
-                case
-                    when ts.goals > ts.goals_against then 'win'
-                    when ts.goals < ts.goals_against then 'loss'
-                    else 'tie'
-                end
-            else
-                case
-                    when ts.goals < ts.goals_against then 'win'
-                    when ts.goals > ts.goals_against then 'loss'
-                    else 'tie'
-                end
+        case
+            when ts.goals > ts.goals_against then 'win'
+            else 'loss'
         end as result,
         ts.goals - ts.goals_against as goal_differential
-    from {{ ref('int__all_games') }} g
-    inner join {{ ref('int__team_per_game_stats') }} ts
-        on g.id = ts.game_id
-    where
-        g.date >= dateadd('day', -30, current_date())
-        and g.season = (select season from current_season)
+    from {{ ref('int__team_per_game_stats') }} ts
+    where ts.season = (select season from current_season)::string
 ),
 
 last_5_games as (
@@ -613,10 +579,19 @@ final_rankings as (
         
         -- Calculate final power score with adjusted weights for early season
         case
+            -- No previous season loaded: score on current season alone at any
+            -- games-played count (components are neutral 50s very early)
+            when prev_power_score is null then
+                (points_component * 0.30) +
+                (goal_component * 0.25) +
+                (advanced_stats_component * 0.20) +
+                (schedule_component * 0.15) +
+                (momentum_component * 0.10)
+
             when games_played = 0 then
                 -- Pure previous season ranking (includes playoff performance)
                 prev_power_score
-                
+
             when games_played < 5 then
                 -- Blend heavily weighted to previous season (with playoffs)
                 (prev_power_score * previous_weight) +
@@ -707,11 +682,13 @@ select
     
     -- Previous season playoff context
     playoff_round_reached as prev_playoff_round,
-    case playoff_round_reached
-        when 4 then 'Cup Finals'
-        when 3 then 'Conference Finals'
-        when 2 then 'Second Round'
-        when 1 then 'First Round'
+    case
+        -- absence of a loaded previous season is not a missed playoff
+        when playoff_round_reached is null then null
+        when playoff_round_reached = 4 then 'Cup Finals'
+        when playoff_round_reached = 3 then 'Conference Finals'
+        when playoff_round_reached = 2 then 'Second Round'
+        when playoff_round_reached = 1 then 'First Round'
         else 'Missed Playoffs'
     end as prev_playoff_result,
     round(playoff_win_pct * 100, 1) as prev_playoff_win_pct,
