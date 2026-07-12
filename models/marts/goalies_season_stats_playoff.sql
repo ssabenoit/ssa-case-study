@@ -1,14 +1,13 @@
--- models/marts/goalies_season_stats_regular.sql
--- Regular-season stats for each goalie (one row per season/goalie/team stint).
--- Season GAA is goals against per 60 minutes of actual ice time; GSAA is
--- saves above what a league-average goalie would stop on the same workload.
+-- models/marts/goalies_season_stats_playoff.sql
+-- Playoff stats for each goalie (one row per season/goalie/team stint).
+-- Same construction as goalies_season_stats_regular, playoff games only.
 
 with
 
 goalie_games as (
     select *
     from {{ ref('fct_goalie_game_stats') }}
-    where game_type = 'regular'
+    where game_type = 'playoff'
 ),
 
 goalie_season_stats as (
@@ -21,7 +20,6 @@ goalie_season_stats as (
         count_if(is_starting_goalie) as starts,
         count_if(decision = 'W') as wins,
         count_if(decision = 'L') as losses,
-        count_if(decision = 'O') as ot_losses,
         count_if(shutout_flag) as shutouts,
         count_if(quality_start) as quality_starts,
         sum(goals_against) as goals_against,
@@ -54,7 +52,6 @@ select
     {{ safe_divide('gs.pp_saves::float', 'gs.pp_shots_against') }} as pp_save_pct,
     {{ safe_divide('gs.sh_saves::float', 'gs.sh_shots_against') }} as sh_save_pct,
     round(gs.saves - (gs.shots_faced * {{ var('league_avg_save_pct') }}), 1) as goals_saved_above_average,
-    (gs.gp >= {{ var('leaderboard_min_gp_goalie') }}) as is_qualified,
     {{ season_display('gs.season') }} as season_display,
     dp.first_name,
     dp.last_name,

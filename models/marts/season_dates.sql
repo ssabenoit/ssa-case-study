@@ -4,10 +4,10 @@
 with
 
 days as (
-    select distinct 
-        season, 
+    select distinct
+        season,
         date
-    from {{ ref('standings_by_day') }}
+    from {{ ref('int__standings_by_day') }}
 )
 
 select

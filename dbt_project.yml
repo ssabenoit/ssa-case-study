@@ -45,6 +45,9 @@ vars:
   regular_season_games: 82
   league_team_count: 32
   league_avg_save_pct: 0.910
+  # minimum games played to appear as "qualified" on leaderboards
+  leaderboard_min_gp_skater: 10
+  leaderboard_min_gp_goalie: 15
 
 # Configure all tests to result in warnings rather than failures
 tests:

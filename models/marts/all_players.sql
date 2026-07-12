@@ -1,21 +1,11 @@
 {{ config(materialized='table') }}
 
 -- models/marts/all_players.sql
--- Master table containing all players (forwards, defensemen, and goalies) for every team
+-- Master table containing all rostered players for every team.
+-- Thin presentation rename over int__all_players (the union of skaters and
+-- goalies already lives there — no need to rebuild it).
 
-with
-
-skaters as (
-    select *
-    from {{ ref('int__all_skaters') }}
-),
-
-goalies as (
-    select *
-    from {{ ref('int__all_goalies') }}
-)
-
-select 
+select
     team_abv,
     player_id,
     first_name,
@@ -25,28 +15,9 @@ select
     height,
     weight,
     shoots,
-    birthdate as birth_date,
+    birth_date,
     birth_city,
     birth_state,
     birth_country,
     headshot_url
-from skaters
-
-union all
-
-select 
-    team_abv,
-    player_id,
-    first_name,
-    last_name,
-    position,
-    number,
-    height,
-    weight,
-    shoots,
-    birthdate as birth_date,
-    birth_city,
-    birth_state,
-    birth_country,
-    headshot_url
-from goalies
+from {{ ref('int__all_players') }}
