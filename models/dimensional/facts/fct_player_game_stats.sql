@@ -1,58 +1,135 @@
 {{ config(materialized='table') }}
 
 -- models/dimensional/facts/fct_player_game_stats.sql
--- Player (skater) game-level statistics fact table
+-- Player (skater) game-level statistics fact table.
+-- Grain: one row per (game, player). Boxscore counting stats are enriched
+-- with play-by-play-derived detail (real primary/secondary assists, PP/SH
+-- assists, SH/OT/empty-net goals, game-winning goals) — none of these are
+-- estimated anymore. player_key/team_key are NHL natural ids.
 
 with
 
 skater_stats as (
     select
         s.*,
-        g.date,
-        g.home_abv,
-        g.away_abv,
+        lg.game_date as date,
+        lg.home_team_abv as home_abv,
+        lg.away_team_abv as away_abv,
+        lg.last_period_type,
         case
-            when s.type = 'home' then g.away_abv
-            else g.home_abv
+            when s.type = 'home' then lg.away_team_abv
+            else lg.home_team_abv
         end as opponent_abv
     from {{ ref('int__skaters_per_game_stats') }} s
-    inner join {{ ref('int__all_games') }} g
-        on s.game_id = g.id
+    inner join {{ ref('int__league_games') }} lg
+        on s.game_id = lg.game_id
+    where s.game_type in ('regular', 'playoff')
+),
+
+-- Real (non-shootout) goals with attribution, from the plays fact
+goal_events as (
+    select
+        game_key as game_id,
+        event_team_key as team_id,
+        primary_player_key as scorer_id,
+        secondary_player_key as assist1_id,
+        tertiary_player_key as assist2_id,
+        strength_state,
+        is_empty_net,
+        period_category,
+        game_elapsed_seconds
+    from {{ ref('fct_plays') }}
+    where event_type_name = 'goal'
+        and period_category != 'Shootout'
+),
+
+scorer_detail as (
+    select
+        game_id,
+        scorer_id as player_id,
+        count_if(strength_state = 'SH') as sh_goals,
+        count_if(period_category = 'Overtime') as overtime_goals,
+        count_if(is_empty_net) as empty_net_goals
+    from goal_events
+    group by game_id, scorer_id
+),
+
+assist_detail as (
+    select
+        game_id,
+        player_id,
+        sum(is_primary) as primary_assists,
+        sum(is_secondary) as secondary_assists,
+        count_if(strength_state = 'PP') as pp_assists,
+        count_if(strength_state = 'SH') as sh_assists
+    from (
+        select game_id, assist1_id as player_id, 1 as is_primary, 0 as is_secondary, strength_state
+        from goal_events
+        where assist1_id is not null
+        union all
+        select game_id, assist2_id as player_id, 0 as is_primary, 1 as is_secondary, strength_state
+        from goal_events
+        where assist2_id is not null
+    )
+    group by game_id, player_id
+),
+
+-- Game-winning goal: the winning team's (loser_final + 1)th goal.
+-- Shootout wins credit no skater GWG, so SO games are excluded.
+game_winners as (
+    select game_id, team_id, goals_against as losing_team_final_score
+    from {{ ref('int__team_per_game_stats') }}
+    where goals > goals_against
+        and coalesce(last_period_type, 'REG') != 'SO'
+),
+
+goal_sequence as (
+    select
+        game_id,
+        team_id,
+        scorer_id,
+        row_number() over (
+            partition by game_id, team_id
+            order by game_elapsed_seconds
+        ) as team_goal_number
+    from goal_events
+),
+
+gwg as (
+    select
+        gs.game_id,
+        gs.scorer_id as player_id,
+        1 as game_winning_goals
+    from goal_sequence gs
+    inner join game_winners w
+        on w.game_id = gs.game_id
+        and w.team_id = gs.team_id
+    where gs.team_goal_number = w.losing_team_final_score + 1
 ),
 
 player_game_facts as (
     select
         -- Keys
-        fg.game_key,
-        dp.player_key,
+        {{ dbt_utils.generate_surrogate_key(['ss.game_id', 'ss.player_id']) }} as player_game_key,
+        ss.game_id as game_key,
+        ss.player_id as player_key,
         dt.team_key as team_key,
         cast(replace(cast(ss.date as string), '-', '') as int) as date_key,
         ss.season as season_key,
         opp.team_key as opponent_team_key,
-        
+
         -- Game context
-        case 
-            when ss.type = 'home' then true
-            else false
-        end as is_home_game,
-        
+        (ss.type = 'home') as is_home_game,
+
         -- Player info for this game
-        coalesce(ap.position, dp.primary_position_code) as position_played,
-        ap.number as jersey_number,
-        
+        coalesce(ss.position, dp.primary_position_code) as position_played,
+        dp.jersey_number,
+
         -- Offensive stats
         ss.goals,
         ss.assists,
-        -- Calculate primary vs secondary assists (would need play-by-play data for accuracy)
-        case 
-            when ss.assists >= 2 then 1
-            when ss.assists = 1 then 1
-            else 0
-        end as primary_assists,
-        case
-            when ss.assists >= 2 then ss.assists - 1
-            else 0
-        end as secondary_assists,
+        coalesce(ad.primary_assists, 0) as primary_assists,
+        coalesce(ad.secondary_assists, 0) as secondary_assists,
         ss.points,
         ss.shots,
         case
@@ -60,51 +137,30 @@ player_game_facts as (
             else 0
         end as shooting_pct,
         ss.pp_goals,
-        -- Estimate PP assists (would need detailed data)
-        case
-            when ss.points > ss.goals and ss.pp_goals > 0 then 1
-            else 0
-        end as pp_assists,
-        
+        coalesce(ad.pp_assists, 0) as pp_assists,
+
         -- Defensive stats
         ss.plus_minus,
         ss.hits,
         ss.blocks,
         ss.takeaways,
         ss.giveaways,
-        
+
         ss.faceoff_pct,
-        
+
         -- Penalty stats
         ss.pim as penalty_minutes,
-        case
-            when ss.pim = 2 then 1
-            else 0
-        end as minor_penalties,
-        case
-            when ss.pim = 5 then 1
-            else 0
-        end as major_penalties,
-        case
-            when ss.pim = 10 then 1
-            else 0
-        end as misconduct_penalties,
-        
+
         -- Time on ice (toi is already in seconds)
         ss.toi as time_on_ice_seconds,
 
-        -- Estimate TOI by strength (would need detailed shift data)
-        -- Using rough estimates based on typical distributions
-        ss.toi * 0.8 as even_strength_toi,
-        ss.toi * 0.15 as powerplay_toi,
-        ss.toi * 0.05 as shorthanded_toi,
-        
-        -- Special goals (would need play-by-play for accuracy)
-        0 as sh_goals,
-        0 as sh_assists,
-        0 as game_winning_goals,
-        0 as overtime_goals,
-        
+        -- Play-by-play-derived special goals
+        coalesce(sd.sh_goals, 0) as sh_goals,
+        coalesce(ad.sh_assists, 0) as sh_assists,
+        coalesce(sd.empty_net_goals, 0) as empty_net_goals,
+        coalesce(g.game_winning_goals, 0) as game_winning_goals,
+        coalesce(sd.overtime_goals, 0) as overtime_goals,
+
         -- Additional metadata
         ss.shifts,
         ss.game_type,
@@ -112,23 +168,24 @@ player_game_facts as (
         ss.game_id,
         ss.team_abv,
         ss.name as player_name
-        
+
     from skater_stats ss
-    left join {{ ref('fct_games') }} fg
-        on ss.game_id = fg.game_id
     left join {{ ref('dim_players') }} dp
         on ss.player_id = dp.player_id
     left join {{ ref('dim_teams') }} dt
         on ss.team_abv = dt.team_abv
     left join {{ ref('dim_teams') }} opp
         on ss.opponent_abv = opp.team_abv
-    left join {{ ref('int__all_players') }} ap
-        on ss.player_id = ap.player_id
-        and ss.team_abv = ap.team_abv
-    where ss.game_type in ('regular', 'playoff')
+    left join scorer_detail sd
+        on sd.game_id = ss.game_id and sd.player_id = ss.player_id
+    left join assist_detail ad
+        on ad.game_id = ss.game_id and ad.player_id = ss.player_id
+    left join gwg g
+        on g.game_id = ss.game_id and g.player_id = ss.player_id
 )
 
 select
+    player_game_key,
     game_key,
     player_key,
     team_key,
@@ -152,35 +209,26 @@ select
     takeaways,
     faceoff_pct,
     penalty_minutes,
-    minor_penalties,
-    major_penalties,
-    misconduct_penalties,
     time_on_ice_seconds,
-    even_strength_toi,
-    powerplay_toi,
-    shorthanded_toi,
     pp_goals,
     pp_assists,
     sh_goals,
     sh_assists,
+    empty_net_goals,
     game_winning_goals,
     overtime_goals,
     shifts,
+    game_type,
+    player_id,
+    game_id,
+    team_abv,
+    player_name,
     -- Calculated metrics
-    case
-        when goals >= 3 then true
-        else false
-    end as hat_trick,
-    case
-        when points >= 4 then true
-        else false  
-    end as four_point_game,
-    case
-        when goals >= 4 then true
-        else false
-    end as four_goal_game,
+    (goals >= 3) as hat_trick,
+    (points >= 4) as four_point_game,
+    (goals >= 4) as four_goal_game,
     goals + assists as point_contributions
 from player_game_facts
-order by 
-    game_key, 
+order by
+    game_key,
     player_key

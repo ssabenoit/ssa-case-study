@@ -81,6 +81,7 @@ seasons as (
             when 20222023 then 82500000
             when 20232024 then 83500000
             when 20242025 then 88000000
+            when 20252026 then 95500000
             else null
         end as salary_cap,
         case sb.season

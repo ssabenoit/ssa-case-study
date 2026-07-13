@@ -9,8 +9,8 @@ upcoming_games_source as (
     select *
     from {{ ref('stg_nhl__season_schedules') }}
     where
-        game_state = 'FUT'
-        and game_type = 2  -- Regular season games
+        game_state in ('FUT', 'PRE')       -- scheduled + pregame
+        and game_type in (2, 3)            -- regular season and playoffs
 ),
 
 teams as (
@@ -50,9 +50,11 @@ upcoming_games_fact as (
             else false
         end as is_weekend,
         
+        -- real puck-drop time in Eastern Time (game_date carries no clock)
+        convert_timezone('America/New_York', try_to_timestamp_tz(g.start_time_utc)) as start_time_eastern,
         case
-            when extract(hour from g.game_date::timestamp) < 17 then 'Afternoon'
-            when extract(hour from g.game_date::timestamp) < 20 then 'Early Evening'
+            when extract(hour from convert_timezone('America/New_York', try_to_timestamp_tz(g.start_time_utc))) < 17 then 'Afternoon'
+            when extract(hour from convert_timezone('America/New_York', try_to_timestamp_tz(g.start_time_utc))) < 20 then 'Early Evening'
             else 'Late Evening'
         end as game_time_category,
         

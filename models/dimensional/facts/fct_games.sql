@@ -26,11 +26,13 @@ games_base as (
         gi.start_time_utc,
         gi.venue_tz,
         gi.venue_utc_offset
-    from {{ ref('int__all_games') }} g 
-    left join {{ ref('int__basic_games_info') }} gi 
+    from {{ ref('int__all_games') }} g
+    left join {{ ref('int__basic_games_info') }} gi
         on g.id = gi.game_id
-    left join {{ ref('stg_nhl__season_schedules') }} sg 
+    left join {{ ref('stg_nhl__season_schedules') }} sg
         on g.id = sg.id
+    -- league games only (All-Star / 4 Nations / preseason excluded)
+    where g.id in (select game_id from {{ ref('int__league_games') }})
 )
 
 ,
@@ -166,7 +168,8 @@ game_facts as (
 )
 
 select
-    row_number() over (order by game_id) as game_key,
+    -- natural key: the NHL game id is globally stable
+    game_id as game_key,
     *
 from game_facts
 order by game_key

@@ -120,7 +120,7 @@ player_team_bridge_base as (
 
 final_bridge as (
     select
-        row_number() over (order by ptb.player_id, ptb.season, ptb.start_date) as bridge_key,
+        {{ dbt_utils.generate_surrogate_key(['ptb.player_id', 'ptb.team_abv', 'ptb.season']) }} as bridge_key,
         dp.player_key,
         dt.team_key,
         ds.season_key,

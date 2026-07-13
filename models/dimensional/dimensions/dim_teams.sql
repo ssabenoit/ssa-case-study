@@ -141,7 +141,8 @@ team_history as (
 )
 
 select
-    row_number() over (order by t.team_id) as team_key,
+    -- natural key: NHL team ids are globally stable, so joins survive rebuilds
+    t.team_id as team_key,
     t.team_id,
     t.team_abv,
     t.team_name::string as team_name,
