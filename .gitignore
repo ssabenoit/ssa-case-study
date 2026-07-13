@@ -167,3 +167,15 @@ target/
 dbt_packages/
 logs/
 # end dbt Cloud content
+
+# Project-specific
+# raw extracts are reproducible via nhl_to_parquet.py
+data/*.parquet
+.user.yml
+.mb_api_key
+.claude/
+.macro/
+.vscode/
+.evidence/
+evidence/.evidence/
+evidence/node_modules/
