@@ -90,10 +90,10 @@ standings_facts as (
         end as points_from_playoff,
 
         -- Games remaining
-        82 - sb.games_played as games_remaining,
+        {{ var('regular_season_games') }} - sb.games_played as games_remaining,
 
         -- Maximum possible points
-        sb.points + (82 - sb.games_played) * 2 as max_possible_points,
+        sb.points + ({{ var('regular_season_games') }} - sb.games_played) * 2 as max_possible_points,
 
         -- Magic/Tragic numbers (not derived; kept for interface stability)
         null::int as magic_number,
@@ -157,22 +157,22 @@ select
     -- Calculated pace metrics
     case
         when games_played > 0
-        then round(points * 82.0 / games_played, 1)
+        then round(points * {{ var('regular_season_games') }} * 1.0 / games_played, 1)
         else 0
     end as points_pace,
     case
         when games_played > 0
-        then round(wins * 82.0 / games_played, 1)
+        then round(wins * {{ var('regular_season_games') }} * 1.0 / games_played, 1)
         else 0
     end as wins_pace,
     case
         when games_played > 0
-        then round(goals_for * 82.0 / games_played, 1)
+        then round(goals_for * {{ var('regular_season_games') }} * 1.0 / games_played, 1)
         else 0
     end as goals_for_pace,
     case
         when games_played > 0
-        then round(goals_against * 82.0 / games_played, 1)
+        then round(goals_against * {{ var('regular_season_games') }} * 1.0 / games_played, 1)
         else 0
     end as goals_against_pace,
     -- Record strings for easier reporting

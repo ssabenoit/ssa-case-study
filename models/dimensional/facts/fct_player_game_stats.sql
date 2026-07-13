@@ -107,6 +107,25 @@ gwg as (
     where gs.team_goal_number = w.losing_team_final_score + 1
 ),
 
+-- Real faceoff win/loss counts per player-game from play-by-play events
+player_faceoffs as (
+    select
+        game_key as game_id,
+        player_id,
+        sum(won) as faceoffs_won,
+        sum(lost) as faceoffs_lost
+    from (
+        select game_key, primary_player_key as player_id, 1 as won, 0 as lost
+        from {{ ref('fct_plays') }}
+        where event_type_name = 'faceoff' and primary_player_key is not null
+        union all
+        select game_key, secondary_player_key as player_id, 0 as won, 1 as lost
+        from {{ ref('fct_plays') }}
+        where event_type_name = 'faceoff' and secondary_player_key is not null
+    )
+    group by game_key, player_id
+),
+
 player_game_facts as (
     select
         -- Keys
@@ -147,6 +166,8 @@ player_game_facts as (
         ss.giveaways,
 
         ss.faceoff_pct,
+        coalesce(pf.faceoffs_won, 0) as faceoffs_won,
+        coalesce(pf.faceoffs_lost, 0) as faceoffs_lost,
 
         -- Penalty stats
         ss.pim as penalty_minutes,
@@ -182,6 +203,8 @@ player_game_facts as (
         on ad.game_id = ss.game_id and ad.player_id = ss.player_id
     left join gwg g
         on g.game_id = ss.game_id and g.player_id = ss.player_id
+    left join player_faceoffs pf
+        on pf.game_id = ss.game_id and pf.player_id = ss.player_id
 )
 
 select
@@ -208,6 +231,8 @@ select
     giveaways,
     takeaways,
     faceoff_pct,
+    faceoffs_won,
+    faceoffs_lost,
     penalty_minutes,
     time_on_ice_seconds,
     pp_goals,

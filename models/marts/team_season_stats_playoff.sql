@@ -46,8 +46,9 @@ team_stats as (
         team_abv
 )
 
-select 
-    s.*, 
+select
+    s.*,
+    {{ season_display('s.season') }} as season_display,
     i.logo_url
 from team_stats s 
 left join teams_info i

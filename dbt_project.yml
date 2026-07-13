@@ -30,13 +30,24 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 models:
   nhl_analytics:
+    +persist_docs:
+      relation: true
+      columns: true
     staging:
       +materialized: view
     intermediate:
       +materialized: view
     dimensional:
       +materialized: table
+    marts:
+      # dashboard-serving models re-aggregate on every query as views;
+      # small tables are cheaper and faster for Metabase
+      +materialized: table
 
-# Configure all tests to result in warnings rather than failures
-tests:
-  +severity: warn
+vars:
+  regular_season_games: 82
+  league_team_count: 32
+  league_avg_save_pct: 0.910
+  # minimum games played to appear as "qualified" on leaderboards
+  leaderboard_min_gp_skater: 10
+  leaderboard_min_gp_goalie: 15

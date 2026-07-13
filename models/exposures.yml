@@ -1,0 +1,31 @@
+version: 2
+
+exposures:
+  - name: nhl_dashboard
+    label: NHL Dashboard (Metabase)
+    type: dashboard
+    maturity: high
+    url: https://expert-southshore.metabaseapp.com/public/dashboard/b22f719e-6220-46fd-bc72-41b257ec635f
+    description: >
+      Public Metabase dashboard with League / Team / Player Statistics and
+      Player Comparison tabs. Cards query the marts and dimensional models
+      listed here; schema changes to any of them require a Metabase database
+      re-sync and a card review.
+    owner:
+      name: Nick
+      email: nick@southshore.llc
+    depends_on:
+      - ref('team_season_stats_regular')
+      - ref('skaters_season_stats_regular')
+      - ref('goalies_season_stats_regular')
+      - ref('mart_team_power_rankings')
+      - ref('mart_standings_weekly')
+      - ref('mart_team_form')
+      - ref('upcoming_games')
+      - ref('standings_by_day')
+      - ref('current_statwise_rankings')
+      - ref('dim_players')
+      - ref('dim_teams')
+      - ref('fct_standings_daily')
+      - ref('int__teams_basic_info')
+      - ref('int__current_standings')

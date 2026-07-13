@@ -1,130 +1,101 @@
-# NHL Analytics Dashboard
+# NHL Analytics — dbt Project
 
-A comprehensive dbt project for analyzing NHL statistics, player performance, and game data. This project transforms raw NHL API data into analytics-ready datasets for exploring team performance, player statistics, and game insights.
+An end-to-end NHL analytics pipeline: Python extraction from the NHL API →
+Snowflake → dbt transformations → a public Metabase dashboard.
 
-## Project Overview
-
-This NHL Analytics Dashboard project provides a structured data transformation pipeline using dbt Core, creating a foundation for NHL data analysis and visualization. The project includes:
-
-- Staging models that standardize and clean raw NHL API data
-- Intermediate models that join and enhance the data
-- Marts models that present analytics-ready data for specific use cases
-- Visualizations for exploring team performance, player stats, and game insights
-
-## Data Model
-
-The data model is structured in layers:
-
-### Sources
-- Raw NHL API data stored in the `dbt_analytics.staging` schema
-- Includes game data, player statistics, standings, and team information
-
-### Staging Models
-- Structured, typed, and normalized representation of source data
-- Minimal transformations, focused on data quality and consistency
-- Located in `models/staging/`
-
-### Intermediate Models
-- Business logic layer that joins and enhances staging models
-- Creates reusable data components for various analytics
-- Located in `models/intermediate/`
-
-### Marts Models
-- Analytics-ready datasets organized by business domain
-- Optimized for specific analytical use cases and visualizations
-- Located in `models/marts/`
-
-## Key Features
-
-- **Team Performance Analysis**: Track team standings, performance trends, and statistical rankings
-- **Player Statistics**: Detailed player statistics for skaters and goalies across regular season and playoffs
-- **Game Analysis**: Game-by-game breakdowns with play-by-play data
-- **Historical Tracking**: Historical performance data for teams and players
-- **Upcoming Games**: Schedule information for future games
-
-## Getting Started
-
-### Prerequisites
-- dbt Core installed
-- Access to a data warehouse (Snowflake, BigQuery, etc.)
-- Python environment for visualizations (optional)
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/nhl-analytics.git
-   cd nhl-analytics
-   ```
-
-2. Set up your profiles.yml file with connection details to your data warehouse.
-
-3. Install dbt dependencies:
-   ```bash
-   dbt deps
-   ```
-
-4. Run the models:
-   ```bash
-   dbt build
-   ```
-
-### Visualizations
-
-The project includes several visualization options in the `visualization/` directory:
-
-- Dashboard for team performance metrics
-- Player comparison tools
-- Game analysis visualizations
-
-To run the visualizations:
-
-1. Set up the Python environment:
-   ```bash
-   conda env create -f visualization/ssa_environment.yml
-   conda activate ssa_environment
-   ```
-
-2. Run the dashboard:
-   ```bash
-   python visualization/dashboard.py
-   ```
-
-## Project Structure
+## Architecture
 
 ```
-.
-├── analyses/           # Ad-hoc analyses
-├── macros/             # Reusable SQL macros
-├── models/             # dbt models organized in layers
-│   ├── intermediate/   # Business logic layer
-│   ├── marts/          # Analytics-ready data
-│   ├── staging/        # Initial data structuring
-│   └── sources.yml     # Source definitions
-├── seeds/              # Static data files
-├── snapshots/          # Historical data tracking
-├── tests/              # Data quality tests
-└── visualization/      # Dashboard and visualization code
+NHL API ──nhl_to_parquet.py──▶ parquet ──parquet_to_snowflake.py──▶ DBT_ANALYTICS.STAGING
+                                                                        │
+   staging/        1:1 typed views over raw tables; dedup to the latest │ load
+   (views)         _loaded_at per natural key; never filtered           ▼
+   intermediate/   business logic. int__league_games is the canonical  dbt
+   (views/tables)  game universe (NHL-vs-NHL, regular+playoff only) —
+                   the single choke point that keeps All-Star and
+                   4 Nations games out of every stat
+   dimensional/    star schema (tables): dim_* / fct_* / metrics.
+                   Natural keys (team_id, player_id, game_id) for dims,
+                   hashed surrogate keys for composite fact grains
+   marts/          presentation layer for Metabase (tables): stable
+                   names, display columns (season_display), leaderboard
+                   qualification flags
 ```
 
-## Data Dictionary
+## Key modeling decisions
 
-Key metrics and dimensions available in the models include:
+- **League-game decontamination**: every stats model filters through
+  `int__league_games` (game types 2/3 between two franchises validated
+  against that season's standings participants).
+- **Derived team stats**: the loaded `game_summaries` table lacks
+  `summary.teamGameStats`, so hits/blocks/giveaways/takeaways/PP goals are
+  summed from player boxscores; PIM and times-shorthanded come from
+  play-by-play penalty events (offsetting penalties cancel, misconducts
+  excluded); faceoff counts come from play-by-play faceoff events. League
+  PP goals ≡ league PK goals-against by construction.
+- **Stable keys**: `team_key = team_id`, `player_key = player_id`,
+  `game_key = game_id`; composite grains use `dbt_utils.generate_surrogate_key`.
+  Keys survive rebuilds — no `row_number()` keys anywhere.
+- **Play-by-play attribution**: `fct_plays` parses the 4-digit situation
+  code (strength/PP/SH/empty-net) and carries scorer/assist/hitter/blocker/
+  goalie player keys, enabling real GWG/OT/SH/EN goals, assist splits,
+  faceoff counts, and Corsi/Fenwick/PDO (`mart_team_shot_metrics`).
 
-- **Team Performance**: points, wins, losses, goals_for, goals_against, etc.
-- **Player Stats**: goals, assists, points, shots, plus_minus, time_on_ice, etc.
-- **Game Data**: scores, play-by-play events, shots, faceoffs, etc.
+## Running
 
-For a comprehensive data dictionary, see the schema.yml files in each model directory.
+```bash
+# local dev (venv one level up)
+../venv/bin/dbt deps
+../venv/bin/dbt build            # dev target -> DBT_ANALYTICS.DBT_DEV
+../venv/bin/dbt build --target prod
+../venv/bin/dbt docs generate && ../venv/bin/dbt docs serve
+```
 
-## Contributing
+Profiles live in `~/.dbt/profiles.yml` (profile `nhl_analytics`); CI uses
+`ci/profiles.yml` with env-var credentials into the isolated `DBT_CI` schema.
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+## Seeds, macros, vars
 
-## Roadmap
+- Seeds: `nhl_team_colors`, `nhl_team_arenas`, `nhl_team_history` (static
+  franchise attributes incl. Utah).
+- Macros: `safe_divide`, `parse_toi`, `season_display`.
+- Vars: `regular_season_games` (82), `league_team_count` (32),
+  `league_avg_save_pct` (0.910), `leaderboard_min_gp_skater` (10),
+  `leaderboard_min_gp_goalie` (15).
 
-See [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) for the planned development roadmap.
+## Testing
 
-## License
+Grain uniqueness on every fact/mart, `relationships` from fact FKs to dims,
+`accepted_values` on enums, `dbt_expectations` range guards on every
+percentage metric (the regression class that bit this project), and dbt
+unit tests for the trickiest logic (penalty offsetting, faceoff counting,
+per-60 GAA). Tests fail builds; `severity: warn` is the exception, inline
+and justified.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Exposures
+
+`models/exposures.yml` declares the public Metabase dashboard and the models
+its cards query — check it before renaming or dropping anything.
+
+## Data loading & backfill
+
+```bash
+python nhl_to_parquet.py --start-date 2024-10-01 --end-date 2025-06-30 \
+    --output-dir ./data_backfill_s2425 --request-delay 0.3
+# IMPORTANT: prune full-replace tables before loading a historical window,
+# or you will clobber current rosters/standings/schedules:
+rm ./data_backfill_s2425/{team_rosters,current_standings,current_teams,season_schedules}.parquet
+python parquet_to_snowflake.py --input-dir ./data_backfill_s2425
+```
+
+`season_schedules` is full-replace by design and therefore only holds the
+most recently extracted season — nothing downstream may depend on it for
+historical game types (fct_games derives game type from the games feed).
+
+## Housekeeping notes
+
+- The Evidence.dev scaffold and standalone Python visualization apps were
+  removed (2026-07); recover from git history if needed. The Python
+  extractor (`nhl_extractor.py` + CLIs) remains the ingestion path.
+- Source freshness reflects in-season expectations; offseason staleness
+  warnings are expected.

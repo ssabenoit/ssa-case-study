@@ -37,7 +37,7 @@ away_team_forwards as (
         player.value:takeaways::int as takeaways,
         player.value:blockedShots::int as blocks,
         player.value:shifts::int as shifts,
-        cast(split_part(player.value:toi::string, ':', 1) as int) * 60 + cast(split_part(player.value:toi::string, ':', 2) as int) as toi
+        {{ parse_toi("player.value:toi::string") }} as toi
     from
         games,
         lateral flatten(input => parse_json(PLAYERBYGAMESTATS_AWAYTEAM_FORWARDS)) player
@@ -70,7 +70,7 @@ away_team_defense as (
         player.value:takeaways::int as takeaways,
         player.value:blockedShots::int as blocks,
         player.value:shifts::int as shifts,
-        cast(split_part(player.value:toi::string, ':', 1) as int) * 60 + cast(split_part(player.value:toi::string, ':', 2) as int) as toi
+        {{ parse_toi("player.value:toi::string") }} as toi
     from
         games,
         lateral flatten(input => parse_json(PLAYERBYGAMESTATS_AWAYTEAM_DEFENSE)) player
@@ -103,7 +103,7 @@ home_team_forwards as (
         player.value:takeaways::int as takeaways,
         player.value:blockedShots::int as blocks,
         player.value:shifts::int as shifts,
-        cast(split_part(player.value:toi::string, ':', 1) as int) * 60 + cast(split_part(player.value:toi::string, ':', 2) as int) as toi
+        {{ parse_toi("player.value:toi::string") }} as toi
     from
         games,
         lateral flatten(input => parse_json(PLAYERBYGAMESTATS_HOMETEAM_FORWARDS)) player
@@ -136,7 +136,7 @@ home_team_defense as (
         player.value:takeaways::int as takeaways,
         player.value:blockedShots::int as blocks,
         player.value:shifts::int as shifts,
-        cast(split_part(player.value:toi::string, ':', 1) as int) * 60 + cast(split_part(player.value:toi::string, ':', 2) as int) as toi
+        {{ parse_toi("player.value:toi::string") }} as toi
     from
         games,
         lateral flatten(input => parse_json(PLAYERBYGAMESTATS_HOMETEAM_DEFENSE)) player
