@@ -15,7 +15,7 @@ skater_season_stats as (
         season_key as season,
         player_id,
         team_abv,
-        player_name as name,
+        min(player_name) as name,
         count(*) as games_played,
         sum(goals) as goals,
         sum(assists) as assists,
@@ -44,8 +44,7 @@ skater_season_stats as (
     group by
         season,
         player_id,
-        team_abv,
-        name
+        team_abv
 )
 
 select

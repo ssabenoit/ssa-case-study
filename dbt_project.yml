@@ -30,6 +30,9 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 models:
   nhl_analytics:
+    +persist_docs:
+      relation: true
+      columns: true
     staging:
       +materialized: view
     intermediate:
@@ -48,7 +51,3 @@ vars:
   # minimum games played to appear as "qualified" on leaderboards
   leaderboard_min_gp_skater: 10
   leaderboard_min_gp_goalie: 15
-
-# Configure all tests to result in warnings rather than failures
-tests:
-  +severity: warn

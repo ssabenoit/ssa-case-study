@@ -20,7 +20,7 @@ skater_season_stats as (
         season,
         player_id,
         team_abv,
-        name,
+        min(name) as name,
         count(*) as games_played,
         sum(goals) as goals,
         sum(assists) as assists,
@@ -38,10 +38,9 @@ skater_season_stats as (
         avg(toi) as avg_toi
     from skater_stats
     where game_type = 'regular'
-    group by 
-        season, 
-        player_id, 
-        name, 
+    group by
+        season,
+        player_id,
         team_abv
 )
 

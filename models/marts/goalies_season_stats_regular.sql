@@ -15,7 +15,7 @@ goalie_season_stats as (
     select
         season_key as season,
         player_id,
-        player_name as name,
+        min(player_name) as name,
         team_abv,
         count(*) as gp,
         count_if(is_starting_goalie) as starts,
@@ -42,7 +42,6 @@ goalie_season_stats as (
     group by
         season,
         player_id,
-        name,
         team_abv
 )
 

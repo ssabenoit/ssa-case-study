@@ -2,455 +2,363 @@ version: 2
 
 models:
   - name: all_players
-    description: Master table containing all players (forwards, defensemen, and goalies) for every team
+    description: Master table of all rostered players for every team (thin rename over int__all_players).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [team_abv, player_id]
     columns:
-      - name: team_abv
-        description: Three-letter abbreviation for the team
       - name: player_id
-        description: Unique identifier for the player
-      - name: first_name
-        description: Player's first name
-      - name: last_name
-        description: Player's last name
-      - name: position
-        description: Player's position code
-      - name: number
-        description: Player's jersey number
-      - name: height
-        description: Player's height in inches
-      - name: weight
-        description: Player's weight in pounds
-      - name: shoots
-        description: Player's shooting handedness (L/R) for skaters
-      - name: catches
-        description: Player's catching handedness (L/R) for goalies
-      - name: birthDate
-        description: Player's birth date
-      - name: birth_city
-        description: Player's city of birth
-      - name: birth_state
-        description: Player's state/province of birth
-      - name: birth_country
-        description: Player's country of birth
-      - name: headshot_url
-        description: URL to player's headshot image
+        description: NHL player id
+        tests: [not_null]
+      - name: team_abv
+        description: Roster team abbreviation
+        tests: [not_null]
+      - name: birth_date
+        description: Player date of birth
 
   - name: all_plays
-    description: Comprehensive record of all plays from NHL games
+    description: Passthrough of all staged play-by-play events (one row per game event).
     columns:
-      - name: id
-        description: Unique identifier for the game
-      - name: season
-        description: NHL season identifier
-      - name: game_type
-        description: Type of game (regular/playoff)
-      - name: away_team
-        description: Away team identifier
-      - name: home_team
-        description: Home team identifier
-      - name: plays
-        description: JSON array of plays in the game
+      - name: game_id
+        tests: [not_null]
+      - name: event_id
+        tests: [not_null]
 
   - name: current_statwise_rankings
-    description: Current statistical rankings for teams across various metrics
-    columns:
-      - name: team_abv
-        description: Three-letter abbreviation for the team
-      - name: team_name
-        description: Full name of the team
-      - name: goals_for_rank
-        description: Team ranking based on goals scored
-      - name: goals_against_rank
-        description: Team ranking based on goals allowed
-      - name: pp_pct_rank
-        description: Team ranking based on power play percentage
-      - name: pk_pct_rank
-        description: Team ranking based on penalty kill percentage
-      - name: points_rank
-        description: Team ranking based on points in the standings
-      - name: goals_for
-        description: Total goals scored
-      - name: goals_against
-        description: Total goals allowed
-      - name: pp_pct
-        description: Power play percentage
-      - name: pk_pct
-        description: Penalty kill percentage
-      - name: points
-        description: Total points in the standings
-
-  - name: goalies_season_stats_regular
-    description: Compiled season statistics for goalies during the regular season
+    description: >
+      Team league rankings per stat category for each season, with ordinal
+      display strings (1st/2nd/3rd...). Rankings are meaningful again now that
+      the underlying special-teams and physical-play stats are populated.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [season, team_abv]
     columns:
       - name: season
-        description: NHL season identifier
-      - name: player_id
-        description: Unique identifier for the goalie
+        description: "{{ doc('nhl_season_key') }}"
+        tests: [not_null]
       - name: team_abv
-        description: Three-letter abbreviation for the team
-      - name: name
-        description: Goalie's name (format typically "F. Lastname")
-      - name: games_played
-        description: Number of games played in the season
-      - name: shots_against
-        description: Total shots faced
-      - name: goals_against
-        description: Total goals allowed
-      - name: shots_saved
-        description: Total saves made
-      - name: save_pct
-        description: Save percentage
-      - name: goals_against_avg
-        description: Goals against average (GAA)
-      - name: total_toi
-        description: Total time on ice (in seconds)
-      - name: avg_toi
-        description: Average time on ice per game
-      - name: first_name
-        description: Goalie's first name
-      - name: last_name
-        description: Goalie's last name
-      - name: position
-        description: Position code (should be 'G' for all records)
-
-  - name: players_history
-    description: Historical player information including team affiliations
-    columns:
-      - name: player_id
-        description: Unique identifier for the player
-      - name: first_name
-        description: Player's first name
-      - name: last_name
-        description: Player's last name
-      - name: position
-        description: Player's position code
-      - name: team_history
-        description: List of teams the player has played for
-      - name: current_team
-        description: Player's current team
-
-  - name: season_dates
-    description: Start and end dates for NHL seasons
-    columns:
-      - name: season
-        description: NHL season identifier
-      - name: season_start
-        description: First day of the season
-      - name: season_end
-        description: Last day of the season
-      - name: reg_season_start
-        description: First day of the regular season
-      - name: reg_season_end
-        description: Last day of the regular season
-      - name: playoff_start
-        description: First day of the playoffs
-      - name: playoff_end
-        description: Last day of the playoffs
-
-  - name: skaters_season_stats_playoff
-    description: Compiled season statistics for skaters during the playoffs
-    columns:
-      - name: season
-        description: NHL season identifier
-      - name: player_id
-        description: Unique identifier for the player
-      - name: team_abv
-        description: Three-letter abbreviation for the team
-      - name: name
-        description: Player's name (format typically "F. Lastname")
-      - name: games_played
-        description: Number of playoff games played
-      - name: goals
-        description: Total playoff goals
-      - name: assists
-        description: Total playoff assists
-      - name: hits
-        description: Total playoff hits
-      - name: shots
-        description: Total playoff shots on goal
-      - name: faceoff_pct
-        description: Playoff faceoff win percentage
-      - name: pim
-        description: Playoff penalty minutes
-      - name: plus_minus
-        description: Playoff plus-minus rating
-      - name: points
-        description: Total playoff points
-      - name: pp_goals
-        description: Playoff power play goals
-      - name: giveaways
-        description: Playoff giveaways
-      - name: takeaways
-        description: Playoff takeaways
-      - name: shifts
-        description: Total playoff shifts
-      - name: total_toi
-        description: Total playoff time on ice (in seconds)
-      - name: avg_toi
-        description: Average playoff time on ice per game
-      - name: first_name
-        description: Player's first name
-      - name: last_name
-        description: Player's last name
-      - name: position
-        description: Player's position code
+        tests: [not_null]
 
   - name: skaters_season_stats_regular
-    description: Compiled season statistics for skaters during the regular season
+    description: >
+      Regular-season skater stats, one row per season/player/team stint.
+      Includes play-by-play-derived detail (real assist splits, GWG/OT/SH/EN
+      goals, true faceoff counts), per-game and per-60 rates, and a
+      leaderboard qualification flag.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [season, player_id, team_abv]
     columns:
       - name: season
-        description: NHL season identifier
+        description: "{{ doc('nhl_season_key') }}"
+        tests: [not_null]
       - name: player_id
-        description: Unique identifier for the player
+        tests: [not_null]
       - name: team_abv
-        description: Three-letter abbreviation for the team
+        tests: [not_null]
       - name: name
-        description: Player's name (format typically "F. Lastname")
+        description: Player name as it appears in boxscores ("F. Lastname")
       - name: games_played
-        description: Number of regular season games played
+        tests: [not_null]
       - name: goals
-        description: Total regular season goals
       - name: assists
-        description: Total regular season assists
-      - name: hits
-        description: Total regular season hits
-      - name: shots
-        description: Total regular season shots on goal
+      - name: points
+      - name: game_winning_goals
+        description: Real GWG derived from goal sequence vs final scores
+      - name: overtime_goals
+      - name: sh_goals
+      - name: empty_net_goals
+      - name: primary_assists
+      - name: secondary_assists
+      - name: pp_assists
+      - name: faceoffs_won
+        description: "{{ doc('faceoff_counts') }}"
+      - name: faceoffs_lost
       - name: faceoff_pct
-        description: Regular season faceoff win percentage
-      - name: pim
-        description: Regular season penalty minutes
-      - name: plus_minus
-        description: Regular season plus-minus rating
-      - name: points
-        description: Total regular season points
-      - name: pp_goals
-        description: Regular season power play goals
-      - name: giveaways
-        description: Regular season giveaways
-      - name: takeaways
-        description: Regular season takeaways
-      - name: shifts
-        description: Total regular season shifts
-      - name: total_toi
-        description: Total regular season time on ice (in seconds)
-      - name: avg_toi
-        description: Average regular season time on ice per game
-      - name: first_name
-        description: Player's first name
-      - name: last_name
-        description: Player's last name
-      - name: position
-        description: Player's position code
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: "faceoff_pct is not null"
+      - name: points_per_game
+      - name: points_per_60
+        description: Points per 60 minutes of ice time
+      - name: is_qualified
+        description: Meets the leaderboard minimum games-played threshold
+      - name: season_display
+        description: Display form of the season ("2025-26")
+      - name: headshot_url
+        description: Player headshot; falls back to the NHL CDN mug URL
 
-  - name: standings_by_day
-    description: Daily snapshot of team standings throughout the season
-    columns:
-      - name: date
-        description: Date of the standings snapshot
-      - name: team_id
-        description: Unique identifier for each NHL team
-      - name: team_abv
-        description: Three-letter abbreviation for the team
-      - name: team_name
-        description: Full name of the team
-      - name: points
-        description: Season points total as of this date
-      - name: reg_wins
-        description: Regular wins (excluding overtime/shootout wins) as of this date
-      - name: ot_wins
-        description: Overtime wins as of this date
-      - name: total_wins
-        description: Total wins as of this date
-      - name: losses
-        description: Total losses as of this date
-      - name: ot_losses
-        description: Overtime/shootout losses as of this date
-      - name: games_played
-        description: Games played as of this date
-      - name: points_pct
-        description: Percentage of possible points earned as of this date
-
-  - name: team_season_stats_playoff
-    description: Compiled team statistics for the playoffs
+  - name: skaters_season_stats_playoff
+    description: Playoff skater stats, one row per season/player/team stint (same construction as regular).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [season, player_id, team_abv]
     columns:
       - name: season
-        description: NHL season identifier
+        tests: [not_null]
+      - name: player_id
+        tests: [not_null]
       - name: team_abv
-        description: Three-letter abbreviation for the team
-      - name: games_played
-        description: Number of playoff games played
-      - name: shots
-        description: Total playoff shots on goal
-      - name: goals
-        description: Total playoff goals scored
-      - name: goals_against
-        description: Total playoff goals allowed
-      - name: sog
-        description: Total playoff shots on goal (alias)
-      - name: faceoff_pct
-        description: Playoff faceoff win percentage
-      - name: pp_goals
-        description: Playoff power play goals
-      - name: pp_attempts
-        description: Playoff power play opportunities
-      - name: pk_goals_against
-        description: Playoff penalty kill goals allowed
-      - name: pk_attempts
-        description: Number of times shorthanded in playoffs
-      - name: pp_pct
-        description: Playoff power play percentage
-      - name: pk_pct
-        description: Playoff penalty kill percentage
-      - name: pim
-        description: Total playoff penalty minutes
-      - name: hits
-        description: Total playoff hits
-      - name: blocked_shots
-        description: Total playoff blocked shots
-      - name: giveaways
-        description: Total playoff giveaways
-      - name: takeaways
-        description: Total playoff takeaways
+        tests: [not_null]
+
+  - name: goalies_season_stats_regular
+    description: >
+      Regular-season goalie stats, one row per season/goalie/team stint.
+      GAA is goals against per 60 minutes of actual ice time; GSAA is saves
+      above a league-average goalie on the same shot workload.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [season, player_id, team_abv]
+    columns:
+      - name: season
+        description: "{{ doc('nhl_season_key') }}"
+        tests: [not_null]
+      - name: player_id
+        tests: [not_null]
+      - name: team_abv
+        tests: [not_null]
+      - name: gp
+        tests: [not_null]
+      - name: wins
+      - name: losses
+      - name: ot_losses
+      - name: shutouts
+      - name: quality_starts
+      - name: gaa
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 15
+              row_condition: "gaa is not null"
+      - name: save_pct
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: "save_pct is not null"
+      - name: goals_saved_above_average
+        description: GSAA vs the league_avg_save_pct var
+      - name: is_qualified
+        description: Meets the leaderboard minimum games-played threshold
+      - name: season_display
+      - name: headshot_url
+
+  - name: goalies_season_stats_playoff
+    description: Playoff goalie stats, one row per season/goalie/team stint.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [season, player_id, team_abv]
+    columns:
+      - name: season
+        tests: [not_null]
+      - name: player_id
+        tests: [not_null]
 
   - name: team_season_stats_regular
-    description: Compiled team statistics for the regular season
+    description: >
+      Regular-season team stats. Special teams (PP%/PK%), PIM, hits, blocks,
+      and giveaways/takeaways are real values assembled from boxscore and
+      play-by-play data.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [season, team_abv]
     columns:
       - name: season
-        description: NHL season identifier
+        description: "{{ doc('nhl_season_key') }}"
+        tests: [not_null]
       - name: team_abv
-        description: Three-letter abbreviation for the team
+        tests: [not_null]
       - name: games_played
-        description: Number of regular season games played
-      - name: shots
-        description: Total regular season shots on goal
-      - name: goals
-        description: Total regular season goals scored
-      - name: goals_against
-        description: Total regular season goals allowed
-      - name: sog
-        description: Total regular season shots on goal (alias)
-      - name: faceoff_pct
-        description: Regular season faceoff win percentage
-      - name: pp_goals
-        description: Regular season power play goals
-      - name: pp_attempts
-        description: Regular season power play opportunities
-      - name: pk_goals_against
-        description: Regular season penalty kill goals allowed
-      - name: pk_attempts
-        description: Number of times shorthanded in regular season
+        tests: [not_null]
       - name: pp_pct
-        description: Regular season power play percentage
+        description: "Power-play conversion: PP goals / PP opportunities. {{ doc('times_shorthanded') }}"
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: "pp_pct is not null"
       - name: pk_pct
-        description: Regular season penalty kill percentage
-      - name: pim
-        description: Total regular season penalty minutes
-      - name: hits
-        description: Total regular season hits
-      - name: blocked_shots
-        description: Total regular season blocked shots
-      - name: giveaways
-        description: Total regular season giveaways
-      - name: takeaways
-        description: Total regular season takeaways
+        description: Penalty-kill success rate
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: "pk_pct is not null"
+      - name: season_display
+
+  - name: team_season_stats_playoff
+    description: Playoff team stats (same construction as regular season).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [season, team_abv]
+    columns:
+      - name: season
+        tests: [not_null]
+      - name: team_abv
+        tests: [not_null]
+
+  - name: standings_by_day
+    description: >
+      Gap-filled daily standings (thin view over int__standings_by_day) with
+      home/road/L10/streak splits and the display-season string.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [season, date, team_abv]
+    columns:
+      - name: season
+        tests: [not_null]
+      - name: date
+        tests: [not_null]
+      - name: team_abv
+        tests: [not_null]
+      - name: regulation_plus_ot_wins
+        description: True ROW from the league feed
+      - name: season_display
+
+  - name: season_dates
+    description: First and last standings dates per season.
+    columns:
+      - name: season
+        tests: [unique, not_null]
+      - name: start_date
+      - name: end_date
+
+  - name: players_history
+    description: Every team a player has appeared in a league game for (goalies included).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [player_id, team_abv]
+    columns:
+      - name: player_id
+        tests: [not_null]
+      - name: team_abv
+        tests: [not_null]
 
   - name: upcoming_games
-    description: Schedule of future NHL games
+    description: >
+      Scheduled (FUT/PRE) regular-season and playoff games with team logos.
+      Empty during the offseason until the next season's schedule is loaded.
     columns:
       - name: id
-        description: Unique identifier for the game
-      - name: season
-        description: NHL season identifier
-      - name: date
-        description: Scheduled date of the game
-      - name: away_id
-        description: Away team identifier
-      - name: away_abv
-        description: Away team abbreviation
-      - name: home_id
-        description: Home team identifier
-      - name: home_abv
-        description: Home team abbreviation
-      - name: game_type
-        description: Type of game (2=regular season, etc.)
-      - name: game_state
-        description: State of the game (FUT=future)
-      - name: away_logo
-        description: URL to away team logo image
-      - name: home_logo
-        description: URL to home team logo image
+        description: NHL game id
+        tests: [unique, not_null]
+      - name: game_date
+      - name: start_time_utc
 
   - name: mart_team_power_rankings
-    description: Data-driven team power rankings that blend previous season performance with current season metrics for smooth early-season transitions. Rankings are available before the season starts and gradually shift from previous season basis to current season performance over the first 20 games.
+    description: >
+      Presentation passthrough for the Metabase power-rankings card; the
+      single source of truth is dimensional/metrics/team_power_rankings.
     columns:
-      - name: ranking_date
-        description: Date when the rankings were calculated
-        tests:
-          - not_null:
-              severity: warn
       - name: team_id
-        description: Unique identifier for the team
-        tests:
-          - not_null:
-              severity: warn
-      - name: team_abv
-        description: Three-letter abbreviation for the team
-        tests:
-          - not_null:
-              severity: warn
-      - name: team_name
-        description: Full name of the team
-        tests:
-          - not_null:
-              severity: warn
+        tests: [unique, not_null]
       - name: power_score
-        description: Overall power ranking score (0-100). Blends previous and current season metrics based on games played.
-        tests:
-          - not_null:
-              severity: warn
+        tests: [not_null]
       - name: power_rank
-        description: Numerical rank based on power_score (1 is highest)
+        tests: [unique, not_null]
+
+  - name: mart_standings_weekly
+    description: >
+      Weekly standings snapshots (Mondays + season final date), sized for the
+      2,000-row Metabase public-API cap (~900 rows per season). Feeds the
+      bump chart and points-race cards.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [season, date, team_abv]
+    columns:
+      - name: season
+        tests: [not_null]
+      - name: date
+        tests: [not_null]
+      - name: team_abv
+        tests: [not_null]
+      - name: conference_rank
+      - name: league_rank
+      - name: is_season_final
+      - name: season_display
+
+  - name: mart_team_form
+    description: >
+      Latest standings snapshot per team per season: record, home/road
+      splits, true last-10, streak. Offseason-safe (no current_date lookup).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [season, team_abv]
+    columns:
+      - name: season
+        tests: [not_null]
+      - name: team_abv
+        tests: [not_null]
+      - name: as_of_date
+        tests: [not_null]
+      - name: record
+      - name: home_record
+      - name: road_record
+      - name: last_10_record
+      - name: streak
+
+  - name: mart_head_to_head
+    description: Season series records between every pair of teams that met.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [season, game_type, team_abv, opponent_abv]
+    columns:
+      - name: season
+        tests: [not_null]
+      - name: team_abv
+        tests: [not_null]
+      - name: opponent_abv
+        tests: [not_null]
+      - name: record
+        description: W-L-OTL vs this opponent
+
+  - name: mart_three_stars
+    description: Three Stars of each league game with per-player season selection counts.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [game_id, star_number]
+    columns:
+      - name: game_id
+        tests: [not_null]
+      - name: star_number
         tests:
-          - not_null:
-              severity: warn
-      - name: points_component
-        description: Component score based on standings points. Blends previous and current season point percentage.
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3]
+      - name: player_id
+      - name: star_selections_this_season
+
+  - name: mart_team_shot_metrics
+    description: >
+      Possession-proxy shot metrics per team-season from play-by-play:
+      Corsi (all attempts), Fenwick (unblocked), and PDO. Blocked-shot
+      events are attributed to the attempting (opposing) team.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [season, team_abv]
+    columns:
+      - name: season
+        tests: [not_null]
+      - name: team_abv
+        tests: [not_null]
+      - name: corsi_pct
         tests:
-          - not_null:
-              severity: warn
-      - name: goal_component
-        description: Component score based on goals scored/against metrics. Blends previous and current season goal differentials.
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: "corsi_pct is not null"
+      - name: fenwick_pct
         tests:
-          - not_null:
-              severity: warn
-      - name: advanced_stats_component
-        description: Component score based on shot metrics and special teams (PP/PK). Only activates after 5 games played.
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: "fenwick_pct is not null"
+      - name: pdo
+        description: Shooting% + save% x1000 (league mean ~1000)
         tests:
-          - not_null:
-              severity: warn
-      - name: schedule_component
-        description: Component score based on strength of schedule. Only meaningful after 5 games played.
-        tests:
-          - not_null:
-              severity: warn
-      - name: momentum_component
-        description: Component score based on recent performance. Requires minimum 5 games for basic trend, 10 games for full momentum.
-        tests:
-          - not_null:
-              severity: warn
-      - name: games_played
-        description: Number of games played in the current season
-        tests:
-          - not_null:
-              severity: warn
-      - name: current_season_weight_pct
-        description: Percentage weight given to current season metrics (0% at 0 games, 100% at 20+ games)
-        tests:
-          - not_null:
-              severity: warn
-      - name: previous_season_weight_pct
-        description: Percentage weight given to previous season metrics (100% at 0 games, 0% at 20+ games)
-        tests:
-          - not_null:
-              severity: warn
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 800
+              max_value: 1200
+              row_condition: "pdo is not null"

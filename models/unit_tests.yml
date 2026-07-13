@@ -1,0 +1,67 @@
+version: 2
+
+unit_tests:
+  - name: test_penalty_offsetting_cancels
+    description: >
+      Offsetting penalties (same game clock time, same duration, opposite
+      teams) must cancel and create no shorthanded situations, while a lone
+      minor creates exactly one; misconducts add PIM but never a power play.
+    model: int__game_penalties
+    given:
+      - input: ref('stg_nhl__play_by_play')
+        format: dict
+        rows:
+          # offsetting pair at 05:00 of period 1
+          - {game_id: 1, event_id: 10, description: penalty, play_team_id: 100, period: 1, time_in_period: "05:00", penalty_duration: 2}
+          - {game_id: 1, event_id: 11, description: penalty, play_team_id: 200, period: 1, time_in_period: "05:00", penalty_duration: 2}
+          # lone minor by team 100 at 10:00 of period 2
+          - {game_id: 1, event_id: 20, description: penalty, play_team_id: 100, period: 2, time_in_period: "10:00", penalty_duration: 2}
+          # misconduct by team 200: PIM only, no PP
+          - {game_id: 1, event_id: 30, description: penalty, play_team_id: 200, period: 3, time_in_period: "01:00", penalty_duration: 10}
+      - input: ref('int__league_games')
+        format: dict
+        rows:
+          - {game_id: 1}
+    expect:
+      format: dict
+      rows:
+        - {game_id: 1, team_id: 100, pim: 4, penalties_taken: 2, times_shorthanded: 1}
+        - {game_id: 1, team_id: 200, pim: 12, penalties_taken: 2, times_shorthanded: 0}
+
+  - name: test_faceoff_counts_by_team
+    description: Faceoff wins count per team; total faceoffs in game shared.
+    model: int__game_faceoffs
+    given:
+      - input: ref('stg_nhl__play_by_play')
+        format: dict
+        rows:
+          - {game_id: 5, event_id: 1, description: faceoff, play_team_id: 100}
+          - {game_id: 5, event_id: 2, description: faceoff, play_team_id: 100}
+          - {game_id: 5, event_id: 3, description: faceoff, play_team_id: 200}
+          - {game_id: 5, event_id: 4, description: goal, play_team_id: 200}
+      - input: ref('int__league_games')
+        format: dict
+        rows:
+          - {game_id: 5}
+    expect:
+      format: dict
+      rows:
+        - {game_id: 5, team_id: 100, faceoffs_won: 2, faceoffs_in_game: 3}
+        - {game_id: 5, team_id: 200, faceoffs_won: 1, faceoffs_in_game: 3}
+
+  - name: test_goalie_season_gaa_is_per_sixty
+    description: >
+      Season GAA must be goals against per 60 minutes of actual ice time,
+      not an average of per-game goals against. Two games (60 and 30 minutes,
+      2 GA each) = 4 GA over 90 minutes = 2.67 GAA.
+    model: int__goalies_season_stats_regular
+    given:
+      - input: ref('int__goalies_per_game_stats')
+        format: dict
+        rows:
+          - {game_id: 1, season: 20252026, game_type: regular, team_abv: NSH, player_id: 9, name: "J. Saros", starter: true, result: W, goals_against: 2, shots_saved: 30, shots_against: 32, even_goals_against: 2, even_shots_saved: 25, even_shots_against: 27, pp_goals_against: 0, pp_shots_saved: 5, pp_shots_against: 5, sh_goals_against: 0, sh_shots_saved: 0, sh_shots_against: 0, pim: 0, toi: "01:00:00"}
+          - {game_id: 2, season: 20252026, game_type: regular, team_abv: NSH, player_id: 9, name: "J. Saros", starter: false, result: L, goals_against: 2, shots_saved: 10, shots_against: 12, even_goals_against: 2, even_shots_saved: 10, even_shots_against: 12, pp_goals_against: 0, pp_shots_saved: 0, pp_shots_against: 0, sh_goals_against: 0, sh_shots_saved: 0, sh_shots_against: 0, pim: 0, toi: "00:30:00"}
+    expect:
+      format: dict
+      rows:
+        - {season: 20252026, player_id: 9, gp: 2, gaa: 2.67, saves: 40, shots_faced: 44}

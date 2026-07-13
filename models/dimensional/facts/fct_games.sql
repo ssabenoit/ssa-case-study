@@ -10,12 +10,10 @@ games_base as (
         g.id as game_id,
         g.season,
         g.date,
-        case 
-            when sg.game_type = 2 then 'Regular'
-            when sg.game_type = 3 then 'Playoff'
-            when sg.game_type = 1 then 'Preseason'
-            else 'Other'
-        end as game_type,
+        -- game type from the games feed itself (the schedules table only
+        -- retains the most recently extracted season, so it can't be trusted
+        -- for historical/backfilled games)
+        initcap(lg.game_type) as game_type,
         g.home_abv,
         g.away_abv,
         g.home_score,
@@ -29,10 +27,9 @@ games_base as (
     from {{ ref('int__all_games') }} g
     left join {{ ref('int__basic_games_info') }} gi
         on g.id = gi.game_id
-    left join {{ ref('stg_nhl__season_schedules') }} sg
-        on g.id = sg.id
     -- league games only (All-Star / 4 Nations / preseason excluded)
-    where g.id in (select game_id from {{ ref('int__league_games') }})
+    inner join {{ ref('int__league_games') }} lg
+        on g.id = lg.game_id
 )
 
 ,
