@@ -1,5 +1,8 @@
 -- models/staging/stg_nhl__season_schedules.sql
 -- Pulls every game past and scheduled within the scope of the data
+-- Grain: one row per game; the schedule is re-extracted daily and appended,
+-- so we keep only the most recently loaded row (latest game state wins,
+-- e.g. FUT -> OFF once a game has been played).
 
 with
 
@@ -27,4 +30,4 @@ select
     VENUETIMEZONE::string as venue_tz,
     SPECIALEVENT_NAME_DEFAULT::string as special_event
 from games
-qualify row_number() over (partition by ID order by ID desc) = 1
+qualify row_number() over (partition by ID order by _loaded_at desc) = 1

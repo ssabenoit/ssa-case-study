@@ -50,7 +50,7 @@ game_stats as (
         sum(case when type = 'away' then pp_attempts end) as away_pp_attempts,
         sum(case when type = 'home' then faceoff_pct end) as home_faceoff_pct,
         sum(case when type = 'away' then faceoff_pct end) as away_faceoff_pct
-    from {{ ref('stg_nhl__game_summaries') }}
+    from {{ ref('int__team_per_game_stats') }}
     group by game_id
 ),
 

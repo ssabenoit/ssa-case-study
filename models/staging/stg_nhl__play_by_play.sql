@@ -1,6 +1,7 @@
 -- models/staging/stg_nhl__play_by_play.sql
 -- Standardizes play-by-play event data from the NHL API
--- Data is already flattened to one row per event
+-- Data is already flattened to one row per event; the loader appends
+-- re-extractions, so we keep only the most recently loaded row per event.
 
 with
 
@@ -28,6 +29,8 @@ select
     DETAILS_ZONECODE::string as zone_code,
     DETAILS_SHOTTYPE::string as shot_type,
     DETAILS_REASON::string as penalty_reason,
+    DETAILS_TYPECODE::string as penalty_type_code,
+    DETAILS_DESCKEY::string as penalty_desc_key,
     DETAILS_DURATION::int as penalty_duration,
     DETAILS_SCORINGPLAYERID::int as scoring_player_id,
     DETAILS_ASSIST1PLAYERID::int as assist1_player_id,
@@ -39,9 +42,12 @@ select
     DETAILS_BLOCKINGPLAYERID::int as blocking_player_id,
     DETAILS_COMMITTEDBYPLAYERID::int as committed_by_player_id,
     DETAILS_DRAWNBYPLAYERID::int as drawn_by_player_id,
+    DETAILS_SERVEDBYPLAYERID::int as served_by_player_id,
+    DETAILS_WINNINGPLAYERID::int as faceoff_winner_player_id,
+    DETAILS_LOSINGPLAYERID::int as faceoff_loser_player_id,
     DETAILS_AWAYSCORE::int as away_score,
     DETAILS_HOMESCORE::int as home_score,
     DETAILS_AWAYSOG::int as away_sog,
     DETAILS_HOMESOG::int as home_sog
 from source
-qualify row_number() over (partition by GAME_ID, EVENTID order by SORTORDER) = 1
+qualify row_number() over (partition by GAME_ID, EVENTID order by _loaded_at desc, SORTORDER) = 1

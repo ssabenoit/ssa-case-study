@@ -164,3 +164,5 @@ all_skaters_per_game_stats as (
 
 select *
 from all_skaters_per_game_stats
+-- league games only: excludes All-Star / 4 Nations / preseason contamination
+where game_id in (select game_id from {{ ref('int__league_games') }})

@@ -346,8 +346,11 @@ models:
       - name: headshot_url
         description: URL to player's headshot image
 
-  - name: skaters_per_game_stats_all
-    description: Statistics for all skaters on a per-game basis
+  - name: int__skaters_per_game_stats
+    description: >
+      Statistics for all skaters on a per-game basis, parsed from the game
+      boxscore. League games only (All-Star / 4 Nations / preseason excluded
+      via int__league_games).
     config:
       materialized: table
     columns:
@@ -414,8 +417,11 @@ models:
       - name: toi
         description: Time on ice in the game
 
-  - name: goalies_per_game_stats_all
-    description: Statistics for all goalies on a per-game basis
+  - name: int__goalies_per_game_stats
+    description: >
+      Statistics for all goalies on a per-game basis, parsed from the game
+      boxscore. League games only (All-Star / 4 Nations / preseason excluded
+      via int__league_games).
     config:
       materialized: table
     columns:
@@ -482,8 +488,17 @@ models:
       - name: pim
         description: Penalty minutes
 
-  - name: team_per_game_stats_all
-    description: Team statistics on a per-game basis
+  - name: int__team_per_game_stats
+    description: >
+      Team statistics on a per-game basis for league games. Scores/SOG come
+      from game summaries; hits/blocks/giveaways/takeaways/PP goals are summed
+      from player boxscores; PIM and times-shorthanded come from play-by-play
+      penalty events; faceoff percentage from play-by-play faceoff events.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - game_id
+            - team_id
     config:
       materialized: table
     columns:
@@ -550,3 +565,81 @@ models:
         description: Number of giveaways
       - name: takeaways
         description: Number of takeaways
+  - name: int__league_games
+    description: >
+      Canonical universe of NHL league games: regular-season and playoff games
+      between two NHL franchises (validated against that season's standings
+      participants). All-Star, 4 Nations, and other special-event games are
+      excluded. Downstream stats models filter through this model.
+    columns:
+      - name: game_id
+        description: Unique game identifier
+        tests:
+          - unique
+          - not_null
+      - name: season
+        description: NHL season identifier
+        tests:
+          - not_null
+      - name: game_type
+        description: regular or playoff
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['regular', 'playoff']
+      - name: game_date
+        description: Calendar date of the game
+      - name: start_time_utc
+        description: Scheduled puck drop in UTC (ISO-8601 string)
+      - name: last_period_type
+        description: Period the game ended in (REG/OT/SO)
+
+  - name: int__game_penalties
+    description: >
+      Team penalty totals per league game from play-by-play events. PIM
+      includes all penalties (misconducts included); times_shorthanded
+      approximates official PP-opportunity counting (offsetting penalties
+      cancel, misconducts excluded).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - game_id
+            - team_id
+    columns:
+      - name: game_id
+        tests:
+          - not_null
+      - name: team_id
+        tests:
+          - not_null
+      - name: pim
+        description: Total penalty minutes for the team in the game
+        tests:
+          - not_null
+      - name: penalties_taken
+        description: Count of penalties taken
+      - name: times_shorthanded
+        description: Approximate times shorthanded (= opponent PP opportunities)
+
+  - name: int__game_faceoffs
+    description: >
+      Faceoff wins per team per league game from play-by-play events (event
+      owner of a faceoff is the winning team).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - game_id
+            - team_id
+    columns:
+      - name: game_id
+        tests:
+          - not_null
+      - name: team_id
+        tests:
+          - not_null
+      - name: faceoffs_won
+        description: Faceoffs won by this team in this game
+        tests:
+          - not_null
+      - name: faceoffs_in_game
+        description: Total faceoffs taken in the game (both teams)
