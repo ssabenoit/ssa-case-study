@@ -17,7 +17,9 @@ goalie_season_stats as (
         player_id,
         min(player_name) as name,
         team_abv,
-        count(*) as gp,
+        -- GP = games actually played (backups dress with 0:00 TOI)
+        count_if(time_on_ice_seconds > 0) as gp,
+        count(*) as games_dressed,
         count_if(is_starting_goalie) as starts,
         count_if(decision = 'W') as wins,
         count_if(decision = 'L') as losses,
