@@ -7,7 +7,7 @@
 
 with
 
-teams_base as (
+current_teams as (
     select
         team_id,
         team_name,
@@ -18,14 +18,55 @@ teams_base as (
     from {{ ref('int__teams_basic_info') }}
 ),
 
+-- Franchises that appear in loaded seasons but no longer exist (e.g. ARI in
+-- 2023-24). Identity comes from the games feed; display fields from the
+-- standings of the season(s) they played.
+historical_teams as (
+    select
+        ids.team_id,
+        st.team_name,
+        ids.team_abv,
+        st.place_name,
+        st.common_name,
+        st.logo_url
+    from (
+        select AWAYTEAM_ABBREV::string as team_abv, AWAYTEAM_ID::int as team_id
+        from {{ ref('stg_nhl__games') }}
+        union
+        select HOMETEAM_ABBREV::string, HOMETEAM_ID::int
+        from {{ ref('stg_nhl__games') }}
+    ) ids
+    inner join (
+        select
+            TEAMABBREV_DEFAULT::string as team_abv,
+            TEAMNAME_DEFAULT::string as team_name,
+            PLACENAME_DEFAULT::string as place_name,
+            TEAMCOMMONNAME_DEFAULT::string as common_name,
+            TEAMLOGO::string as logo_url
+        from {{ ref('stg_nhl__daily_standings') }}
+        qualify row_number() over (partition by TEAMABBREV_DEFAULT order by DATE desc) = 1
+    ) st
+        on st.team_abv = ids.team_abv
+    where ids.team_abv not in (select team_abv from current_teams)
+),
+
+teams_base as (
+    select *, true as is_current_franchise from current_teams
+    union all
+    select *, false as is_current_franchise from historical_teams
+),
+
+-- Division/conference from the most recent standings the team appears in
+-- (works for both active and defunct franchises)
 current_division_conference as (
-    select distinct
-        team_abv,
-        division,
-        division_abv,
-        conference,
-        conference_abv
-    from {{ ref('int__current_standings') }}
+    select
+        TEAMABBREV_DEFAULT::string as team_abv,
+        DIVISIONNAME::string as division,
+        DIVISIONABBREV::string as division_abv,
+        CONFERENCENAME::string as conference,
+        CONFERENCEABBREV::string as conference_abv
+    from {{ ref('stg_nhl__daily_standings') }}
+    qualify row_number() over (partition by TEAMABBREV_DEFAULT order by DATE desc) = 1
 ),
 
 team_colors as (
@@ -65,7 +106,7 @@ select
     tc.secondary_color,
     coalesce(th.is_original_or_relocated, false) as is_original_or_relocated,
     coalesce(th.is_expansion_team, false) as is_expansion_team,
-    true as is_active  -- All current teams are active
+    t.is_current_franchise as is_active
 from teams_base t
 left join current_division_conference dc
     on t.team_abv = dc.team_abv
