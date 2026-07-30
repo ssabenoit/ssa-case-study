@@ -1,0 +1,17 @@
+label: Games
+dimensions:
+  game_key:
+    primary_key: true
+    hidden: true
+measures:
+  game_count:
+    aggregate_type: count
+    label: "# Games"
+  avg_attendance:
+    sql: ${attendance}
+    aggregate_type: average
+    label: Avg Attendance
+  total_goals_scored:
+    sql: ${final_home_score} + ${final_away_score}
+    aggregate_type: sum
+    label: Total Goals (both teams)

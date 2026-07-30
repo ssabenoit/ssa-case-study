@@ -1,0 +1,5 @@
+label: Daily Standings
+dimensions:
+  standings_daily_key:
+    primary_key: true
+    hidden: true

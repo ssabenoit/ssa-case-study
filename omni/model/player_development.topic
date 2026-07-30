@@ -1,0 +1,10 @@
+base_view: dbt_analytics_prod__mart_player_seasons
+label: Player Development
+description: Career trajectories — one row per player-season with age, per-game and per-60 production.
+
+ai_context: |
+  season_age is hockey age (age on Feb 1 of the season). Use with mart_aging_curves for league context.
+  points_per_60 uses real TOI. draft_year/draft_overall_pick come from official NHL landing data.
+
+joins:
+  dbt_analytics_prod__dim_players: {}

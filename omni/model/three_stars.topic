@@ -1,0 +1,7 @@
+base_view: dbt_analytics_prod__mart_three_stars
+label: Three Stars
+description: Game three-stars selections with season-to-date star counts.
+
+joins:
+  dbt_analytics_prod__dim_players: {}
+  dbt_analytics_prod__dim_teams: {}

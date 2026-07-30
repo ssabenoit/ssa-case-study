@@ -1,0 +1,17 @@
+base_view: dbt_analytics_prod__fct_plays
+label: Shots & Goals (Play-by-Play)
+description: Every attributed play-by-play event with rink coordinates; joins one-to-one to the xG model for shot attempts.
+
+ai_context: |
+  Event-level data, 2007-08 onward (rink coordinate era). x_coordinate/y_coordinate give rink position for shot maps.
+  Shot attempts are event_type_name in ('shot-on-goal','missed-shot','blocked-shot','goal').
+  xG lives on the joined dbt_analytics_prod__fct_shots_xg view (raw model output; blocked shots, empty-net and
+  shootout attempts are excluded from the xG universe by design).
+  For season-level xG leaderboards prefer the calibrated marts topics (Skater xG, Team xG, Goalie GSAx).
+
+joins:
+  dbt_analytics_prod__fct_shots_xg: {}
+  dbt_analytics_prod__dim_teams: {}
+  dbt_analytics_prod__dim_players: {}
+  dbt_analytics_prod__dim_seasons: {}
+  dbt_analytics_prod__fct_games: {}

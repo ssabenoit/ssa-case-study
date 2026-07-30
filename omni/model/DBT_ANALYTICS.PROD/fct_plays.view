@@ -1,0 +1,15 @@
+label: Play-by-Play Events
+dimensions:
+  play_key:
+    primary_key: true
+    hidden: true
+measures:
+  event_count:
+    aggregate_type: count
+    label: "# Events"
+  goal_count:
+    aggregate_type: count
+    label: Goals
+    filters:
+      is_goal:
+        is: true

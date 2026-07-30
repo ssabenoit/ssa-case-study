@@ -1,0 +1,10 @@
+base_view: dbt_analytics_prod__mart_goalie_gsax
+label: Goalie GSAx
+description: Goals saved above expected per goalie-season (on-net calibrated xG faced minus goals allowed).
+
+ai_context: |
+  Positive goals_saved_above_expected = stopped more than an average goalie would facing the same shots.
+  gsax_per_100_shots normalizes for workload. Qualified: shots_faced >= 500.
+
+joins:
+  dbt_analytics_prod__dim_players: {}

@@ -1,0 +1,65 @@
+label: Skater Game Stats
+dimensions:
+  player_game_key:
+    primary_key: true
+    hidden: true
+measures:
+  games_played:
+    aggregate_type: count
+    label: GP
+  total_goals:
+    sql: ${goals}
+    aggregate_type: sum
+    label: G
+  total_assists:
+    sql: ${assists}
+    aggregate_type: sum
+    label: A
+  total_points:
+    sql: ${points}
+    aggregate_type: sum
+    label: P
+  total_shots:
+    sql: ${shots}
+    aggregate_type: sum
+    label: SOG
+  total_hits:
+    sql: ${hits}
+    aggregate_type: sum
+    label: Hits
+  total_blocks:
+    sql: ${blocks}
+    aggregate_type: sum
+    label: Blocks
+  total_pim:
+    sql: ${penalty_minutes}
+    aggregate_type: sum
+    label: PIM
+  total_pp_goals:
+    sql: ${pp_goals}
+    aggregate_type: sum
+    label: PP Goals
+  total_gwg:
+    sql: ${game_winning_goals}
+    aggregate_type: sum
+    label: GWG
+  shooting_pct_agg:
+    sql: 1.0 * ${total_goals} / nullif(${total_shots}, 0)
+    label: Shooting %
+    format: PERCENT_1
+  total_toi_seconds:
+    sql: ${time_on_ice_seconds}
+    aggregate_type: sum
+    hidden: true
+  toi_minutes_per_game:
+    sql: ${total_toi_seconds} / 60.0 / nullif(${games_played}, 0)
+    label: TOI/GP (min)
+    format: NUMBER_1
+  points_per_game:
+    sql: 1.0 * ${total_points} / nullif(${games_played}, 0)
+    label: P/GP
+    format: NUMBER_2
+  points_per_60:
+    sql: 3600.0 * ${total_points} / nullif(${total_toi_seconds}, 0)
+    label: P/60
+    format: NUMBER_2

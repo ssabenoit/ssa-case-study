@@ -1,0 +1,7 @@
+label: Seasons
+dimensions:
+  season_key:
+    primary_key: true
+    hidden: true
+  season_display_name:
+    label: Season

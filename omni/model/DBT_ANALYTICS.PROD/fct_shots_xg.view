@@ -1,0 +1,28 @@
+label: Shots (xG)
+dimensions:
+  shot_key:
+    primary_key: true
+    hidden: true
+measures:
+  shot_count:
+    aggregate_type: count
+    label: Shot Attempts
+  total_goals:
+    sql: ${is_goal}
+    aggregate_type: sum
+    label: Goals
+  total_xg:
+    sql: ${xg_raw}
+    aggregate_type: sum
+    label: xG (raw)
+    format: NUMBER_2
+    description: Sum of raw model xG. For season-level analysis prefer the calibrated marts (mart_skater_xg, mart_team_xg, mart_goalie_gsax).
+  goals_above_expected:
+    sql: ${total_goals} - ${total_xg}
+    label: Goals Above Expected (raw)
+    format: NUMBER_2
+  xg_per_shot:
+    sql: ${xg_raw}
+    aggregate_type: average
+    label: xG / Shot
+    format: NUMBER_3

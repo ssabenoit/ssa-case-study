@@ -1,0 +1,9 @@
+base_view: dbt_analytics_prod__fct_upcoming_games
+label: Upcoming Games
+description: Scheduled games with dates, matchups, and joined win probabilities from the projections engine.
+
+ai_context: |
+  Join to Game Projections is one-to-one on game_id: p_home_win/p_away_win give each matchup's probability.
+
+joins:
+  dbt_analytics_prod__mart_game_projections: {}

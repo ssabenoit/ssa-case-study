@@ -1,0 +1,9 @@
+label: Players
+dimensions:
+  player_key:
+    primary_key: true
+    hidden: true
+measures:
+  player_count:
+    aggregate_type: count
+    label: "# Players"

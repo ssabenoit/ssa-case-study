@@ -1,0 +1,109 @@
+label: Team Game Stats
+dimensions:
+  team_game_key:
+    primary_key: true
+    hidden: true
+measures:
+  games_played:
+    aggregate_type: count
+    label: GP
+  wins:
+    aggregate_type: count
+    label: W
+    filters:
+      game_result:
+        is: W
+  regulation_ot_losses:
+    aggregate_type: count
+    label: L
+    filters:
+      game_result:
+        is: L
+  overtime_losses:
+    aggregate_type: count
+    label: OTL
+    filters:
+      game_result:
+        is: OTL
+  total_points_earned:
+    sql: ${points_earned}
+    aggregate_type: sum
+    label: Points
+  point_pct:
+    sql: 1.0 * ${total_points_earned} / nullif(2 * ${games_played}, 0)
+    label: Points %
+    format: PERCENT_1
+  total_goals_for:
+    sql: ${goals_for}
+    aggregate_type: sum
+    label: GF
+  total_goals_against:
+    sql: ${goals_against}
+    aggregate_type: sum
+    label: GA
+  goals_per_game:
+    sql: 1.0 * ${total_goals_for} / nullif(${games_played}, 0)
+    label: GF/GP
+    format: NUMBER_2
+  goals_against_per_game:
+    sql: 1.0 * ${total_goals_against} / nullif(${games_played}, 0)
+    label: GA/GP
+    format: NUMBER_2
+  total_shots_for:
+    sql: ${shots_for}
+    aggregate_type: sum
+    label: SF
+  total_shots_against:
+    sql: ${shots_against}
+    aggregate_type: sum
+    label: SA
+  shot_share:
+    sql: 1.0 * ${total_shots_for} / nullif(${total_shots_for} + ${total_shots_against}, 0)
+    label: Shot Share
+    format: PERCENT_1
+  total_pp_goals:
+    sql: ${powerplay_goals}
+    aggregate_type: sum
+    label: PP Goals
+  total_pp_opportunities:
+    sql: ${powerplay_opportunities}
+    aggregate_type: sum
+    label: PP Opportunities
+  power_play_pct:
+    sql: 1.0 * ${total_pp_goals} / nullif(${total_pp_opportunities}, 0)
+    label: PP%
+    format: PERCENT_1
+    description: Power-play goals divided by power-play opportunities (ratio of sums, not average of per-game percentages).
+  total_pk_goals_against:
+    sql: ${penalty_kill_goals_against}
+    aggregate_type: sum
+    label: PK Goals Against
+  total_times_shorthanded:
+    sql: ${times_shorthanded}
+    aggregate_type: sum
+    label: Times Shorthanded
+  penalty_kill_pct_agg:
+    sql: 1.0 - 1.0 * ${total_pk_goals_against} / nullif(${total_times_shorthanded}, 0)
+    label: PK%
+    format: PERCENT_1
+    description: 1 minus PP goals allowed per time shorthanded (ratio of sums).
+  team_shooting_pct:
+    sql: 1.0 * ${total_goals_for} / nullif(${total_shots_for}, 0)
+    label: Shooting %
+    format: PERCENT_1
+  team_save_pct:
+    sql: 1.0 - 1.0 * ${total_goals_against} / nullif(${total_shots_against}, 0)
+    label: Save %
+    format: PERCENT_1
+  total_faceoff_wins:
+    sql: ${faceoff_wins}
+    aggregate_type: sum
+    hidden: true
+  total_faceoff_losses:
+    sql: ${faceoff_losses}
+    aggregate_type: sum
+    hidden: true
+  faceoff_win_pct_agg:
+    sql: 1.0 * ${total_faceoff_wins} / nullif(${total_faceoff_wins} + ${total_faceoff_losses}, 0)
+    label: Faceoff %
+    format: PERCENT_1

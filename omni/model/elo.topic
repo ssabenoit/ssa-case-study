@@ -1,0 +1,10 @@
+base_view: dbt_analytics_prod__mart_team_elo
+label: Team Elo
+description: Elo rating trajectory per team per game, with pregame win probabilities.
+
+ai_context: |
+  MOV-scaled Elo (K=12, home advantage 25, 70% season carryover). League average is ~1505.
+  elo is the POST-game rating. p_win_pregame was the model's pregame win probability.
+
+joins:
+  dbt_analytics_prod__dim_teams: {}

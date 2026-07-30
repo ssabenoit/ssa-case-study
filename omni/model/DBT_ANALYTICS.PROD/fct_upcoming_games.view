@@ -1,0 +1,9 @@
+label: Upcoming Games
+dimensions:
+  game_key:
+    primary_key: true
+    hidden: true
+measures:
+  game_count:
+    aggregate_type: count
+    label: "# Games"

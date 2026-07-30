@@ -25,7 +25,8 @@ Env:
   MB_URL             Metabase base URL (default: expert-southshore instance)
   MB_API_KEY_FILE    file containing the Metabase API key
                      (default: ../.mb_api_key relative to repo root)
-  OMNI_BASE_URL, OMNI_API_KEY, OMNI_CONNECTION_ID   optional Omni schema refresh
+  OMNI_BASE_URL, OMNI_MODEL_ID       optional Omni schema refresh (shared model id)
+  OMNI_API_KEY / OMNI_API_KEY_FILE   Omni Organization API key (or file containing it)
   ALERT_WEBHOOK_URL  optional Slack-compatible webhook
 """
 import argparse
@@ -192,16 +193,29 @@ def step_metabase_sync():
 
 def step_omni_refresh():
     import requests
-    base, key, conn = (os.getenv("OMNI_BASE_URL"), os.getenv("OMNI_API_KEY"),
-                       os.getenv("OMNI_CONNECTION_ID"))
-    if not (base and key and conn):
+    base, model_id = os.getenv("OMNI_BASE_URL"), os.getenv("OMNI_MODEL_ID")
+    key = os.getenv("OMNI_API_KEY")
+    key_file = os.getenv("OMNI_API_KEY_FILE")
+    if not key and key_file and Path(key_file).exists():
+        key = Path(key_file).read_text().strip()
+    if not (base and key and model_id):
         return {"skipped": "Omni env not configured"}
-    resp = requests.post(
-        f"{base}/api/v1/connections/{conn}/schema-refresh",
-        headers={"Authorization": f"Bearer {key}"}, timeout=120,
-    )
+    headers = {"Authorization": f"Bearer {key}"}
+    resp = requests.post(f"{base}/api/v1/models/{model_id}/refresh",
+                         headers=headers, timeout=120)
     resp.raise_for_status()
-    return {"omni": resp.status_code}
+    job_id = resp.json().get("jobId")
+    status = "RUNNING"
+    for _ in range(60):
+        time.sleep(5)
+        poll = requests.get(f"{base}/api/v1/jobs/{job_id}/status",
+                            headers=headers, timeout=30)
+        status = poll.json().get("status", "UNKNOWN")
+        if status != "RUNNING":
+            break
+    if status != "COMPLETED":
+        raise RuntimeError(f"Omni schema refresh job {job_id}: {status}")
+    return {"omni_refresh_job": job_id, "status": status}
 
 
 def step_invariants():

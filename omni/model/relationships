@@ -1,0 +1,190 @@
+- join_from_view: dbt_analytics_prod__fct_games
+  join_to_view: dbt_analytics_prod__dim_seasons
+  on_sql: ${dbt_analytics_prod__fct_games.season_key} = ${dbt_analytics_prod__dim_seasons.season_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_games
+  join_to_view: dbt_analytics_prod__dim_dates
+  on_sql: ${dbt_analytics_prod__fct_games.date_key} = ${dbt_analytics_prod__dim_dates.date_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_team_game_stats
+  join_to_view: dbt_analytics_prod__dim_teams
+  on_sql: ${dbt_analytics_prod__fct_team_game_stats.team_key} = ${dbt_analytics_prod__dim_teams.team_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_team_game_stats
+  join_to_view: dbt_analytics_prod__dim_seasons
+  on_sql: ${dbt_analytics_prod__fct_team_game_stats.season_key} = ${dbt_analytics_prod__dim_seasons.season_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_team_game_stats
+  join_to_view: dbt_analytics_prod__dim_dates
+  on_sql: ${dbt_analytics_prod__fct_team_game_stats.date_key} = ${dbt_analytics_prod__dim_dates.date_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_team_game_stats
+  join_to_view: dbt_analytics_prod__fct_games
+  on_sql: ${dbt_analytics_prod__fct_team_game_stats.game_key} = ${dbt_analytics_prod__fct_games.game_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_player_game_stats
+  join_to_view: dbt_analytics_prod__dim_players
+  on_sql: ${dbt_analytics_prod__fct_player_game_stats.player_key} = ${dbt_analytics_prod__dim_players.player_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_player_game_stats
+  join_to_view: dbt_analytics_prod__dim_teams
+  on_sql: ${dbt_analytics_prod__fct_player_game_stats.team_key} = ${dbt_analytics_prod__dim_teams.team_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_player_game_stats
+  join_to_view: dbt_analytics_prod__dim_seasons
+  on_sql: ${dbt_analytics_prod__fct_player_game_stats.season_key} = ${dbt_analytics_prod__dim_seasons.season_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_player_game_stats
+  join_to_view: dbt_analytics_prod__dim_dates
+  on_sql: ${dbt_analytics_prod__fct_player_game_stats.date_key} = ${dbt_analytics_prod__dim_dates.date_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_goalie_game_stats
+  join_to_view: dbt_analytics_prod__dim_players
+  on_sql: ${dbt_analytics_prod__fct_goalie_game_stats.player_key} = ${dbt_analytics_prod__dim_players.player_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_goalie_game_stats
+  join_to_view: dbt_analytics_prod__dim_teams
+  on_sql: ${dbt_analytics_prod__fct_goalie_game_stats.team_key} = ${dbt_analytics_prod__dim_teams.team_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_goalie_game_stats
+  join_to_view: dbt_analytics_prod__dim_seasons
+  on_sql: ${dbt_analytics_prod__fct_goalie_game_stats.season_key} = ${dbt_analytics_prod__dim_seasons.season_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_standings_daily
+  join_to_view: dbt_analytics_prod__dim_teams
+  on_sql: ${dbt_analytics_prod__fct_standings_daily.team_key} = ${dbt_analytics_prod__dim_teams.team_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_standings_daily
+  join_to_view: dbt_analytics_prod__dim_seasons
+  on_sql: ${dbt_analytics_prod__fct_standings_daily.season_key} = ${dbt_analytics_prod__dim_seasons.season_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_standings_daily
+  join_to_view: dbt_analytics_prod__dim_dates
+  on_sql: ${dbt_analytics_prod__fct_standings_daily.date_key} = ${dbt_analytics_prod__dim_dates.date_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_plays
+  join_to_view: dbt_analytics_prod__dim_teams
+  on_sql: ${dbt_analytics_prod__fct_plays.event_team_key} = ${dbt_analytics_prod__dim_teams.team_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_plays
+  join_to_view: dbt_analytics_prod__dim_players
+  on_sql: ${dbt_analytics_prod__fct_plays.primary_player_key} = ${dbt_analytics_prod__dim_players.player_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_plays
+  join_to_view: dbt_analytics_prod__dim_seasons
+  on_sql: ${dbt_analytics_prod__fct_plays.season_key} = ${dbt_analytics_prod__dim_seasons.season_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_plays
+  join_to_view: dbt_analytics_prod__fct_games
+  on_sql: ${dbt_analytics_prod__fct_plays.game_key} = ${dbt_analytics_prod__fct_games.game_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_plays
+  join_to_view: dbt_analytics_prod__fct_shots_xg
+  on_sql: ${dbt_analytics_prod__fct_plays.play_key} = ${dbt_analytics_prod__fct_shots_xg.shot_key}
+  relationship_type: one_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_shots_xg
+  join_to_view: dbt_analytics_prod__dim_players
+  on_sql: ${dbt_analytics_prod__fct_shots_xg.shooter_player_key} = ${dbt_analytics_prod__dim_players.player_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_shots_xg
+  join_to_view: dbt_analytics_prod__dim_teams
+  on_sql: ${dbt_analytics_prod__fct_shots_xg.team_key} = ${dbt_analytics_prod__dim_teams.team_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_shots_xg
+  join_to_view: dbt_analytics_prod__dim_seasons
+  on_sql: ${dbt_analytics_prod__fct_shots_xg.season_key} = ${dbt_analytics_prod__dim_seasons.season_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_shots_xg
+  join_to_view: dbt_analytics_prod__fct_games
+  on_sql: ${dbt_analytics_prod__fct_shots_xg.game_key} = ${dbt_analytics_prod__fct_games.game_key}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__fct_upcoming_games
+  join_to_view: dbt_analytics_prod__mart_game_projections
+  on_sql: ${dbt_analytics_prod__fct_upcoming_games.game_id} = ${dbt_analytics_prod__mart_game_projections.game_id}
+  relationship_type: one_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__mart_playoff_odds
+  join_to_view: dbt_analytics_prod__dim_teams
+  on_sql: ${dbt_analytics_prod__mart_playoff_odds.team_abv} = ${dbt_analytics_prod__dim_teams.team_abv}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__mart_team_elo
+  join_to_view: dbt_analytics_prod__dim_teams
+  on_sql: ${dbt_analytics_prod__mart_team_elo.team_abv} = ${dbt_analytics_prod__dim_teams.team_abv}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__mart_team_xg
+  join_to_view: dbt_analytics_prod__dim_teams
+  on_sql: ${dbt_analytics_prod__mart_team_xg.team_abv} = ${dbt_analytics_prod__dim_teams.team_abv}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__mart_team_xg
+  join_to_view: dbt_analytics_prod__mart_team_shot_metrics
+  on_sql: ${dbt_analytics_prod__mart_team_xg.season} = ${dbt_analytics_prod__mart_team_shot_metrics.season} and ${dbt_analytics_prod__mart_team_xg.team_abv} = ${dbt_analytics_prod__mart_team_shot_metrics.team_abv}
+  relationship_type: one_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__mart_player_projections
+  join_to_view: dbt_analytics_prod__dim_players
+  on_sql: ${dbt_analytics_prod__mart_player_projections.player_id} = ${dbt_analytics_prod__dim_players.player_id}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__mart_player_seasons
+  join_to_view: dbt_analytics_prod__dim_players
+  on_sql: ${dbt_analytics_prod__mart_player_seasons.player_id} = ${dbt_analytics_prod__dim_players.player_id}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__mart_skater_xg
+  join_to_view: dbt_analytics_prod__dim_players
+  on_sql: ${dbt_analytics_prod__mart_skater_xg.player_id} = ${dbt_analytics_prod__dim_players.player_id}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__mart_goalie_gsax
+  join_to_view: dbt_analytics_prod__dim_players
+  on_sql: ${dbt_analytics_prod__mart_goalie_gsax.player_id} = ${dbt_analytics_prod__dim_players.player_id}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__mart_player_similarity
+  join_to_view: dbt_analytics_prod__dim_players
+  on_sql: ${dbt_analytics_prod__mart_player_similarity.player_id} = ${dbt_analytics_prod__dim_players.player_id}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__mart_milestone_tracker
+  join_to_view: dbt_analytics_prod__dim_players
+  on_sql: ${dbt_analytics_prod__mart_milestone_tracker.player_id} = ${dbt_analytics_prod__dim_players.player_id}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__mart_three_stars
+  join_to_view: dbt_analytics_prod__dim_players
+  on_sql: ${dbt_analytics_prod__mart_three_stars.player_id} = ${dbt_analytics_prod__dim_players.player_id}
+  relationship_type: many_to_one
+  join_type: always_left
+- join_from_view: dbt_analytics_prod__mart_three_stars
+  join_to_view: dbt_analytics_prod__dim_teams
+  on_sql: ${dbt_analytics_prod__mart_three_stars.team_abv} = ${dbt_analytics_prod__dim_teams.team_abv}
+  relationship_type: many_to_one
+  join_type: always_left

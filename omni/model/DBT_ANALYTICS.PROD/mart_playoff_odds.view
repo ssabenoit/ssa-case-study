@@ -1,0 +1,5 @@
+label: Playoff Odds (Monte Carlo)
+measures:
+  team_count:
+    aggregate_type: count
+    hidden: true
