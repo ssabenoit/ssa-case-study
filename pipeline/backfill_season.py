@@ -40,7 +40,10 @@ def main():
         sys.exit(2)
     start_year = int(sys.argv[1])
     season = f"{start_year}{start_year + 1}"
-    start, end = f"{start_year}-09-15", f"{start_year + 1}-07-05"
+    # COVID-era seasons ran outside the normal calendar: the 2019-20 playoffs
+    # were the Aug-Sep 2020 bubble, and 2020-21 started in January.
+    overrides = {2019: ("2019-09-15", "2020-10-05")}
+    start, end = overrides.get(start_year, (f"{start_year}-09-15", f"{start_year + 1}-07-05"))
 
     from nhl_to_parquet import extract_to_parquet
     from parquet_to_snowflake import load_parquet_to_snowflake
