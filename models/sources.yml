@@ -130,3 +130,27 @@ sources:
         freshness:
           warn_after: {count: 24, period: hour}
           error_after: {count: 48, period: hour}
+      - name: shift_charts
+        description: >
+          Per-shift records from the NHL shift-chart endpoint: one row per
+          player shift (typeCode 517) or shift-chart event, with period,
+          start/end/duration, player and team identifiers.
+        columns:
+          - name: id
+            description: Unique shift record identifier
+          - name: gameid
+            description: NHL game id
+        freshness:
+          warn_after: {count: 48, period: hour}
+          error_after: {count: 7, period: day}
+
+      - name: official_skater_summary
+        description: Official league season aggregates per skater (parity/validation source).
+      - name: official_goalie_summary
+        description: Official league season aggregates per goalie (parity/validation source).
+      - name: official_team_summary
+        description: Official league season aggregates per team (parity/validation source).
+      - name: player_landing
+        description: >
+          Player bio/draft/awards payloads from the player landing endpoint;
+          draft year/round/overall pick, handedness, career totals, awards.

@@ -688,3 +688,15 @@ models:
       combination_of_columns:
       - season
       - team_abv
+- name: int__player_game_shifts
+  description: 'Per player-game shift summary from the shift-chart feed: real shift counts and ice time measured from actual shifts.'
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns: [game_id, player_id]
+  columns:
+  - name: game_id
+    tests: [not_null]
+  - name: player_id
+    tests: [not_null]
+  - name: toi_seconds
+    description: Sum of shift durations

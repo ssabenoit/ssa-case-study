@@ -124,6 +124,24 @@ def step_load(work_dir: Path, refresh_reference: bool):
     return loaded
 
 
+def step_extras():
+    """Tier-1 auxiliary streams: recent shift charts, current-season official
+    aggregates, landing payloads for any new players. Best-effort."""
+    results = {}
+    season = os.getenv("CURRENT_SEASON", "20262027")
+    for name, cmd in (
+        ("shifts", ["shifts", "--window-days", "3"]),
+        ("official", ["official-summaries", "--seasons", f"{season}..{season}"]),
+        ("landing", ["player-landing"]),
+    ):
+        proc = subprocess.run(
+            [sys.executable, str(REPO_ROOT / "pipeline" / "fetch_extras.py"), *cmd],
+            capture_output=True, text=True,
+        )
+        results[name] = "ok" if proc.returncode == 0 else f"failed: {proc.stdout.splitlines()[-1:] or proc.returncode}"
+    return results
+
+
 def step_dbt():
     dbt_bin = os.getenv("DBT_BIN", str(REPO_ROOT.parent / "venv" / "bin" / "dbt"))
     proc = subprocess.run(
@@ -231,6 +249,7 @@ def main():
             ok = run_step("extract", lambda: step_extract(work_dir, start, today), results)
             ok = ok and run_step("flatten", lambda: step_flatten(work_dir), results)
             ok = ok and run_step("load", lambda: step_load(work_dir, refresh_reference), results)
+            run_step("extras", step_extras, results)   # best-effort aux streams
         if ok and not args.skip_dbt:
             ok = run_step("dbt_build_prod", step_dbt, results)
         if ok and not args.skip_bi:

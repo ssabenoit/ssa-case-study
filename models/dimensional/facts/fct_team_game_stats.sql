@@ -104,7 +104,7 @@ team_game_facts as (
         tgs.pim as penalty_minutes,
 
         -- Score state (derived from actual goal sequence)
-        (fgo.first_goal_team_id = tgs.team_id) as score_first_flag,
+        (fgo.first_goal_team_id = dt.team_key) as score_first_flag,
         coalesce(own_pg.p1_goals, 0) > coalesce(opp_pg.p1_goals, 0) as lead_after_1st,
         coalesce(own_pg.p2_cumulative_goals, 0) > coalesce(opp_pg.p2_cumulative_goals, 0) as lead_after_2nd,
 
@@ -141,9 +141,9 @@ team_game_facts as (
             else lg.home_team_abv
         end
     left join period_goals own_pg
-        on own_pg.game_id = tgs.game_id and own_pg.team_id = tgs.team_id
+        on own_pg.game_id = tgs.game_id and own_pg.team_id = dt.team_key
     left join period_goals opp_pg
-        on opp_pg.game_id = tgs.game_id and opp_pg.team_id != tgs.team_id
+        on opp_pg.game_id = tgs.game_id and opp_pg.team_id != dt.team_key
     left join first_goals fgo
         on fgo.game_id = tgs.game_id
 )

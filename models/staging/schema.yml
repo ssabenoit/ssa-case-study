@@ -213,3 +213,41 @@ models:
         description: JSON array of defensemen on the team
       - name: goalies
         description: JSON array of goalies on the team
+
+  - name: stg_nhl__shift_charts
+    description: One row per player shift (typeCode 517), deduplicated to the latest load.
+    columns:
+      - name: shift_id
+        tests: [unique, not_null]
+      - name: game_id
+        tests: [not_null]
+      - name: player_id
+        tests: [not_null]
+      - name: duration_seconds
+        description: Shift length in seconds
+
+  - name: stg_nhl__official_summaries
+    description: >
+      Official NHL per-season skater aggregates — the continuous parity/
+      validation source for our derived stats. One row per
+      (season, game type, player).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [season, game_type_id, player_id]
+    columns:
+      - name: season
+        tests: [not_null]
+      - name: player_id
+        tests: [not_null]
+      - name: game_winning_goals
+        description: Official GWG — validates our play-by-play derivation
+
+  - name: stg_nhl__player_landing
+    description: Player bio, real draft data, and awards from the landing endpoint (one row per player).
+    columns:
+      - name: player_id
+        tests: [unique, not_null]
+      - name: draft_year
+        description: Actual draft year (null for undrafted players)
+      - name: draft_overall_pick
+        description: Overall selection number

@@ -179,8 +179,13 @@ play_facts as (
         end as play_team_abv
 
     from plays_base pb
+    -- team ids are season-scoped (e.g. Utah 59 -> 68 across seasons); route
+    -- through the id map so every era lands on the franchise's dim row
+    left join {{ ref('int__team_id_map') }} idm
+        on idm.season = pb.season
+        and idm.team_id = pb.play_team_id
     left join {{ ref('dim_teams') }} dt
-        on dt.team_id = pb.play_team_id
+        on dt.team_abv = idm.team_abv
     -- skater counts from the event team's perspective
     cross join lateral (
         select case

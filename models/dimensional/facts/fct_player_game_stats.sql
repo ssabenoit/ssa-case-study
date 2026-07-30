@@ -77,10 +77,16 @@ assist_detail as (
 -- Game-winning goal: the winning team's (loser_final + 1)th goal.
 -- Shootout wins credit no skater GWG, so SO games are excluded.
 game_winners as (
-    select game_id, team_id, goals_against as losing_team_final_score
-    from {{ ref('int__team_per_game_stats') }}
-    where goals > goals_against
-        and coalesce(last_period_type, 'REG') != 'SO'
+    -- canonical franchise key via abbrev (feed team ids are season-scoped)
+    select
+        t.game_id,
+        dt.team_key as team_id,
+        t.goals_against as losing_team_final_score
+    from {{ ref('int__team_per_game_stats') }} t
+    left join {{ ref('dim_teams') }} dt
+        on dt.team_abv = t.team_abv
+    where t.goals > t.goals_against
+        and coalesce(t.last_period_type, 'REG') != 'SO'
 ),
 
 goal_sequence as (
