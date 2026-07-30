@@ -1,4 +1,5 @@
 # CI-only dbt profile: credentials come from GitHub Actions secrets via env vars.
+# Prefers key-pair auth (SNOWFLAKE_PRIVATE_KEY_PATH); falls back to password.
 # Local development continues to use ~/.dbt/profiles.yml.
 nhl_analytics:
   target: ci
@@ -7,8 +8,12 @@ nhl_analytics:
       type: snowflake
       account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
       user: "{{ env_var('SNOWFLAKE_USER') }}"
-      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
-      role: "{{ env_var('SNOWFLAKE_ROLE', 'ACCOUNTADMIN') }}"
+{% if env_var('SNOWFLAKE_PRIVATE_KEY_PATH', '') %}
+      private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH') }}"
+{% else %}
+      password: "{{ env_var('SNOWFLAKE_PASSWORD', '') }}"
+{% endif %}
+      role: "{{ env_var('SNOWFLAKE_ROLE', 'NHL_PIPELINE_ROLE') }}"
       database: DBT_ANALYTICS
       warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE', 'DBT_WH') }}"
       schema: DBT_CI

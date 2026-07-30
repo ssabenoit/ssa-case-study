@@ -40,6 +40,12 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install dbt-snowflake==1.10.3
+      - name: Materialize key-pair credential when configured
+        if: ${{ secrets.SNOWFLAKE_PRIVATE_KEY != '' }}
+        run: |
+          printf '%s' "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > "$RUNNER_TEMP/sf_key.p8"
+          chmod 600 "$RUNNER_TEMP/sf_key.p8"
+          echo "SNOWFLAKE_PRIVATE_KEY_PATH=$RUNNER_TEMP/sf_key.p8" >> "$GITHUB_ENV"
       - run: dbt deps
       - name: Build and test against DBT_CI schema
         run: dbt build --profiles-dir ci --target ci

@@ -1,0 +1,9 @@
+# NHL pipeline runtime (extract -> flatten -> load -> orchestration glue)
+requests>=2.31
+python-dotenv>=1.0
+pandas>=2.1
+pyarrow>=14.0
+snowflake-connector-python>=3.6
+
+# dev/test
+pytest>=8.0
