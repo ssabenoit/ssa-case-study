@@ -29,12 +29,15 @@ historical_teams as (
         st.place_name,
         st.common_name,
         st.logo_url
+    -- league games only: the raw games feed also contains All-Star events
+    -- whose division squads collide with real abbrevs (e.g. "ATL" = Team
+    -- Atlantic vs the Atlanta Thrashers)
     from (
-        select AWAYTEAM_ABBREV::string as team_abv, AWAYTEAM_ID::int as team_id
-        from {{ ref('stg_nhl__games') }}
+        select away_team_abv as team_abv, away_team_id as team_id
+        from {{ ref('int__league_games') }}
         union
-        select HOMETEAM_ABBREV::string, HOMETEAM_ID::int
-        from {{ ref('stg_nhl__games') }}
+        select home_team_abv, home_team_id
+        from {{ ref('int__league_games') }}
     ) ids
     inner join (
         select
