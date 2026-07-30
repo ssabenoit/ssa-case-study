@@ -16,7 +16,40 @@ omni/
     DBT_ANALYTICS.ANALYTICS/  raw engine tables (hidden; marts serve instead)
   push_model.py               sync omni/model/ -> Omni via the model YAML API
   parity_check.py             Omni-vs-Snowflake parity suite (11 canonical numbers)
+  build_dashboards.py         dashboards-as-code: the five flagship dashboards
 ```
+
+## Dashboards (folder "NHL Showcase")
+
+| Dashboard | identifier | Control |
+|---|---|---|
+| NHL League Pulse | `cad0598c` | Season picker |
+| NHL Team Page | `b2c5a0d5` | Team picker (default NSH) |
+| NHL Player Explorer | `e10f16fa` | Season picker |
+| NHL Game Center | `71430d9d` | Game picker (default 2025030415, 2026 Cup Final) |
+| NHL Projections Hub | `c6647f9b` | — (latest-run filters baked in) |
+
+URLs: `https://southshorellc.omniapp.co/dashboards/<identifier>`. All 31 tile
+queries verified via the query API; all five render to PDF via the downloads API.
+
+### Dashboard controls via the v2 API (undocumented grammar)
+
+`PATCH /api/v2/documents/{id}/draft` then `POST .../draft/publish` — a patch
+and its publish must happen in ONE draft cycle (each PATCH starts a fresh
+draft from the published doc; separate patches don't stack). Control shape:
+
+```json
+{"controls": {"data": {"<bound_field>": {
+    "label": "Team",
+    "config": {"type": "string", "kind": "EQUALS", "values": ["NSH"]},
+    "map": {"1": "<field_in_tile_1>", "2": false}
+}}, "order": ["<bound_field>"]}}
+```
+
+`map` keys are tile record-keys ("1", "2", …); the value is the field the
+control drives in that tile (`false` = tile unaffected). Tile-level filters on
+the same field must be removed in the same patch or they intersect with the
+control and strand the tile on the old value.
 
 ## Workflow
 
