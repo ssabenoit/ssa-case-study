@@ -1,4 +1,4 @@
-{{ config(materialized='table') }}
+{{ config(materialized='incremental', unique_key='game_id', incremental_strategy='delete+insert') }}
 
 -- models/intermediate/int__game_penalties.sql
 -- Team penalty totals per league game, from play-by-play events.
@@ -18,12 +18,19 @@ penalties as (
         play_team_id as team_id,
         period,
         time_in_period,
-        penalty_duration as duration
+        penalty_duration as duration,
+        _loaded_at
     from {{ ref('stg_nhl__play_by_play') }}
     where description = 'penalty'
         and penalty_duration is not null
         and penalty_duration > 0
         and game_id in (select game_id from {{ ref('int__league_games') }})
+        {% if is_incremental() %}
+        and game_id in (
+            select game_id from {{ ref('stg_nhl__play_by_play') }}
+            where _loaded_at > (select coalesce(max(loaded_at), '1900-01-01') from {{ this }})
+        )
+        {% endif %}
 ),
 
 -- penalties that can create a power play, grouped so offsetting ones can cancel
@@ -59,7 +66,8 @@ pim_totals as (
         game_id,
         team_id,
         sum(duration) as pim,
-        count(*) as penalties_taken
+        count(*) as penalties_taken,
+        max(_loaded_at) as loaded_at
     from penalties
     group by game_id, team_id
 ),
@@ -78,7 +86,8 @@ select
     p.team_id,
     p.pim,
     p.penalties_taken,
-    coalesce(s.times_shorthanded, 0) as times_shorthanded
+    coalesce(s.times_shorthanded, 0) as times_shorthanded,
+    p.loaded_at
 from pim_totals p
 left join shorthanded_totals s
     on s.game_id = p.game_id

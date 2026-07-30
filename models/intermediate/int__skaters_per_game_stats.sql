@@ -1,4 +1,4 @@
-{{ config(materialized='table') }}
+{{ config(materialized='incremental', unique_key='game_id', incremental_strategy='delete+insert') }}
 
 -- models/intermediate/int__skaters_per_game_stats.sql
 -- Extracts individual skater stats per game from each game boxscore
@@ -8,11 +8,18 @@ with
 games as (
     select *
     from {{ ref("stg_nhl__game_boxscore") }}
+    {% if is_incremental() %}
+    -- high-watermark: only games loaded since the last run (corrections
+    -- carry a newer _loaded_at, so they reprocess; delete+insert by game_id
+    -- replaces the whole game's rows)
+    where _loaded_at > (select coalesce(max(loaded_at), '1900-01-01') from {{ this }})
+    {% endif %}
 ),
 
 away_team_forwards as (
     select
         ID::int as game_id,
+        _loaded_at as loaded_at,
         SEASON::int as season,
         AWAYTEAM_ABBREV::string as team_abv,
         'away' as type,
@@ -46,6 +53,7 @@ away_team_forwards as (
 away_team_defense as (
     select
         ID::int as game_id,
+        _loaded_at as loaded_at,
         SEASON::int as season,
         AWAYTEAM_ABBREV::string as team_abv,
         'away' as type,
@@ -79,6 +87,7 @@ away_team_defense as (
 home_team_forwards as (
     select
         ID::int as game_id,
+        _loaded_at as loaded_at,
         SEASON::int as season,
         HOMETEAM_ABBREV::string as team_abv,
         'home' as type,
@@ -112,6 +121,7 @@ home_team_forwards as (
 home_team_defense as (
     select
         ID::int as game_id,
+        _loaded_at as loaded_at,
         SEASON::int as season,
         HOMETEAM_ABBREV::string as team_abv,
         'home' as type,

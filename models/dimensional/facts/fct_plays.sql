@@ -1,4 +1,4 @@
-{{ config(materialized='table') }}
+{{ config(materialized='incremental', unique_key='game_key', incremental_strategy='delete+insert') }}
 
 -- models/dimensional/facts/fct_plays.sql
 -- Play-by-play event-level fact table for league games.
@@ -19,6 +19,12 @@ plays_base as (
     from {{ ref('stg_nhl__play_by_play') }} p
     inner join {{ ref('int__league_games') }} lg
         on p.game_id = lg.game_id
+    {% if is_incremental() %}
+    where p.game_id in (
+        select game_id from {{ ref('stg_nhl__play_by_play') }}
+        where _loaded_at > (select coalesce(max(loaded_at), '1900-01-01') from {{ this }})
+    )
+    {% endif %}
 ),
 
 play_facts as (
@@ -163,6 +169,7 @@ play_facts as (
         end as is_shorthanded,
 
         -- Metadata
+        pb._loaded_at as loaded_at,
         pb.home_side,
         pb.game_id,
         case
@@ -206,6 +213,7 @@ select
     event_type_id,
     event_type_name,
     event_team_key,
+    loaded_at,
     primary_player_key,
     secondary_player_key,
     tertiary_player_key,

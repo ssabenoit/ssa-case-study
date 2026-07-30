@@ -49,6 +49,7 @@ select
     DETAILS_AWAYSCORE::int as away_score,
     DETAILS_HOMESCORE::int as home_score,
     DETAILS_AWAYSOG::int as away_sog,
-    DETAILS_HOMESOG::int as home_sog
+    DETAILS_HOMESOG::int as home_sog,
+    _loaded_at
 from source
 qualify row_number() over (partition by GAME_ID, EVENTID order by _loaded_at desc, SORTORDER) = 1
