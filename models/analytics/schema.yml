@@ -1,0 +1,125 @@
+version: 2
+
+models:
+- name: int__shot_features
+  description: 'Feature vector per unblocked non-empty-net shot attempt; shared by xG training and scoring (no train/serve drift).'
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns: [shot_key]
+  columns:
+  - name: shot_key
+    tests: [not_null]
+  - name: is_goal
+    tests:
+    - accepted_values:
+        values: [0, 1]
+
+- name: fct_shots_xg
+  description: Expected goals per shot from the seeded logistic model.
+  columns:
+  - name: shot_key
+    tests: [unique, not_null]
+  - name: xg_raw
+    tests:
+    - not_null
+    - dbt_expectations.expect_column_values_to_be_between:
+        min_value: 0
+        max_value: 1
+
+- name: int__xg_season_calibration
+  description: Per-season xG calibration factors (all-attempt and on-net), absorbing era and event-logging drift.
+  columns:
+  - name: season_key
+    tests: [unique, not_null]
+  - name: calibration_factor
+    tests:
+    - dbt_expectations.expect_column_values_to_be_between:
+        min_value: 0.7
+        max_value: 1.3
+
+- name: mart_skater_xg
+  description: Skater shot quality per season (calibrated xG, finishing above expected).
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns: [season, player_id]
+
+- name: mart_team_xg
+  description: Team xG for/against and share per season.
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns: [season, team_abv]
+  columns:
+  - name: xg_share
+    tests:
+    - dbt_expectations.expect_column_values_to_be_between:
+        min_value: 0
+        max_value: 1
+        row_condition: xg_share is not null
+
+- name: mart_goalie_gsax
+  description: Goals saved above expected per goalie-season (on-net calibrated xG faced minus goals allowed).
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns: [season, player_id]
+
+- name: mart_team_elo
+  description: Elo rating history per team-game.
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns: [game_id, team_abv]
+
+- name: mart_game_projections
+  description: Latest win probability per scheduled game.
+  columns:
+  - name: game_id
+    tests: [unique, not_null]
+  - name: p_home_win
+    tests:
+    - dbt_expectations.expect_column_values_to_be_between:
+        min_value: 0
+        max_value: 1
+
+- name: mart_playoff_odds
+  description: Monte Carlo season odds, full run history with is_latest flag.
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns: [run_date, season, team_abv]
+  columns:
+  - name: playoff_odds
+    tests:
+    - dbt_expectations.expect_column_values_to_be_between:
+        min_value: 0
+        max_value: 1
+
+- name: mart_player_projections
+  description: Latest player season projections with bio context.
+  columns:
+  - name: player_id
+    tests: [unique, not_null]
+
+- name: mart_projection_accuracy
+  description: The engine grading itself; Brier and calibration per run month (empty until projected games complete).
+
+- name: mart_player_seasons
+  description: Career trajectories with hockey-age; one row per (player, season).
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns: [season, player_id, team_abv]
+
+- name: mart_aging_curves
+  description: League-average production by age and position.
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns: [position, season_age]
+
+- name: mart_player_similarity
+  description: Top-5 age-and-position-matched comparables per player-season.
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns: [season, player_id, similarity_rank]
+
+- name: mart_milestone_tracker
+  description: Career milestone watch for active players (era totals + landing career totals + projection pace).
+  columns:
+  - name: player_id
+    tests: [unique, not_null]

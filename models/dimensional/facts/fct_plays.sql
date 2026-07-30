@@ -1,4 +1,4 @@
-{{ config(materialized='incremental', unique_key='game_key', incremental_strategy='delete+insert') }}
+{{ config(materialized='incremental', unique_key='game_key', incremental_strategy='delete+insert', on_schema_change='append_new_columns') }}
 
 -- models/dimensional/facts/fct_plays.sql
 -- Play-by-play event-level fact table for league games.
@@ -209,6 +209,7 @@ select
     date_key,
     season_key,
     event_idx,
+    sort_order,
     period_number,
     period_type,
     time_elapsed_seconds,

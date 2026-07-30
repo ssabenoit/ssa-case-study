@@ -154,6 +154,29 @@ def step_dbt():
     return {"dbt_tail": tail}
 
 
+def step_analytics():
+    """Elo update + projections engine, then rebuild the serving marts."""
+    results = {}
+    for name, script in (("elo", "elo.py"), ("projections", "projections.py")):
+        proc = subprocess.run(
+            [sys.executable, str(REPO_ROOT / "analytics" / script), "--schema", "PROD"],
+            capture_output=True, text=True,
+        )
+        if proc.returncode != 0:
+            raise RuntimeError(f"{name} failed: {proc.stdout.splitlines()[-1:] }")
+        results[name] = "ok"
+    dbt_bin = os.getenv("DBT_BIN", str(REPO_ROOT.parent / "venv" / "bin" / "dbt"))
+    proc = subprocess.run(
+        [dbt_bin, "run", "--target", "prod", "--project-dir", str(REPO_ROOT),
+         "-s", "source:nhl_analytics_engine+"],
+        capture_output=True, text=True,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError("analytics marts rebuild failed")
+    results["serving_marts"] = "ok"
+    return results
+
+
 def step_metabase_sync():
     import requests
     mb_url = os.getenv("MB_URL", "https://expert-southshore.metabaseapp.com")
@@ -252,6 +275,8 @@ def main():
             run_step("extras", step_extras, results)   # best-effort aux streams
         if ok and not args.skip_dbt:
             ok = run_step("dbt_build_prod", step_dbt, results)
+        if ok and not args.skip_dbt:
+            run_step("analytics_engine", step_analytics, results)  # elo + projections
         if ok and not args.skip_bi:
             run_step("metabase_sync", step_metabase_sync, results)   # non-fatal
             run_step("omni_refresh", step_omni_refresh, results)     # non-fatal
