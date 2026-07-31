@@ -1,1 +1,10 @@
 label: Projection Accuracy
+dimensions:
+  brier_score:
+    format: NUMBER_3
+  avg_predicted_home_win:
+    format: PERCENT_1
+  actual_home_win_rate:
+    format: PERCENT_1
+  favorite_hit_rate:
+    format: PERCENT_1

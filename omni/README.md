@@ -51,6 +51,37 @@ control drives in that tile (`false` = tile unaffected). Tile-level filters on
 the same field must be removed in the same patch or they intersect with the
 control and strand the tile on the old value.
 
+### Chart visConfig grammar (undocumented; see restyle_dashboards.py)
+
+The v1 documents API silently drops `visConfig` at creation — charts must be
+applied afterward via the v2 draft API. Three things are required or the tile
+silently falls back to a table:
+
+1. `prefersChart: true` on the tile (THE switch — a valid chart config with
+   `prefersChart: false` still renders as a table).
+2. `visConfig.visConfig.visType: "basic"` (not `vegalite`).
+3. A full cartesian config: `_dependentAxis`, `behaviors`, `configType`,
+   `mark`, `x` (with `field`), `series` (each with `field`, `manual: true`,
+   `mark._mark_color`, `yAxis`), `color` (valid `legendPosition`, e.g.
+   `"bottom"`), and `tooltip`.
+
+Valid `chartType` values (extracted from validation errors): auto, area,
+areaStacked, bar, barLine, barGrouped, barStacked, boxplot, column,
+columnGrouped, columnStacked, heatmap, kpi, line, lineColor, map, markdown,
+pie, funnel, sankey, point, pointColor, pointSize, pointSizeColor,
+singleRecord, summaryValue, svgMap, table, treemap.
+
+For multi-series lines colored by a dimension (`lineColor`), put the color
+dimension in `config.color.field` and do NOT pivot the query. Display formats
+(percentages etc.) belong on the model (view-extension `format:`), not the
+dashboard — they then apply everywhere including Blobby answers.
+
+The iteration loop that makes this workable: patch → publish →
+`POST /v1/dashboards/{id}/download {"format": "png"}` → poll
+`.../download/{jobId}/status` → fetch `.../download/{jobId}` → look at the
+image → fix. Renders are ground truth; stored configs can look right and
+still fall back.
+
 ## Workflow
 
 1. Edit files under `omni/model/`.

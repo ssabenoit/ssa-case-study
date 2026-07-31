@@ -1,1 +1,6 @@
 label: Game Projections
+dimensions:
+  p_home_win:
+    format: PERCENT_1
+  p_away_win:
+    format: PERCENT_1
