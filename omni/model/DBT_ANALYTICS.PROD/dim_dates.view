@@ -1,0 +1,5 @@
+label: Dates
+dimensions:
+  date_key:
+    primary_key: true
+    hidden: true

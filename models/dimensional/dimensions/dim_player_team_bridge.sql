@@ -30,11 +30,23 @@ goalie_team_seasons as (
     group by player_id, team_abv, season
 ),
 
--- Combine skaters and goalies
+-- Combine skaters and goalies. A player can appear in both feeds for the
+-- same stint (e.g. a goalie glitch-listed once among skaters), so collapse
+-- to one row per (player, team, season).
 all_player_team_seasons as (
-    select * from skater_team_seasons
-    union all
-    select * from goalie_team_seasons
+    select
+        player_id,
+        team_abv,
+        season,
+        min(first_game_id) as first_game_id,
+        max(last_game_id) as last_game_id,
+        sum(games_played) as games_played
+    from (
+        select * from skater_team_seasons
+        union all
+        select * from goalie_team_seasons
+    )
+    group by player_id, team_abv, season
 ),
 
 -- Get game dates for start and end dates

@@ -1,0 +1,10 @@
+base_view: dbt_analytics_prod__mart_milestone_tracker
+label: Milestone Tracker
+description: Active players approaching career goal/point milestones, with projected pace.
+
+ai_context: |
+  era_goals/era_points count the loaded era (2007-08+). official_career_games comes from NHL landing data.
+  goals_to_milestone is distance to the next round-hundred milestone.
+
+joins:
+  dbt_analytics_prod__dim_players: {}

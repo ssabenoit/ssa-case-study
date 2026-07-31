@@ -1,0 +1,11 @@
+base_view: dbt_analytics_prod__mart_playoff_odds
+label: Playoff & Cup Odds
+description: Monte Carlo season simulation (10k runs) — playoff, division, Presidents' Trophy and Cup odds per team, full run history.
+
+ai_context: |
+  Filter is_latest = true for current odds; the full history supports "odds over time" charts.
+  Within one run_date: playoff_odds sums to 16 across the league, cup_odds sums to 1.
+  exp_points is simulated expected season points. These are analytical projections, not betting advice.
+
+joins:
+  dbt_analytics_prod__dim_teams: {}

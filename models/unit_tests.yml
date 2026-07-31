@@ -7,6 +7,9 @@ unit_tests:
       teams) must cancel and create no shorthanded situations, while a lone
       minor creates exactly one; misconducts add PIM but never a power play.
     model: int__game_penalties
+    overrides:
+      macros:
+        is_incremental: false
     given:
       - input: ref('stg_nhl__play_by_play')
         format: dict
@@ -31,6 +34,9 @@ unit_tests:
   - name: test_faceoff_counts_by_team
     description: Faceoff wins count per team; total faceoffs in game shared.
     model: int__game_faceoffs
+    overrides:
+      macros:
+        is_incremental: false
     given:
       - input: ref('stg_nhl__play_by_play')
         format: dict

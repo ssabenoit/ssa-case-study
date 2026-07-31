@@ -1,0 +1,9 @@
+label: Teams
+dimensions:
+  team_key:
+    primary_key: true
+    hidden: true
+measures:
+  team_count:
+    aggregate_type: count
+    label: "# Teams"

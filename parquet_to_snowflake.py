@@ -34,16 +34,36 @@ logger = logging.getLogger(__name__)
 
 
 def get_snowflake_config():
-    """Get Snowflake configuration from environment variables."""
-    return {
+    """Get Snowflake configuration from environment variables.
+
+    Prefers key-pair auth (SNOWFLAKE_PRIVATE_KEY_PATH pointing at a PKCS#8
+    PEM) and falls back to SNOWFLAKE_PASSWORD for local/legacy use.
+    """
+    config = {
         'account': os.getenv('SNOWFLAKE_ACCOUNT'),
         'user': os.getenv('SNOWFLAKE_USER'),
-        'password': os.getenv('SNOWFLAKE_PASSWORD'),
         'warehouse': os.getenv('SNOWFLAKE_WAREHOUSE'),
         'database': os.getenv('SNOWFLAKE_DATABASE'),
         'schema': os.getenv('SNOWFLAKE_SCHEMA'),
         'role': os.getenv('SNOWFLAKE_ROLE'),
     }
+
+    private_key_path = os.getenv('SNOWFLAKE_PRIVATE_KEY_PATH')
+    if private_key_path:
+        from cryptography.hazmat.primitives import serialization
+        with open(private_key_path, 'rb') as key_file:
+            private_key = serialization.load_pem_private_key(
+                key_file.read(), password=None,
+            )
+        config['private_key'] = private_key.private_bytes(
+            encoding=serialization.Encoding.DER,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+    else:
+        config['password'] = os.getenv('SNOWFLAKE_PASSWORD')
+
+    return config
 
 
 def get_parquet_columns(cursor, stage_name: str, file_name: str) -> dict:

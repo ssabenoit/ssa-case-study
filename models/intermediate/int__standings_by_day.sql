@@ -25,9 +25,10 @@ source_standings as (
 ),
 
 date_cte as (
+    -- spans 1990 through the 2040s: deep backfill needs the backward reach
     select
-        dateadd(day, seq4(), '2020-01-01'::date) as date
-    from table(generator(rowcount => 3650))  -- 10 years of dates
+        dateadd(day, seq4(), '1990-01-01'::date) as date
+    from table(generator(rowcount => 20000))
 ),
 
 parsed_standings as (

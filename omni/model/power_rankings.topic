@@ -1,0 +1,9 @@
+base_view: dbt_analytics_prod__mart_team_power_rankings
+label: Power Rankings
+description: Composite weekly power rankings blending results, goals, special teams, momentum, and schedule strength.
+
+ai_context: |
+  One row per team per ranking_date. power_rank 1 is best. Component columns show the score breakdown.
+  Early-season rankings blend in the previous season (see current/previous_season_weight_pct).
+
+joins: {}

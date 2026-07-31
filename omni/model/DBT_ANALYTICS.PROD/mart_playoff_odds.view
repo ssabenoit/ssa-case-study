@@ -1,0 +1,16 @@
+label: Playoff Odds (Monte Carlo)
+dimensions:
+  playoff_odds:
+    format: PERCENT_1
+  division_odds:
+    format: PERCENT_1
+  presidents_odds:
+    format: PERCENT_1
+  cup_odds:
+    format: PERCENT_1
+  exp_points:
+    format: NUMBER_1
+measures:
+  team_count:
+    aggregate_type: count
+    hidden: true

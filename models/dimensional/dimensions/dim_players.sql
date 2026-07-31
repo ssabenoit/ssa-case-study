@@ -92,6 +92,12 @@ player_universe as (
     select player_id from game_players
 ),
 
+-- Official bio/draft/awards from the player landing endpoint
+landing as (
+    select *
+    from {{ ref('stg_nhl__player_landing') }}
+),
+
 player_stats_summary as (
     select
         player_id,
@@ -113,17 +119,30 @@ goalie_stats_summary as (
 players_with_attributes as (
     select
         u.player_id,
-        r.first_name,
-        r.last_name,
-        -- boxscore names are "F. Lastname"; use them only when no roster row exists
-        coalesce(r.first_name || ' ' || r.last_name, gp.last_name_seen) as full_name,
-        r.birth_date,
-        floor(datediff(day, r.birth_date::date, current_date()) / 365.25)::int as current_age,
-        case
-            when r.birth_date is not null
-            then extract(year from r.birth_date::date) + 18  -- typical draft age
-            else null
-        end as approximate_draft_year,
+        coalesce(r.first_name, l.first_name) as first_name,
+        coalesce(r.last_name, l.last_name) as last_name,
+        -- roster name, else landing bio, else the boxscore's "F. Lastname"
+        coalesce(
+            r.first_name || ' ' || r.last_name,
+            l.first_name || ' ' || l.last_name,
+            gp.last_name_seen
+        ) as full_name,
+        coalesce(r.birth_date, l.birth_date::string) as birth_date,
+        floor(datediff(day, coalesce(r.birth_date, l.birth_date::string)::date,
+                       current_date()) / 365.25)::int as current_age,
+        -- real draft data from the landing endpoint; estimate only as fallback
+        coalesce(
+            l.draft_year,
+            case
+                when r.birth_date is not null
+                then extract(year from r.birth_date::date) + 18
+            end
+        ) as approximate_draft_year,
+        l.draft_year,
+        l.draft_round,
+        l.draft_overall_pick,
+        l.draft_team_abv,
+        (l.draft_year is null and l.player_id is not null) as is_undrafted,
         r.birth_city,
         r.birth_state,
         r.birth_country,
@@ -177,6 +196,7 @@ players_with_attributes as (
         coalesce(gp.last_season = ls.max_season, false) as is_active
     from player_universe u
     left join roster_deduped r on r.player_id = u.player_id
+    left join landing l on l.player_id = u.player_id
     left join game_players gp on gp.player_id = u.player_id
     left join player_stats_summary pss on pss.player_id = u.player_id
     left join goalie_stats_summary gss on gss.player_id = u.player_id
@@ -193,6 +213,11 @@ select
     birth_date,
     current_age,
     approximate_draft_year as draft_year_estimate,
+    draft_year,
+    draft_round,
+    draft_overall_pick,
+    draft_team_abv,
+    is_undrafted,
     birth_city,
     birth_state,
     birth_country,

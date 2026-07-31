@@ -1,0 +1,9 @@
+base_view: dbt_analytics_prod__mart_projection_accuracy
+label: Projection Accuracy
+description: The projections engine grading itself — Brier score and calibration by run month.
+
+ai_context: |
+  brier_score: lower is better; 0.25 = coin-flip baseline. favorite_hit_rate is how often the
+  favored team won. Empty until projected games complete.
+
+joins: {}

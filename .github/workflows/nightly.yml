@@ -1,0 +1,56 @@
+name: Nightly refresh (fallback)
+
+# Fallback runner for pipeline/refresh.py. autumneight is the primary
+# scheduler; enable the cron below only if it needs covering.
+# Requires the same Snowflake secrets as ci.yml (key-pair preferred) plus
+# optionally MB_API_KEY and ALERT_WEBHOOK_URL.
+
+on:
+  workflow_dispatch:
+    inputs:
+      window_days:
+        description: "Days back to extract"
+        default: "2"
+      refresh_reference:
+        description: "Also refresh schedules/rosters/standings/teams"
+        type: boolean
+        default: false
+  # schedule:
+  #   - cron: "0 9 * * *"   # 09:00 UTC ≈ after West Coast games finish
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+      SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+      SNOWFLAKE_DATABASE: DBT_ANALYTICS
+      SNOWFLAKE_SCHEMA: STAGING
+      ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
+      DBT_BIN: dbt
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install dbt-snowflake==1.10.3 -r requirements.txt
+      - name: Materialize key-pair credential when configured
+        if: ${{ secrets.SNOWFLAKE_PRIVATE_KEY != '' }}
+        run: |
+          printf '%s' "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > "$RUNNER_TEMP/sf_key.p8"
+          chmod 600 "$RUNNER_TEMP/sf_key.p8"
+          echo "SNOWFLAKE_PRIVATE_KEY_PATH=$RUNNER_TEMP/sf_key.p8" >> "$GITHUB_ENV"
+      - name: Materialize Metabase key when configured
+        if: ${{ secrets.MB_API_KEY != '' }}
+        run: |
+          printf '%s' "${{ secrets.MB_API_KEY }}" > "$RUNNER_TEMP/.mb_api_key"
+          echo "MB_API_KEY_FILE=$RUNNER_TEMP/.mb_api_key" >> "$GITHUB_ENV"
+      - run: dbt deps
+      - name: Run refresh
+        run: |
+          python pipeline/refresh.py \
+            --window-days "${{ inputs.window_days || '2' }}" \
+            ${{ inputs.refresh_reference && '--refresh-reference' || '' }}

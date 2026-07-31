@@ -1,4 +1,4 @@
-{{ config(materialized='table') }}
+{{ config(materialized='incremental', unique_key='game_id', incremental_strategy='delete+insert') }}
 
 -- models/intermediate/int__goalies_per_game_stats.sql
 -- Compiles per-game stats for NHL goalies from individual box scores
@@ -8,11 +8,18 @@ with
 games as (
     select *
     from {{ ref("stg_nhl__game_boxscore") }}
+    {% if is_incremental() %}
+    -- high-watermark: only games loaded since the last run (corrections
+    -- carry a newer _loaded_at, so they reprocess; delete+insert by game_id
+    -- replaces the whole game's rows)
+    where _loaded_at > (select coalesce(max(loaded_at), '1900-01-01') from {{ this }})
+    {% endif %}
 ),
 
 away_team_goalies as (
     select
         ID::int as game_id,
+        _loaded_at as loaded_at,
         SEASON::int as season,
         case
             when GAMETYPE = 2 then 'regular'
@@ -56,6 +63,7 @@ away_team_goalies as (
 home_team_goalies as (
     select
         ID::int as game_id,
+        _loaded_at as loaded_at,
         SEASON::int as season,
         case
             when GAMETYPE = 2 then 'regular'

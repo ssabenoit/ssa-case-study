@@ -1,0 +1,17 @@
+base_view: dbt_analytics_prod__fct_player_game_stats
+label: Skaters
+description: One row per skater per game — goals, assists, points, shots, TOI, physical play. Join to Players, Teams, Seasons, Dates.
+
+ai_context: |
+  Map "goals" -> total_goals, "assists" -> total_assists, "points" -> total_points, "games" -> games_played.
+  Use shooting_pct_agg for shooting percentage (ratio of sums). TOI measures derive from time_on_ice_seconds.
+  For leaderboards, group by dbt_analytics_prod__dim_players.full_name and order by the relevant measure descending.
+  game_type values are lowercase: 'regular' or 'playoff' — default to regular season.
+  For per-season stats always also group or filter by season (via dbt_analytics_prod__dim_seasons.season_display_name).
+  Known reference points: Nathan MacKinnon had 53 goals in 2023-24; Auston Matthews had 69.
+
+joins:
+  dbt_analytics_prod__dim_players: {}
+  dbt_analytics_prod__dim_teams: {}
+  dbt_analytics_prod__dim_seasons: {}
+  dbt_analytics_prod__dim_dates: {}

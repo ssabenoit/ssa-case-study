@@ -1,0 +1,10 @@
+base_view: dbt_analytics_prod__mart_player_similarity
+label: Player Similarity
+description: Top-5 statistical comparables per player-season, matched on age and position in normalized production space.
+
+ai_context: |
+  similarity_rank 1 is the closest comparable; similarity_distance is euclidean distance in z-score space
+  (points/60, goals/game, TOI) among same-position, same-age seasons.
+
+joins:
+  dbt_analytics_prod__dim_players: {}

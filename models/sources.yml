@@ -130,3 +130,45 @@ sources:
         freshness:
           warn_after: {count: 24, period: hour}
           error_after: {count: 48, period: hour}
+      - name: shift_charts
+        description: >
+          Per-shift records from the NHL shift-chart endpoint: one row per
+          player shift (typeCode 517) or shift-chart event, with period,
+          start/end/duration, player and team identifiers.
+        columns:
+          - name: id
+            description: Unique shift record identifier
+          - name: gameid
+            description: NHL game id
+        freshness:
+          warn_after: {count: 48, period: hour}
+          error_after: {count: 7, period: day}
+
+      - name: official_skater_summary
+        description: Official league season aggregates per skater (parity/validation source).
+      - name: official_goalie_summary
+        description: Official league season aggregates per goalie (parity/validation source).
+      - name: official_team_summary
+        description: Official league season aggregates per team (parity/validation source).
+      - name: player_landing
+        description: >
+          Player bio/draft/awards payloads from the player landing endpoint;
+          draft year/round/overall pick, handedness, career totals, awards.
+
+  - name: nhl_analytics_engine
+    description: >
+      Python-computed analytics tables (Elo ratings, projections, simulations)
+      written by analytics/elo.py and analytics/projections.py during the
+      nightly pipeline. Run-dated where applicable so accuracy is gradeable.
+    database: dbt_analytics
+    schema: analytics
+    loader: analytics_python
+    tables:
+      - name: team_elo_daily
+        description: Post-game Elo ratings for every league game since 2007-08.
+      - name: game_projections
+        description: Run-dated win probabilities for scheduled games.
+      - name: sim_team_season
+        description: Run-dated Monte Carlo season odds (playoffs/division/Presidents/Cup).
+      - name: player_projections
+        description: Run-dated player season projections.

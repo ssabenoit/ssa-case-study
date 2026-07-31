@@ -1,0 +1,15 @@
+base_view: dbt_analytics_prod__fct_goalie_game_stats
+label: Goalies
+description: One row per goalie per game — saves, shots faced, GA, quality starts. Join to Players, Teams, Seasons.
+
+ai_context: |
+  games_played counts only appearances with ice time (dressed backups excluded).
+  Map "save percentage"/"SV%" -> save_pct_agg (total saves / total shots faced). Map "GAA" -> gaa.
+  A qualified goalie for season leaderboards: games_played >= 25 (mention the threshold used).
+  game_type values are lowercase: 'regular' or 'playoff' — never 'R'/'P'. Default to regular season.
+  decision values: W, L, O (overtime/shootout loss), null for relief appearances without a decision.
+
+joins:
+  dbt_analytics_prod__dim_players: {}
+  dbt_analytics_prod__dim_teams: {}
+  dbt_analytics_prod__dim_seasons: {}

@@ -1,0 +1,14 @@
+base_view: dbt_analytics_prod__fct_standings_daily
+label: Standings & Form
+description: Point-in-time standings snapshots per team per day — ranks, streaks, last-10, pace, magic numbers.
+
+ai_context: |
+  This is a DAILY SNAPSHOT table: one row per team per date. For "current standings" filter to the
+  latest date (max date_key) or use is_in_season context from dbt_analytics_prod__dim_dates.
+  Never sum points/wins across dates — pick a single date first.
+  Ranks: league_rank, conference_rank, division_rank, wildcard_rank. playoff_spot_flag marks teams in a playoff spot.
+
+joins:
+  dbt_analytics_prod__dim_teams: {}
+  dbt_analytics_prod__dim_seasons: {}
+  dbt_analytics_prod__dim_dates: {}

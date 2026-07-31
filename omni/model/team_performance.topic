@@ -1,0 +1,19 @@
+base_view: dbt_analytics_prod__fct_team_game_stats
+label: Team Performance
+description: One row per team per game — goals, shots, special teams, faceoffs, results. Join to Teams, Seasons, Dates, and Games.
+
+ai_context: |
+  The core team topic. game_result values: W (win), L (regulation loss), OTL (overtime or shootout loss).
+  Map "record" -> wins / regulation_ot_losses / overtime_losses. Map "points" -> total_points_earned.
+  Always use the ratio-of-sums measures for percentages: power_play_pct (PP%), penalty_kill_pct_agg (PK%),
+  team_shooting_pct, team_save_pct, faceoff_win_pct_agg — never average the per-game percentage columns.
+  game_type values are lowercase: 'regular' or 'playoff'. Default to regular season unless asked about
+  playoffs. (Exception: the joined dbt_analytics_prod__fct_games.game_type is capitalized 'Regular'/'Playoff'.)
+  Season names live in dbt_analytics_prod__dim_seasons.season_display_name (e.g. "2024-25").
+  Only NHL league games are present (no All-Star or exhibition contamination).
+
+joins:
+  dbt_analytics_prod__dim_teams: {}
+  dbt_analytics_prod__dim_seasons: {}
+  dbt_analytics_prod__dim_dates: {}
+  dbt_analytics_prod__fct_games: {}

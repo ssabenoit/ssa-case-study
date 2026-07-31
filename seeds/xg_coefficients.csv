@@ -1,0 +1,16 @@
+feature,coefficient
+intercept,-0.581596
+shot_distance,-0.048586
+log_shot_distance,-0.208892
+shot_angle_abs,-0.014816
+is_power_play,0.34318
+is_shorthanded,0.131031
+is_rebound,0.480227
+is_rush,0.248744
+shot_type_wrist,0.161751
+shot_type_slap,0.63727
+shot_type_snap,0.538779
+shot_type_backhand,-0.247378
+shot_type_tip-in,-0.306074
+shot_type_deflected,-0.269348
+shot_type_wrap-around,-0.826188

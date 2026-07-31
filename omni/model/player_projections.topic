@@ -1,0 +1,11 @@
+base_view: dbt_analytics_prod__mart_player_projections
+label: Player Projections
+description: Rest-of-season / next-season player projections (goals, assists, points) with bio context.
+
+ai_context: |
+  One row per player (latest projection run only; projected_on is the run date).
+  Rates blend three seasons with a regression-to-position-mean prior; players need 30+ recent games to qualify.
+  These are analytical projections, not betting advice.
+
+joins:
+  dbt_analytics_prod__dim_players: {}

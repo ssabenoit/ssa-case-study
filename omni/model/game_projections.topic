@@ -1,0 +1,9 @@
+base_view: dbt_analytics_prod__mart_game_projections
+label: Game Projections
+description: Latest Elo-based win probability per scheduled game.
+
+ai_context: |
+  One row per game with home/away Elo and win probabilities (p_home_win + p_away_win = 1).
+  These are analytical projections, not betting advice. projected_on is the run date of the projection.
+
+joins: {}

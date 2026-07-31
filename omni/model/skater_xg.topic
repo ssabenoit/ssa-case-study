@@ -1,0 +1,10 @@
+base_view: dbt_analytics_prod__mart_skater_xg
+label: Skater xG
+description: Calibrated expected goals per skater-season; finishing = goals above expected.
+
+ai_context: |
+  goals_above_expected > 0 means the player finished better than an average shooter would on the same chances.
+  conversion_rate is goals per shot attempt. Qualified leaderboards: shot_attempts >= 100.
+
+joins:
+  dbt_analytics_prod__dim_players: {}

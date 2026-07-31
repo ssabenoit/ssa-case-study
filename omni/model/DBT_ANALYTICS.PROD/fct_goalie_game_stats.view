@@ -1,0 +1,56 @@
+label: Goalie Game Stats
+dimensions:
+  goalie_game_key:
+    primary_key: true
+    hidden: true
+measures:
+  games_played:
+    aggregate_type: count
+    label: GP
+    filters:
+      time_on_ice_seconds:
+        greater_than: 0
+    description: Appearances with ice time. Dressed-but-did-not-play games are excluded.
+  starts:
+    aggregate_type: count
+    label: Starts
+    filters:
+      is_starting_goalie:
+        is: true
+  total_saves:
+    sql: ${saves}
+    aggregate_type: sum
+    label: Saves
+  total_shots_faced:
+    sql: ${shots_faced}
+    aggregate_type: sum
+    label: Shots Faced
+  total_goals_against:
+    sql: ${goals_against}
+    aggregate_type: sum
+    label: GA
+  save_pct_agg:
+    sql: 1.0 * ${total_saves} / nullif(${total_shots_faced}, 0)
+    label: SV%
+    format: NUMBER_3
+    description: Ratio of total saves to total shots faced (not an average of per-game percentages).
+  total_toi_seconds:
+    sql: ${time_on_ice_seconds}
+    aggregate_type: sum
+    hidden: true
+  gaa:
+    sql: 3600.0 * ${total_goals_against} / nullif(${total_toi_seconds}, 0)
+    label: GAA
+    format: NUMBER_2
+  shutouts:
+    aggregate_type: count
+    label: SO
+    filters:
+      shutout_flag:
+        is: true
+  quality_starts:
+    aggregate_type: count
+    label: Quality Starts
+    filters:
+      quality_start:
+        is: true

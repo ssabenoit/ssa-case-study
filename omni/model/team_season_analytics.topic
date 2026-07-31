@@ -1,0 +1,12 @@
+base_view: dbt_analytics_prod__mart_team_xg
+label: Team xG & Shot Metrics
+description: Season-level team analytics — calibrated xG for/against, Corsi, Fenwick, PDO.
+
+ai_context: |
+  One row per team-season. xg_for/xg_against are calibrated to season scoring environments.
+  xg_share above 0.5 means the team out-chanced opponents. PDO near 1.000 is league average;
+  well above suggests unsustainable shooting/save luck. Joined shot metrics view has corsi_pct/fenwick_pct.
+
+joins:
+  dbt_analytics_prod__mart_team_shot_metrics: {}
+  dbt_analytics_prod__dim_teams: {}
