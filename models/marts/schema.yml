@@ -361,4 +361,5 @@ models:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 800
               max_value: 1200
-              row_condition: "pdo is not null"
+              # early-season samples swing far outside the range (one 7-0 game = PDO 1300+)
+              row_condition: "pdo is not null and games_played >= 10"

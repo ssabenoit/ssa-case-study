@@ -3,8 +3,10 @@
 -- models/intermediate/int__league_games.sql
 -- Canonical universe of NHL league games: regular-season and playoff games
 -- played between two NHL franchises. All-Star, 4 Nations, and other
--- special-event games are excluded here. This is the single decontamination
--- choke point every downstream stats model filters through.
+-- special-event games are excluded here, as are games not yet final (the
+-- extract window can include tonight's live/scheduled games, whose partial
+-- stats would otherwise land in season totals). This is the single
+-- decontamination choke point every downstream stats model filters through.
 
 with
 
@@ -46,3 +48,4 @@ inner join league_teams away_franchise
     on away_franchise.season = g.SEASON
     and away_franchise.team_abv = g.AWAYTEAM_ABBREV
 where g.GAMETYPE in (2, 3)
+    and g.GAMESTATE in ('OFF', 'FINAL')

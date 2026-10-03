@@ -46,13 +46,15 @@ def p_win(elo_a, elo_b):
 
 def load_inputs(conn, schema):
     ratings = q(conn, """
-        select home_team as team, home_elo_post as elo, game_date from DBT_ANALYTICS.ANALYTICS.TEAM_ELO_DAILY
+        select home_team as team, home_elo_post as elo, season, game_date from DBT_ANALYTICS.ANALYTICS.TEAM_ELO_DAILY
         qualify row_number() over (partition by home_team order by game_date desc, game_id desc) = 1
         union all
-        select away_team, away_elo_post, game_date from DBT_ANALYTICS.ANALYTICS.TEAM_ELO_DAILY
+        select away_team, away_elo_post, season, game_date from DBT_ANALYTICS.ANALYTICS.TEAM_ELO_DAILY
         qualify row_number() over (partition by away_team order by game_date desc, game_id desc) = 1
     """)
-    ratings = ratings.sort_values("game_date").groupby("team").last()["elo"].to_dict()
+    latest = ratings.sort_values("game_date").groupby("team").last()
+    rated_season = latest["season"].astype(int).to_dict()
+    ratings = latest["elo"].to_dict()
 
     schedule = q(conn, f"""
         select id as game_id, season, game_date, home_abv, away_abv
@@ -66,11 +68,36 @@ def load_inputs(conn, schema):
         from DBT_ANALYTICS.{schema}.DIM_TEAMS
         where is_active
     """)
-    return ratings, schedule, divisions
+    return ratings, rated_season, schedule, divisions
 
 
-def season_rollover(ratings):
-    return {t: BASE + SEASON_CARRYOVER * (e - BASE) for t, e in ratings.items()}
+def season_rollover(ratings, rated_season, season):
+    # elo.py regresses each team at its first game of a new season, so only
+    # teams with no game yet in the projected season still need regressing
+    return {t: BASE + SEASON_CARRYOVER * (e - BASE) if rated_season.get(t, season) < season else e
+            for t, e in ratings.items()}
+
+
+def banked_points(conn, schema, season):
+    """Standings points already earned in `season` from final regular-season
+    games (2 for a win, 1 for an OT/SO loss); the simulation adds these to the
+    points it plays out over the remaining schedule."""
+    df = q(conn, f"""
+        with results as (
+            select e.home_team, e.away_team, e.home_won,
+                   lg.last_period_type in ('OT', 'SO') as went_ot
+            from DBT_ANALYTICS.ANALYTICS.TEAM_ELO_DAILY e
+            inner join DBT_ANALYTICS.{schema}.INT__LEAGUE_GAMES lg
+                on lg.game_id = e.game_id
+            where lg.season = {int(season)} and lg.game_type = 'regular'
+        )
+        select team, sum(pts) as pts from (
+            select home_team as team, iff(home_won, 2, iff(went_ot, 1, 0)) as pts from results
+            union all
+            select away_team, iff(home_won, iff(went_ot, 1, 0), 2) from results
+        ) group by team
+    """)
+    return df.set_index("team")["pts"].astype(float).to_dict() if len(df) else {}
 
 
 def game_projections(ratings, schedule, run_ts):
@@ -84,7 +111,7 @@ def game_projections(ratings, schedule, run_ts):
     return rows
 
 
-def simulate_season(ratings, schedule, divisions, sims, rng):
+def simulate_season(ratings, schedule, divisions, sims, rng, banked=None):
     teams = sorted(divisions["team_abv"])
     t_idx = {t: i for i, t in enumerate(teams)}
     div_of = divisions.set_index("team_abv")["division"].to_dict()
@@ -93,6 +120,7 @@ def simulate_season(ratings, schedule, divisions, sims, rng):
     home_i = schedule["home_abv"].map(t_idx).to_numpy()
     away_i = schedule["away_abv"].map(t_idx).to_numpy()
     base_elo = np.array([ratings.get(t, BASE) for t in teams])
+    banked_pts = np.array([(banked or {}).get(t, 0.0) for t in teams])
 
     n_teams = len(teams)
     playoff_ct = np.zeros(n_teams)
@@ -113,7 +141,7 @@ def simulate_season(ratings, schedule, divisions, sims, rng):
         home_won = rng.random(len(ph)) < ph
         went_ot = rng.random(len(ph)) < P_OVERTIME
 
-        pts = np.zeros(n_teams)
+        pts = banked_pts.copy()
         np.add.at(pts, home_i, np.where(home_won, 2, np.where(went_ot, 1, 0)))
         np.add.at(pts, away_i, np.where(~home_won, 2, np.where(went_ot, 1, 0)))
         pts_j = pts + rng.random(n_teams) * 0.01  # tiebreak jitter
@@ -206,6 +234,9 @@ def write(conn, table, ddl_cols, rows):
     cur = conn.cursor()
     cur.execute("create schema if not exists DBT_ANALYTICS.ANALYTICS")
     cur.execute(f"create table if not exists DBT_ANALYTICS.ANALYTICS.{table} ({ddl_cols})")
+    # one run per day: a same-day re-run replaces that day's rows instead of
+    # duplicating them (every row's first column is run_date)
+    cur.execute(f"delete from DBT_ANALYTICS.ANALYTICS.{table} where run_date = %s", (rows[0][0],))
     placeholders = ",".join(["%s"] * len(rows[0]))
     cur.executemany(f"insert into DBT_ANALYTICS.ANALYTICS.{table} values ({placeholders})", rows)
     print(f"wrote {len(rows):,} rows -> {table}")
@@ -220,12 +251,12 @@ def main():
     run_ts = datetime.now(timezone.utc).isoformat()
     conn = connect()
     try:
-        ratings, schedule, divisions = load_inputs(conn, args.schema)
-        # projecting a not-yet-started season: apply the between-season regression
-        latest_completed = 20252026
-        if schedule["season"].max() > latest_completed:
-            ratings = season_rollover(ratings)
-        print(f"{len(schedule):,} scheduled games; {len(ratings)} rated teams")
+        ratings, rated_season, schedule, divisions = load_inputs(conn, args.schema)
+        season = int(schedule["season"].max())
+        ratings = season_rollover(ratings, rated_season, season)
+        banked = banked_points(conn, args.schema, season)
+        print(f"{len(schedule):,} scheduled games; {len(ratings)} rated teams; "
+              f"{int(sum(banked.values()))} points banked")
 
         gp_rows = game_projections(ratings, schedule, run_ts)
         write(conn, "GAME_PROJECTIONS",
@@ -233,8 +264,8 @@ def main():
               "away string, home_elo float, away_elo float, p_home_win float", gp_rows)
 
         rng = np.random.default_rng(20262027)
-        sim = simulate_season(ratings, schedule, divisions, args.sims, rng)
-        sim_rows = [(run_ts[:10], int(schedule["season"].max()), r.team,
+        sim = simulate_season(ratings, schedule, divisions, args.sims, rng, banked)
+        sim_rows = [(run_ts[:10], season, r.team,
                      round(r.exp_points, 1), round(r.playoff_odds, 4),
                      round(r.division_odds, 4), round(r.presidents_odds, 4),
                      round(r.cup_odds, 4))
