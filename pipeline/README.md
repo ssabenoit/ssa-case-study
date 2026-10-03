@@ -20,6 +20,15 @@ the packages in `requirements.txt`, dbt-snowflake, and environment variables.
 
 **Step semantics:** extract/flatten/load/dbt/invariants are required (failure
 fails the run); Metabase/Omni syncs are best-effort (logged, never fatal).
+On reference runs, `validate_reference` checks that all 32 clubs' teams,
+standings, rosters and schedules came back (the extractor logs and skips
+fetches that exhaust their retries, e.g. on HTTP 429). If any are missing the
+existing reference tables are kept, the game data still loads and builds, and
+the run exits nonzero. `NHL_REQUEST_DELAY` (default 1.0s) paces API calls.
+
+**GitHub Actions:** `.github/workflows/nightly.yml` runs this with
+`DBT_PROFILES_DIR=ci` (the `prod` target in `ci/profiles.yml`, key-pair only).
+Required secrets are listed at the top of the workflow.
 Invariants enforced post-run: league PP goals ≡ league PK goals-against,
 exactly 32 active franchises, and latest-completed-game freshness is logged.
 

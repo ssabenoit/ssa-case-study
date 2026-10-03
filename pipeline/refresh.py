@@ -90,7 +90,9 @@ def step_extract(work_dir: Path, start: date, end: date):
         start_date=start.isoformat(),
         end_date=end.isoformat(),
         output_dir=str(work_dir / "raw"),
-        request_delay=0.3,
+        # 0.3s draws HTTP 429s from the NHL API; failed fetches are logged and
+        # skipped, which validate_reference catches before any full replace
+        request_delay=float(os.getenv("NHL_REQUEST_DELAY", "1.0")),
     )
     files = sorted(p.name for p in (work_dir / "raw").glob("*.parquet"))
     return {"files": files, "window": f"{start} -> {end}"}
@@ -99,6 +101,44 @@ def step_extract(work_dir: Path, start: date, end: date):
 def step_flatten(work_dir: Path):
     counts = flatten_directory(str(work_dir / "raw"), str(work_dir / "flat"))
     return {"rows": counts}
+
+
+def step_validate_reference(work_dir: Path):
+    """Full-replace tables overwrite the warehouse copy, so a fetch the
+    extractor gave up on (e.g. a rate-limited club) would silently drop a
+    team. Refuse the reference load unless every club is present."""
+    import pandas as pd
+    flat = work_dir / "flat"
+    problems = []
+    for table in ("current_teams", "current_standings", "team_rosters"):
+        path = flat / f"{table}.parquet"
+        rows = len(pd.read_parquet(path)) if path.exists() else 0
+        if rows != 32:
+            problems.append(f"{table}: {rows} rows (expected 32)")
+
+    # each club's schedule is fetched separately, so every regular-season game
+    # appears exactly twice (once per club); a club whose fetch failed shows
+    # its games only once, from its opponents' schedules
+    path = flat / "season_schedules.parquet"
+    if not path.exists():
+        problems.append("season_schedules: missing")
+    else:
+        sched = pd.read_parquet(path, columns=["ID", "GAMETYPE", "HOMETEAM_ABBREV", "AWAYTEAM_ABBREV"])
+        sched = sched[sched["GAMETYPE"] == 2]
+        by_team = pd.concat([
+            sched[["ID", "HOMETEAM_ABBREV"]].rename(columns={"HOMETEAM_ABBREV": "team"}),
+            sched[["ID", "AWAYTEAM_ABBREV"]].rename(columns={"AWAYTEAM_ABBREV": "team"}),
+        ]).groupby("team")["ID"].agg(["size", "nunique"])
+        if len(by_team) != 32:
+            problems.append(f"season_schedules: {len(by_team)} clubs (expected 32)")
+        if (by_team["size"] != 2 * by_team["nunique"]).any():
+            # the failed club sees every game once; its opponents only some
+            missing = sorted(by_team.index[by_team["size"] == by_team["nunique"]])
+            problems.append(f"season_schedules: club schedule fetch missing for {missing or 'unknown club'}")
+
+    if problems:
+        raise RuntimeError("reference extract incomplete, not loading: " + "; ".join(problems))
+    return {"clubs": 32}
 
 
 def step_load(work_dir: Path, refresh_reference: bool):
@@ -285,6 +325,13 @@ def main():
         if not args.skip_extract:
             ok = run_step("extract", lambda: step_extract(work_dir, start, today), results)
             ok = ok and run_step("flatten", lambda: step_flatten(work_dir), results)
+            if ok and refresh_reference:
+                # an incomplete reference extract keeps the existing reference
+                # tables and fails the run at the end, but the nightly game
+                # data still loads and builds
+                reference_ok = run_step("validate_reference",
+                                        lambda: step_validate_reference(work_dir), results)
+                refresh_reference = reference_ok
             ok = ok and run_step("load", lambda: step_load(work_dir, refresh_reference), results)
             run_step("extras", step_extras, results)   # best-effort aux streams
         if ok and not args.skip_dbt:
@@ -300,6 +347,8 @@ def main():
         shutil.rmtree(work_dir, ignore_errors=True)
 
     failed = [name for name, success, _ in results if not success]
+    if "validate_reference" in failed:
+        ok = False
     summary = ("NHL refresh OK: " + ", ".join(n for n, s, _ in results if s)) if ok \
         else ("NHL refresh FAILED at: " + ", ".join(failed))
     log("pipeline", "ok" if ok else "failed", failed_steps=failed)

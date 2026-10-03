@@ -1,9 +1,14 @@
-name: Nightly refresh (fallback)
+name: Nightly refresh
 
-# Fallback runner for pipeline/refresh.py. autumneight is the primary
-# scheduler; enable the cron below only if it needs covering.
-# Requires the same Snowflake secrets as ci.yml (key-pair preferred) plus
-# optionally MB_API_KEY and ALERT_WEBHOOK_URL.
+# Runs pipeline/refresh.py: extract -> load -> dbt build (prod) -> Elo and
+# projections -> Metabase/Omni sync -> invariants.
+#
+# Repo secrets (Settings > Secrets and variables > Actions):
+#   required: SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE,
+#             SNOWFLAKE_WAREHOUSE, SNOWFLAKE_PRIVATE_KEY (PKCS#8 PEM, full text)
+#   optional: MB_API_KEY (Metabase schema sync), OMNI_API_KEY (Omni schema
+#             refresh), ALERT_WEBHOOK_URL (Slack-compatible run summary)
+# Scheduled workflows only run from the default branch (main).
 
 on:
   workflow_dispatch:
@@ -15,40 +20,59 @@ on:
         description: "Also refresh schedules/rosters/standings/teams"
         type: boolean
         default: false
+  # enable once a manual run has succeeded:
   # schedule:
   #   - cron: "0 9 * * *"   # 09:00 UTC ≈ after West Coast games finish
+
+concurrency:
+  group: nightly-refresh
+  cancel-in-progress: false
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     env:
       SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
       SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
-      SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
       SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
       SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
       SNOWFLAKE_DATABASE: DBT_ANALYTICS
       SNOWFLAKE_SCHEMA: STAGING
-      ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
       DBT_BIN: dbt
+      DBT_PROFILES_DIR: ci
+      OMNI_BASE_URL: https://southshorellc.omniapp.co
+      OMNI_MODEL_ID: f9824d6d-7291-4575-862b-de2b62872eb5
+      OMNI_API_KEY: ${{ secrets.OMNI_API_KEY }}
+      ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: pip install dbt-snowflake==1.10.3 -r requirements.txt
-      - name: Materialize key-pair credential when configured
-        if: ${{ secrets.SNOWFLAKE_PRIVATE_KEY != '' }}
+      # secrets can't be referenced in step `if:` conditions, so they're
+      # passed through env and checked in the shell
+      - name: Materialize Snowflake key
+        env:
+          SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
         run: |
-          printf '%s' "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > "$RUNNER_TEMP/sf_key.p8"
+          if [ -z "$SNOWFLAKE_PRIVATE_KEY" ]; then
+            echo "::error::SNOWFLAKE_PRIVATE_KEY secret is not set"; exit 1
+          fi
+          printf '%s\n' "$SNOWFLAKE_PRIVATE_KEY" > "$RUNNER_TEMP/sf_key.p8"
           chmod 600 "$RUNNER_TEMP/sf_key.p8"
           echo "SNOWFLAKE_PRIVATE_KEY_PATH=$RUNNER_TEMP/sf_key.p8" >> "$GITHUB_ENV"
       - name: Materialize Metabase key when configured
-        if: ${{ secrets.MB_API_KEY != '' }}
+        env:
+          MB_API_KEY: ${{ secrets.MB_API_KEY }}
         run: |
-          printf '%s' "${{ secrets.MB_API_KEY }}" > "$RUNNER_TEMP/.mb_api_key"
-          echo "MB_API_KEY_FILE=$RUNNER_TEMP/.mb_api_key" >> "$GITHUB_ENV"
+          if [ -n "$MB_API_KEY" ]; then
+            printf '%s' "$MB_API_KEY" > "$RUNNER_TEMP/.mb_api_key"
+            echo "MB_API_KEY_FILE=$RUNNER_TEMP/.mb_api_key" >> "$GITHUB_ENV"
+          fi
       - run: dbt deps
+      - run: dbt debug --target prod
       - name: Run refresh
         run: |
           python pipeline/refresh.py \

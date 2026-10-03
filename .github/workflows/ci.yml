@@ -1,7 +1,7 @@
 name: dbt CI
 
-# Requires repo secrets: SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_PASSWORD,
-# and optionally SNOWFLAKE_ROLE / SNOWFLAKE_WAREHOUSE.
+# Requires repo secrets: SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_PRIVATE_KEY
+# (PKCS#8 PEM, full text), and optionally SNOWFLAKE_ROLE / SNOWFLAKE_WAREHOUSE.
 # Builds into the isolated DBT_CI schema (see ci/profiles.yml).
 
 on:
@@ -31,7 +31,6 @@ jobs:
     env:
       SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
       SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
-      SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
       SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
       SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
     steps:
@@ -40,10 +39,15 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install dbt-snowflake==1.10.3
-      - name: Materialize key-pair credential when configured
-        if: ${{ secrets.SNOWFLAKE_PRIVATE_KEY != '' }}
+      # secrets can't be referenced in step `if:` conditions; check in the shell
+      - name: Materialize Snowflake key
+        env:
+          SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
         run: |
-          printf '%s' "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > "$RUNNER_TEMP/sf_key.p8"
+          if [ -z "$SNOWFLAKE_PRIVATE_KEY" ]; then
+            echo "::error::SNOWFLAKE_PRIVATE_KEY secret is not set"; exit 1
+          fi
+          printf '%s\n' "$SNOWFLAKE_PRIVATE_KEY" > "$RUNNER_TEMP/sf_key.p8"
           chmod 600 "$RUNNER_TEMP/sf_key.p8"
           echo "SNOWFLAKE_PRIVATE_KEY_PATH=$RUNNER_TEMP/sf_key.p8" >> "$GITHUB_ENV"
       - run: dbt deps
