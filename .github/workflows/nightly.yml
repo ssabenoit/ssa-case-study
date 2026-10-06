@@ -20,9 +20,8 @@ on:
         description: "Also refresh schedules/rosters/standings/teams"
         type: boolean
         default: false
-  # enable once a manual run has succeeded:
-  # schedule:
-  #   - cron: "0 9 * * *"   # 09:00 UTC ≈ after West Coast games finish
+  schedule:
+    - cron: "0 9 * * *"   # 09:00 UTC ≈ after West Coast games finish and official stats post
 
 concurrency:
   group: nightly-refresh
