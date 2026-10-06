@@ -165,13 +165,16 @@ def step_load(work_dir: Path, refresh_reference: bool):
     return loaded
 
 
-def step_extras():
+def step_extras(window_days: int):
     """Tier-1 auxiliary streams: recent shift charts, current-season official
     aggregates, landing payloads for any new players. Best-effort."""
     results = {}
     season = os.getenv("CURRENT_SEASON", "20262027")
+    # shift charts must cover the whole game window, or a catch-up run
+    # (--window-days N) loads games whose shifts are never fetched
+    shift_days = str(max(3, window_days + 1))
     for name, cmd in (
-        ("shifts", ["shifts", "--window-days", "3"]),
+        ("shifts", ["shifts", "--window-days", shift_days]),
         ("official", ["official-summaries", "--seasons", f"{season}..{season}"]),
         ("landing", ["player-landing"]),
     ):
@@ -333,7 +336,7 @@ def main():
                                         lambda: step_validate_reference(work_dir), results)
                 refresh_reference = reference_ok
             ok = ok and run_step("load", lambda: step_load(work_dir, refresh_reference), results)
-            run_step("extras", step_extras, results)   # best-effort aux streams
+            run_step("extras", lambda: step_extras(args.window_days), results)   # best-effort aux streams
         if ok and not args.skip_dbt:
             ok = run_step("dbt_build_prod", step_dbt, results)
         if ok and not args.skip_dbt:

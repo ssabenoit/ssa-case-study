@@ -16,7 +16,9 @@ summaries as (
         HOMETEAM_ABBREV::string as home_abv,
         HOMETEAM_SCORE::int as home_score
     from {{ source('nhl_staging_data', 'game_summaries') }}
-    qualify row_number() over (partition by ID order by ID) = 1
+    -- the loader appends a copy per extraction, including ones taken before
+    -- the game ended (NULL scores); keep the most recently loaded copy
+    qualify row_number() over (partition by ID order by _loaded_at desc) = 1
 ),
 
 games as (
