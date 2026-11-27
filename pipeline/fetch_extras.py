@@ -140,6 +140,32 @@ def cmd_shifts(args, work):
 
 
 # ---------------------------------------------------- official summaries ----
+# Since 2026-11-20 the stats API caps every response at 100 rows and ignores
+# limit=-1, so a single request silently returned only the first 100 skaters
+# and the rest kept stale snapshots (assert_official_skater_parity failed on
+# 363 players). Page through with a stable sort and insist on the full total.
+SUMMARY_PAGE = 100
+SUMMARY_SORT_KEY = {"skater": "playerId", "goalie": "playerId", "team": "teamId"}
+
+
+def fetch_summary_pages(kind, season, game_type):
+    sort = f'%5B%7B%22property%22:%22{SUMMARY_SORT_KEY[kind]}%22,%22direction%22:%22ASC%22%7D%5D'
+    records, start, total = [], 0, None
+    while total is None or start < total:
+        url = (f"{STATS}/{kind}/summary?start={start}&limit={SUMMARY_PAGE}&sort={sort}"
+               f"&cayenneExp=seasonId={season}%20and%20gameTypeId={game_type}")
+        payload = get_json(url)
+        page = payload.get("data", [])
+        total = payload.get("total", len(page))
+        records.extend(page)
+        if not page:
+            break
+        start += len(page)
+    if len(records) != total:
+        raise RuntimeError(f"official {kind} summary {season}/{game_type}: got {len(records)} of {total} rows")
+    return records
+
+
 def cmd_official(args, work):
     lo, hi = args.seasons.split("..") if ".." in args.seasons else (args.seasons, args.seasons)
     seasons = []
@@ -152,10 +178,7 @@ def cmd_official(args, work):
         rows = []
         for season in seasons:
             for game_type in (2, 3):
-                url = (f"{STATS}/{kind}/summary?limit=-1&cayenneExp="
-                       f"seasonId={season}%20and%20gameTypeId={game_type}")
-                payload = get_json(url)
-                for rec in payload.get("data", []):
+                for rec in fetch_summary_pages(kind, season, game_type):
                     row = flatten_record(rec)
                     row["GAMETYPEID"] = game_type
                     row["_LOADED_AT"] = ts
