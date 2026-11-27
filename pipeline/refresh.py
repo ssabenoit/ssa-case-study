@@ -194,7 +194,17 @@ def step_dbt():
     )
     tail = "\n".join(proc.stdout.splitlines()[-3:])
     if proc.returncode != 0:
-        raise RuntimeError(f"dbt build failed (exit {proc.returncode}): {tail}")
+        # The last lines are usually dbt's deprecation footer, not the error, so
+        # echo the full output to stderr (it lands in the Actions log) and lift
+        # the failing nodes into the exception message.
+        print(proc.stdout, file=sys.stderr)
+        print(proc.stderr, file=sys.stderr)
+        failures = [
+            line.strip() for line in proc.stdout.splitlines()
+            if any(k in line for k in ("ERROR", "FAIL ", "Failure in", "Database Error", "Compilation Error"))
+        ]
+        detail = "\n".join(failures[:20]) or tail
+        raise RuntimeError(f"dbt build failed (exit {proc.returncode}):\n{detail}")
     return {"dbt_tail": tail}
 
 
